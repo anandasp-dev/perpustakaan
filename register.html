@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form Folio</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Menggunakan versi FontAwesome yang lebih stabil -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="card-register">
+        
+        <!-- Header Section -->
+        <div class="card-header-register">
+            <h1>Your story starts here.</h1>
+            <p class="deskripsi-form-register">Bergabunglah dengan komunitas dengan penuh rasa ingin tahu. Buat akun untuk menjelajah, meminjam, dan menjadi bagian darinya.</p>
+            
+            <!-- Tab Switcher -->
+            <div class="tab-container">
+                <a href="login.html" class="tab-active">Login</a>
+                <a href="register.html" class="tab-register">Register</a>
+            </div>
+        </div>
+
+        <!-- Main Form Section -->
+        <form id="formLogin" action="register.html" class="main-section">
+
+            <div class="form-group">
+                <label for="fullName" class="form-fullName">Full Name</label>
+                <!-- type "text" lebih aman jika membolehkan username selain email -->
+                <input type="text" id="email" placeholder="you@example.com"> 
+            </div>
+            
+            <div class="form-group">
+                <label for="email" class="form-email">Email / Username</label>
+                <!-- type "text" lebih aman jika membolehkan username selain email -->
+                <input type="text" id="email" placeholder="you@example.com"> 
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" placeholder="Enter your password">
+                    <!-- Ikon mata untuk show/hide password -->
+                    <i class="fa-regular fa-eye-slash" id="togglePassword"></i>
+                </div>
+                <label for="deskripsi-password" class="deskripsi-password-register">Use at least 8 characters, including a number</label>
+            </div>
+
+            <!-- Remember Me & Forgot Password Row -->
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox"> I agree to the Terms & Privacy Policy
+                </label>
+            </div>
+
+            <!-- Tombol Login dipisah dari grup input password -->
+            <button type="submit" class="btn-login">Login</button>
+            
+        </form>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            <p class="footer-deskripsi">Already a member? <a href="login.html">Login <i class="fa-solid fa-arrow-right"></i></a></p>
+            
+            <!-- Trust Badge Box -->
+            <div class="trust-badge">
+                <i class="fa-solid fa-leaf"></i>
+                <span>Free Membership. Endless Possibilities</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js.js"></script>
+</body>
+</html>
