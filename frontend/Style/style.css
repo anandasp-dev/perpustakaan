@@ -21,6 +21,17 @@
     --badge-border: #BFDBFE;    /* Warna garis tepi biru muda */
 }
 
+/* --- ERROR MESSAGE STYLES --- */
+#errorMessage {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #c0392b;
+}
+
+#errorMessage.sukses {
+    color: #27ae60;
+}
+
 /* --- RESET & GLOBAL STYLES --- */
 * {
     margin: 0;
@@ -104,7 +115,7 @@ body{
     font-weight: 600;
 }
 
-#email, #password{
+#identifier, #email, #username, #password{
     width: 350px;
     padding: 10px;
     border-radius: 18px;
