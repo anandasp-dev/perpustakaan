@@ -3,62 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Form Folio</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Login</title>
+    <link rel="stylesheet" href="../Style/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="card">
-        
+
         <!-- Header Section -->
         <div class="card-header">
             <h1>Welcome back.</h1>
             <p class="deskripsi-form">Masuk untuk menemukan bacaan menarik berikutnya dan melanjutkan perjalanan Anda.</p>
-            
+
             <!-- Tab Switcher -->
             <div class="tab-container">
-                <a href="login.html" class="tab-active">Login</a>
+                <a href="login.html" class="tab-active" aria-current="page">Login</a>
                 <a href="register.html" class="tab">Register</a>
             </div>
         </div>
 
         <!-- Main Form Section -->
-        <form id="formLogin" action="register.html" class="main-section">
-            
+        <form id="formLogin" class="main-section">
+
             <div class="form-group">
-                <label for="email" class="form-email">Email / Username</label>
-                <!-- type "text" lebih aman jika membolehkan username selain email -->
-                <input type="text" id="email" placeholder="you@example.com"> 
+                <label for="identifier" class="form-email">Email / Username</label>
+                <input type="text" id="identifier" name="identifier" placeholder="you@example.com"
+                       autocomplete="username" maxlength="255" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="password" class="form-password">Password</label>
                 <div class="password-wrapper">
-                    <input type="password" id="password" placeholder="Enter your password">
+                    <input type="password" id="password" name="password" placeholder="Enter your password"
+                           autocomplete="current-password" maxlength="128" required>
                     <!-- Ikon mata untuk show/hide password -->
                     <i class="fa-regular fa-eye-slash" id="togglePassword"></i>
                 </div>
             </div>
 
-            <!-- Remember Me & Forgot Password Row -->
             <div class="form-options">
-                <label class="remember-me">
-                    <input type="checkbox"> Remember me
-                </label>
                 <a href="#" class="forgot-password">Forgot Password?</a>
             </div>
 
-            <!-- Tombol Login dipisah dari grup input password -->
+            <!-- Pesan error dari server -->
+            <p id="errorMessage" role="alert" hidden></p>
+
             <button type="submit" class="btn-login">Login</button>
-            
+
         </form>
 
         <!-- Footer Section -->
         <div class="footer">
-            <p class="footer-deskripsi">New to Folio? <a href="register.html">Create an account <i class="fa-solid fa-arrow-right"></i></a></p>
-            
-            <!-- Trust Badge Box -->
+            <p class="footer-deskripsi">New here? <a href="register.html">Create an account <i class="fa-solid fa-arrow-right"></i></a></p>
+
             <div class="trust-badge">
                 <i class="fa-solid fa-shield-halved"></i>
                 <span>Your reading journey, safely in one place.</span>
@@ -67,6 +65,7 @@
 
     </div>
 
-    <script src="js.js"></script>
+    <script src="../Js/js.js"></script>
+    <script src="../Js/login.js"></script>
 </body>
 </html>
