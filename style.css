@@ -1,0 +1,239 @@
+:root {
+    /* Background & Card */
+    --bg-main: #F4F7F9;         /* Warna abu-abu kebiruan terang untuk background halaman */
+    --bg-card: #FFFFFF;         /* Warna putih untuk background form/card */
+    
+    /* Text Colors */
+    --text-heading: #0B1426;    /* Warna biru dongker pekat untuk judul "Welcome back." */
+    --text-body: #6B7280;       /* Warna abu-abu untuk deskripsi dan label */
+    --text-placeholder: #9CA3AF;/* Warna abu-abu terang untuk placeholder input */
+    
+    /* Primary / Action Colors */
+    --primary-blue: #2563EB;    /* Warna biru terang untuk tombol Login */
+    --primary-hover: #1D4ED8;   /* Warna biru lebih gelap untuk efek hover tombol */
+    
+    /* Borders & Inputs */
+    --border-color: #D1D5DB;    /* Warna abu-abu untuk garis tepi input dan tab */
+    --tab-bg-inactive: #F9FAFB; /* Warna background untuk tab "Register" yang tidak aktif */
+    
+    /* Trust Badge (Kotak di paling bawah) */
+    --badge-bg: #EFF6FF;        /* Warna background biru sangat terang */
+    --badge-border: #BFDBFE;    /* Warna garis tepi biru muda */
+}
+
+/* --- RESET & GLOBAL STYLES --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body{
+    background-color: var(--bg-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+
+.card{
+    background-color: var(--bg-card);
+    max-width: 400px;
+    width: 100%;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    align-items: center;
+    text-align: center;
+}
+
+.card-header h1{
+    text-align: left;
+    font-weight: 600;
+    font-size: 34px;
+    margin-bottom: 2px;
+    color: var(--text-heading);
+}
+
+.deskripsi-form{
+    text-align: left;
+    font-size: 12px;
+    margin-bottom: 24px;
+    color: var(--text-body);
+}
+
+.tab-container{
+    background-color: var(--bg-main);
+    padding: 8px;
+    border-radius: 16px;
+    width: 350px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.01);
+}
+
+.tab-container, .tab-active, .tab {
+    flex: 1; 
+    text-align: center;
+    text-decoration: none; 
+    padding: 8px; 
+    border-radius: 1px;
+    color: #000000;
+    border-radius: 15px;
+} 
+
+.tab-active { 
+    background-color: #ffffff;
+}
+
+.form-group{
+    display: flex;
+    flex-direction: column;
+}
+
+.form-email, .form-password{
+    text-align: left;
+    font-size: 12px;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+#email, #password{
+    width: 350px;
+    padding: 10px;
+    border-radius: 18px;
+    border: 3px solid var(--border-color);
+    margin-bottom: 10px;
+}
+
+.password-wrapper{
+    position: relative;
+    width: 100%;
+}
+
+#password{
+    width: 100%;
+    padding-right: 40px;
+}
+
+#togglePassword{
+    position: absolute;
+    top: 43%; /* Menurunkan ikon 50% dari atas */
+    right: 15px; /* Memberi jarak 15px dari sisi kanan batas wadah */
+    transform: translateY(-50%); /* Menarik ikon sedikit ke atas agar benar-benar berada di tengah vertikal */
+    cursor: pointer; /* Mengubah kursor jadi gambar tangan saat diarahkan ke ikon */
+    color: var(--text-body);
+}
+
+.form-options{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    margin-top: 8px;
+}
+
+.remember-me{
+    font-size: 12px;
+    color: var(--text-body);
+}
+
+.forgot-password{
+    font-size: 11px;
+    text-decoration: none;
+    color: #000000;
+}
+
+.btn-login-active, .btn-login{
+    width: 350px;
+    padding: 10px;
+    border-radius: 15px;
+    background-color: var(--primary-blue);
+    color: #ffffff;
+    border: none;
+}
+
+.footer-deskripsi{
+    font-size: 12px;
+    text-align: left;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+.footer-deskripsi, a{
+    text-decoration: none;
+    color: var(--text-body);
+}
+
+.trust-badge{
+    background-color: var(--badge-border);
+    width: 350px;
+    padding: 10px 17px;
+    font-size: 12px;
+    border: 1px solid #4d81ef;
+    border-radius: 14px;
+    text-align: left;
+}
+
+/* ini batas untuk login form */
+
+
+/* ini untuk bagian register */
+.card-register{
+    background-color: var(--bg-card);
+    max-width: 400px;
+    width: 100%;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    align-items: center;
+    text-align: center;
+}
+
+.card-header-register h1{
+    text-align: left;
+    font-weight: 600;
+    font-size: 34px;
+    margin-bottom: 2px;
+    color: var(--text-heading);
+    line-height: 1;
+}
+
+.tab-register{
+    background-color: #0B1426;
+    color: #ffffff;
+    flex: 1; 
+    text-align: center;
+    text-decoration: none; 
+    padding: 8px; 
+    border-radius: 15px;
+}
+
+.form-fullName{
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.deskripsi-password-register{
+    font-size: 10px;
+    text-align: left;
+    color: var(--text-body);
+}
+
+.deskripsi-form-register{
+    text-align: left;
+    font-size: 12px;
+    margin-bottom: 14px;
+    margin-top: 6px;
+    color: var(--text-body);
+}
+
