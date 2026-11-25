@@ -8,4 +8,4 @@ if ROOT_DIR not in sys.path:
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
-from Backend.wsgi import application as app
+from backend.wsgi import application as app
