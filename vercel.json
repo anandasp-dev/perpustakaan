@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/index.py": {
-      "includeFiles": "{Backend/**,Frontend/**}"
+      "includeFiles": "{backend/**,Backend/**,frontend/**,Frontend/**}"
     }
   },
   "rewrites": [
