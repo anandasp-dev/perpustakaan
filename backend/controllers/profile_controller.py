@@ -9,6 +9,20 @@ MIN_PASSWORD = 8
 MAX_PASSWORD = 128
 
 
+def _last_login_for(user_id, fallback_dt):
+    with cursor() as cur:
+        cur.execute(
+            "SELECT created_at FROM kunjungan "
+            "WHERE user_id = %s AND purpose = 'Login portal anggota' "
+            "ORDER BY created_at DESC, id DESC LIMIT 1",
+            (user_id,),
+        )
+        row = cur.fetchone()
+    if row and row.get("created_at"):
+        return row["created_at"]
+    return fallback_dt
+
+
 def _profile_data(row):
     name = row["full_name"]
     prefix = "ADM" if row.get("role") == "admin" else "MB"
@@ -20,7 +34,9 @@ def _profile_data(row):
         "email": row["email"],
         "phone": row["phone"],
         "role": row["role"],
+        "status": row.get("status") or "active",
         "created_at": row["created_at"],
+        "last_login": _last_login_for(row["id"], row["created_at"]),
         "visits_this_month": row.get("visits_this_month", 0),
     }
 

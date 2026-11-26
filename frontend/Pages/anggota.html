@@ -187,11 +187,9 @@
                     </div>
 
                     <div class="field">
-                        <label for="statusAnggota">Status</label>
-                        <select id="statusAnggota" name="status">
-                            <option value="active">Aktif</option>
-                            <option value="suspended">Tidak Aktif</option>
-                        </select>
+                        <label for="statusAnggotaDisplay">Status</label>
+                        <input type="text" id="statusAnggotaDisplay" value="Aktif" readonly class="readonly">
+                        <input type="hidden" id="statusAnggota" name="status" value="active">
                     </div>
                 </div>
 

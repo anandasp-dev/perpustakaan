@@ -4,8 +4,7 @@
         <div class="title-icon">
             <div>
                 <h1>Data Pengunjung</h1>
-                <p>Satu kunjungan ke perpustakaan adalah satu langkah lebih dekat menuju dirimu yang bijaksana.
-                </p>
+                <p>Satu kunjungan ke perpustakaan adalah satu langkah lebih dekat menuju dirimu yang bijaksana.</p>
             </div>
         </div>
         <button type="button" class="btn-primary" id="openAddVisitor">
@@ -46,21 +45,10 @@
     </section>
 
     <form method="GET" action="pengunjung.html">
-
         <div class="search search-full">
             <i data-lucide="search"></i>
-            <input type="text" name="q" placeholder="Cari pengunjung: nama, ID pengunjung, NPM / ID anggota">
+            <input type="text" name="q" placeholder="Cari pengunjung: nama anggota, NPM, atau ID pengunjung">
         </div>
-
-        <div class="filter-type">
-            <label for="tipe">Filter berdasarkan tipe pengunjung</label>
-            <select class="select" id="tipe" name="tipe" onchange="this.form.submit()">
-                <option value="all">Semua tipe pengunjung</option>
-                <option value="member">Anggota</option>
-                <option value="guest">Tamu</option>
-            </select>
-        </div>
-
     </form>
 
     <h2 class="section-title">Direktori Pengunjung</h2>
@@ -72,20 +60,15 @@
                 <tr>
                     <th>ID PENGUNJUNG</th>
                     <th>NPM / ID ANGGOTA</th>
-                    <th>NAMA PENGUNJUNG</th>
-                    <th>TIPE</th>
+                    <th>NAMA ANGGOTA</th>
                     <th>TANGGAL KUNJUNGAN</th>
-                    <th>JAM MASUK</th>
-                    <th>JAM KELUAR</th>
                     <th>TUJUAN</th>
-                    <th>STATUS</th>
                     <th>UBAH</th>
                 </tr>
             </thead>
             <tbody id="visitorBody">
                 <tr>
-                    <td colspan="10" class="muted" style="text-align:center;padding:24px;">Memuat data
-                        pengunjung...</td>
+                    <td colspan="6" class="muted" style="text-align:center;padding:24px;">Memuat data pengunjung...</td>
                 </tr>
             </tbody>
         </table>
@@ -98,9 +81,6 @@
                 <button type="button" class="btn-outline">Berikutnya</button>
             </div>
         </div>
-
-        <p class="table-note">&mdash; = data belum tersedia. Waktu masuk/keluar dan tujuan kunjungan diisi dari
-            catatan kunjungan.</p>
     </div>
 
     <footer class="footer">
@@ -117,7 +97,7 @@
                 <div class="modal-icon"><i data-lucide="book-plus"></i></div>
                 <div class="modal-title">
                     <h2 id="visitorTitle">Tambah Pengunjung</h2>
-                    <p>Isi data kunjungan baru.</p>
+                    <p>Isi data kunjungan anggota baru.</p>
                 </div>
                 <button type="button" class="modal-close" data-close aria-label="Tutup">
                     <i data-lucide="x"></i>
@@ -132,53 +112,25 @@
                         <input type="text" id="vId" value="Dibuat otomatis" readonly class="readonly">
                     </div>
                     <div class="field">
-                        <label for="vStatus">Status</label>
-                        <select id="vStatus" name="status">
-                            <option value="recorded">Tercatat</option>
-                            <option value="unrecorded">Tidak tercatat</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="field-row">
-                    <div class="field">
-                        <label for="vNama">Nama Pengunjung</label>
-                        <input type="text" id="vNama" name="nama" placeholder="Masukkan nama pengunjung" required>
-                    </div>
-                    <div class="field">
-                        <label for="vTipe">Tipe Pengunjung</label>
-                        <select id="vTipe" name="tipe">
-                            <option value="member">Anggota</option>
-                            <option value="guest">Tamu</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="field-row">
-                    <div class="field">
-                        <label for="vNpm">NPM / ID Anggota</label>
-                        <input type="text" id="vNpm" name="npm" placeholder="Masukkan NPM / ID anggota">
-                    </div>
-                    <div class="field">
                         <label for="vTanggal">Tanggal Kunjungan</label>
                         <input type="date" id="vTanggal" name="tanggal" required>
                     </div>
                 </div>
 
-                <div class="field-row">
-                    <div class="field">
-                        <label for="vMasuk">Jam Masuk</label>
-                        <input type="time" id="vMasuk" name="jam_masuk">
-                    </div>
-                    <div class="field">
-                        <label for="vKeluar">Jam Keluar</label>
-                        <input type="time" id="vKeluar" name="jam_keluar">
-                    </div>
+                <div class="field" style="position: relative;">
+                    <label for="vAnggota">Anggota (Nama / NPM / ID)</label>
+                    <input type="hidden" id="vAnggotaCode" name="member_code">
+                    <input type="text" id="vAnggota" name="anggota" placeholder="Klik atau ketik nama, NPM, atau ID anggota..." autocomplete="off" required>
+                    <div id="vMemberDropdown" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:50; background:#fff; border:1px solid #cbd5e1; border-radius:8px; max-height:200px; overflow-y:auto; box-shadow:0 10px 25px rgba(15,23,42,0.12); margin-top:4px;"></div>
+                    <small id="vAnggotaError" style="display:none; color:#dc2626; font-size:12px; margin-top:4px;"></small>
                 </div>
 
                 <div class="field">
                     <label for="vTujuan">Tujuan Kunjungan</label>
-                    <input type="text" id="vTujuan" name="tujuan" placeholder="Masukkan tujuan kunjungan">
+                    <select id="vTujuan" name="tujuan" required>
+                        <option value="Meminjam buku">Meminjam buku</option>
+                        <option value="Login portal anggota">Login portal web</option>
+                    </select>
                 </div>
 
             </div>
@@ -203,7 +155,7 @@
                 <div class="modal-icon"><i data-lucide="pencil"></i></div>
                 <div class="modal-title">
                     <h2 id="editVisitorTitle">Ubah Pengunjung</h2>
-                    <p id="editVisitorSub">VS-0000 &bull; Nama pengunjung</p>
+                    <p id="editVisitorSub">VS-0000 &bull; Nama anggota</p>
                 </div>
                 <button type="button" class="modal-close" data-close aria-label="Tutup">
                     <i data-lucide="x"></i>
@@ -218,53 +170,25 @@
                         <input type="text" id="evId" name="id_pengunjung" readonly class="readonly">
                     </div>
                     <div class="field">
-                        <label for="evStatus">Status</label>
-                        <select id="evStatus" name="status">
-                            <option value="recorded">Tercatat</option>
-                            <option value="unrecorded">Tidak tercatat</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="field-row">
-                    <div class="field">
-                        <label for="evNama">Nama Pengunjung</label>
-                        <input type="text" id="evNama" name="nama" required>
-                    </div>
-                    <div class="field">
-                        <label for="evTipe">Tipe Pengunjung</label>
-                        <select id="evTipe" name="tipe">
-                            <option value="member">Anggota</option>
-                            <option value="guest">Tamu</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="field-row">
-                    <div class="field">
-                        <label for="evNpm">NPM / ID Anggota</label>
-                        <input type="text" id="evNpm" name="npm">
-                    </div>
-                    <div class="field">
                         <label for="evTanggal">Tanggal Kunjungan</label>
                         <input type="date" id="evTanggal" name="tanggal" required>
                     </div>
                 </div>
 
-                <div class="field-row">
-                    <div class="field">
-                        <label for="evMasuk">Jam Masuk</label>
-                        <input type="time" id="evMasuk" name="jam_masuk">
-                    </div>
-                    <div class="field">
-                        <label for="evKeluar">Jam Keluar</label>
-                        <input type="time" id="evKeluar" name="jam_keluar">
-                    </div>
+                <div class="field" style="position: relative;">
+                    <label for="evAnggota">Anggota (Nama / NPM / ID)</label>
+                    <input type="hidden" id="evAnggotaCode" name="member_code">
+                    <input type="text" id="evAnggota" name="anggota" placeholder="Klik atau ketik nama, NPM, atau ID anggota..." autocomplete="off" required>
+                    <div id="evMemberDropdown" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:50; background:#fff; border:1px solid #cbd5e1; border-radius:8px; max-height:200px; overflow-y:auto; box-shadow:0 10px 25px rgba(15,23,42,0.12); margin-top:4px;"></div>
+                    <small id="evAnggotaError" style="display:none; color:#dc2626; font-size:12px; margin-top:4px;"></small>
                 </div>
 
                 <div class="field">
                     <label for="evTujuan">Tujuan Kunjungan</label>
-                    <input type="text" id="evTujuan" name="tujuan" placeholder="Masukkan tujuan kunjungan">
+                    <select id="evTujuan" name="tujuan" required>
+                        <option value="Meminjam buku">Meminjam buku</option>
+                        <option value="Login portal anggota">Login portal web</option>
+                    </select>
                 </div>
 
             </div>

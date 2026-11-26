@@ -100,20 +100,16 @@ def create_member(request):
 
     npm = str(body.get("npm") or "").strip()
     password = str(body.get("password") or "")
-    status = _check_member_status(body.get("status"))
     if not NPM_RE.fullmatch(npm):
         return error("NPM harus 12 digit angka", 400)
     if not 8 <= len(password) <= 128:
         return error("Kata sandi 8-128 karakter", 400)
-    if status is None:
-        return error("Status keanggotaan tidak valid", 400)
 
     try:
-        row = Member.admin_create(profile[0], npm, profile[1], profile[2], password, status=status)
+        row = Member.admin_create(profile[0], npm, profile[1], profile[2], password, status="active")
         return Response(201, {"member": _member_row(row)})
     except MemberRuleError as exc:
         return error(str(exc), 409)
-
 
 def update_member(request):
     member_id = _path_id(request)
@@ -301,6 +297,34 @@ def dashboard(request):
     Loan.expire_stale()
     return Response(200, Stats.dashboard(ref))
 
+def reports(request):
+    today = _today_wib()
+    period = str(request.query.get("period") or "7").strip().lower()
+    raw_start = str(request.query.get("start") or "").strip()
+    raw_end = str(request.query.get("end") or "").strip()
+
+    if period == "30":
+        end_date = today
+        start_date = today - timedelta(days=29)
+    elif period == "month":
+        end_date = today
+        start_date = today.replace(day=1)
+    elif period == "custom" and raw_start and raw_end:
+        try:
+            start_date = date.fromisoformat(raw_start)
+            end_date = date.fromisoformat(raw_end)
+        except ValueError:
+            return error("Format tanggal harus YYYY-MM-DD", 400)
+        if start_date > end_date:
+            return error("Tanggal mulai tidak boleh melebihi tanggal akhir", 400)
+        if (end_date - start_date).days > 365:
+            return error("Rentang laporan maksimal 365 hari", 400)
+    else:
+        end_date = today
+        start_date = today - timedelta(days=6)
+
+    Loan.expire_stale()
+    return Response(200, Stats.reports(start_date, end_date, today))
 
 def _display_status(row):
     """Status untuk tampilan: 'borrowed' yang lewat jatuh tempo jadi 'overdue'."""
@@ -533,3 +557,170 @@ def notifications(request):
         it.pop("sort_ts", None)
 
     return Response(200, {"notifications": items[:10]})
+
+
+VISITORS_PER_PAGE = 8
+ALLOWED_VISITOR_PURPOSES = {
+    "meminjam buku": "Meminjam buku",
+    "login portal anggota": "Login portal anggota",
+    "login portal web": "Login portal anggota",
+}
+
+
+def _visitor_row(row):
+    uid = row.get("user_id")
+    member_ref = (row.get("npm") or f"MB-{int(uid):04d}") if uid else None
+    return {
+        "id": row["id"],
+        "code": f"VS-{row['id']:04d}",
+        "user_id": uid,
+        "member_code": f"MB-{int(uid):04d}" if uid else None,
+        "npm": row.get("npm"),
+        "member_ref": member_ref,
+        "name": row.get("name") or "Anggota",
+        "visit_date": str(row["visit_date"])[:10] if row.get("visit_date") else None,
+        "purpose": row.get("purpose"),
+    }
+
+
+def _parse_visitor_payload(body):
+    raw_member = str(body.get("member") or "").strip()
+    if not raw_member:
+        return None, "Anggota wajib dipilih dari daftar"
+
+    candidates = User.find_for_admin(raw_member)
+    if not candidates:
+        return None, "Anggota tidak ditemukan. Pilih anggota dari daftar"
+    if len(candidates) > 1:
+        return None, "Ada lebih dari satu anggota yang cocok, pilih langsung dari daftar"
+
+    member = candidates[0]
+    if member.get("role") and member["role"] != "member":
+        return None, "Hanya akun anggota (member) yang dapat dicatat sebagai pengunjung"
+
+    raw_date = str(body.get("visit_date") or "").strip()
+    try:
+        vdate = date.fromisoformat(raw_date) if raw_date else _today_wib()
+    except ValueError:
+        return None, "Format tanggal kunjungan harus YYYY-MM-DD"
+
+    raw_purpose = str(body.get("purpose") or "").strip().lower()
+    if raw_purpose not in ALLOWED_VISITOR_PURPOSES:
+        return None, "Tujuan kunjungan hanya boleh 'Meminjam buku' atau 'Login portal web'"
+
+    return {
+        "user_id": member["id"],
+        "visit_date": vdate,
+        "purpose": ALLOWED_VISITOR_PURPOSES[raw_purpose],
+    }, None
+
+
+def visitors(request):
+    from database.db import cursor
+
+    q = str(request.query.get("q") or "").strip()
+    raw_page = request.query.get("page", "1")
+    page = int(raw_page) if raw_page.isdigit() and int(raw_page) > 0 else 1
+    today = _today_wib()
+    week_start = today - timedelta(days=6)
+
+    with cursor() as cur:
+        where = ["k.status = 'recorded'"]
+        params = []
+
+        if q:
+            like = f"%{q}%"
+            where.append(
+                "(u.full_name LIKE %s OR u.npm LIKE %s "
+                "OR CONCAT('VS-', LPAD(k.id, 4, '0')) LIKE %s "
+                "OR CONCAT('MB-', LPAD(k.user_id, 4, '0')) LIKE %s "
+                "OR k.purpose LIKE %s)"
+            )
+            params.extend([like, like, like, like, like])
+
+        where_sql = " AND ".join(where)
+
+        cur.execute(
+            f"SELECT COUNT(*) AS total FROM kunjungan k LEFT JOIN `user` u ON u.id = k.user_id WHERE {where_sql}",
+            tuple(params),
+        )
+        total = int(cur.fetchone()["total"])
+
+        offset = (page - 1) * VISITORS_PER_PAGE
+        cur.execute(
+            f"SELECT k.id, k.user_id, u.npm, COALESCE(u.full_name, k.visitor_name, 'Anggota') AS name, "
+            f"DATE(k.visit_date) AS visit_date, k.purpose "
+            f"FROM kunjungan k "
+            f"LEFT JOIN `user` u ON u.id = k.user_id "
+            f"WHERE {where_sql} "
+            f"ORDER BY DATE(k.visit_date) DESC, k.id DESC "
+            f"LIMIT %s OFFSET %s",
+            tuple(params) + (VISITORS_PER_PAGE, offset),
+        )
+        rows = cur.fetchall()
+
+        cur.execute(
+            "SELECT "
+            "COALESCE(SUM(status = 'recorded' AND DATE(visit_date) = %s), 0) AS today_total, "
+            "COALESCE(SUM(status = 'recorded' AND DATE(visit_date) BETWEEN %s AND %s), 0) AS week_total, "
+            "COALESCE(SUM(status = 'recorded' AND YEAR(visit_date) = YEAR(%s) AND MONTH(visit_date) = MONTH(%s)), 0) AS month_total "
+            "FROM kunjungan",
+            (today, week_start, today, today, today),
+        )
+        srow = cur.fetchone()
+
+    return Response(200, {
+        "visitors": [_visitor_row(r) for r in rows],
+        "total": total,
+        "page": page,
+        "per_page": VISITORS_PER_PAGE,
+        "pages": max(1, ceil(total / VISITORS_PER_PAGE)),
+        "summary": {
+            "today": int(srow["today_total"]),
+            "week": int(srow["week_total"]),
+            "month": int(srow["month_total"]),
+            "today_date": str(today),
+            "week_start": str(week_start),
+        },
+    })
+
+
+def create_visitor(request):
+    from database.db import cursor
+
+    data, problem = _parse_visitor_payload(request.json())
+    if problem:
+        return error(problem, 400)
+
+    with cursor() as cur:
+        cur.execute(
+            "INSERT INTO kunjungan (user_id, visit_date, purpose, status) VALUES (%s, %s, %s, 'recorded')",
+            (data["user_id"], data["visit_date"], data["purpose"]),
+        )
+        new_id = cur.lastrowid
+
+    return Response(201, {"id": new_id, "code": f"VS-{new_id:04d}", "message": "Pengunjung ditambahkan"})
+
+
+def update_visitor(request):
+    from database.db import cursor
+
+    visitor_id = _path_id(request)
+    if visitor_id is None:
+        return error("Data pengunjung tidak ditemukan", 404)
+
+    data, problem = _parse_visitor_payload(request.json())
+    if problem:
+        return error(problem, 400)
+
+    with cursor() as cur:
+        cur.execute("SELECT id FROM kunjungan WHERE id = %s", (visitor_id,))
+        if not cur.fetchone():
+            return error("Data pengunjung tidak ditemukan", 404)
+
+        cur.execute(
+            "UPDATE kunjungan SET user_id = %s, visit_date = %s, purpose = %s, status = 'recorded' WHERE id = %s",
+            (data["user_id"], data["visit_date"], data["purpose"], visitor_id),
+        )
+
+    return Response(200, {"id": visitor_id, "code": f"VS-{visitor_id:04d}", "message": "Data pengunjung diperbarui"})
