@@ -177,3 +177,166 @@ class Stats:
             "recent_loans": recent,
             "recent_total": recent_total,
         }
+    @staticmethod
+    def reports(start_date, end_date, today):
+        """Agregasi data laporan sesuai rentang tanggal `start_date` s/d `end_date`."""
+        span_days = (end_date - start_date).days + 1
+        prev_end = start_date - timedelta(days=1)
+        prev_start = prev_end - timedelta(days=span_days - 1)
+
+        with cursor() as cur:
+            # 1. Peminjaman dikonfirmasi per hari dalam periode
+            cur.execute(
+                "SELECT DATE(confirmed_at) AS day, COUNT(*) AS total "
+                "FROM peminjaman "
+                "WHERE status IN ('borrowed', 'returned') "
+                "AND DATE(confirmed_at) BETWEEN %s AND %s "
+                "GROUP BY DATE(confirmed_at)",
+                (start_date, end_date),
+            )
+            loans_map = {row["day"]: int(row["total"]) for row in cur.fetchall()}
+
+            cur.execute(
+                "SELECT COUNT(*) AS total FROM peminjaman "
+                "WHERE status IN ('borrowed', 'returned') "
+                "AND DATE(confirmed_at) BETWEEN %s AND %s",
+                (prev_start, prev_end),
+            )
+            prev_loans = int(cur.fetchone()["total"])
+
+            # 2. Kunjungan tercatat per hari dalam periode
+            cur.execute(
+                "SELECT DATE(visit_date) AS day, COUNT(*) AS total "
+                "FROM kunjungan "
+                "WHERE status = 'recorded' "
+                "AND DATE(visit_date) BETWEEN %s AND %s "
+                "GROUP BY DATE(visit_date)",
+                (start_date, end_date),
+            )
+            visits_map = {row["day"]: int(row["total"]) for row in cur.fetchall()}
+
+            cur.execute(
+                "SELECT COUNT(*) AS total FROM kunjungan "
+                "WHERE status = 'recorded' "
+                "AND DATE(visit_date) BETWEEN %s AND %s",
+                (prev_start, prev_end),
+            )
+            prev_visits = int(cur.fetchone()["total"])
+
+            # 3. Pengembalian per hari dalam periode
+            cur.execute(
+                "SELECT DATE(returned_at) AS day, COUNT(*) AS total "
+                "FROM peminjaman "
+                "WHERE status = 'returned' AND returned_at IS NOT NULL "
+                "AND DATE(returned_at) BETWEEN %s AND %s "
+                "GROUP BY DATE(returned_at)",
+                (start_date, end_date),
+            )
+            returns_map = {row["day"]: int(row["total"]) for row in cur.fetchall()}
+
+            cur.execute(
+                "SELECT COUNT(*) AS total FROM peminjaman "
+                "WHERE status = 'returned' AND returned_at IS NOT NULL "
+                "AND DATE(returned_at) BETWEEN %s AND %s",
+                (prev_start, prev_end),
+            )
+            prev_returns = int(cur.fetchone()["total"])
+
+            # 4. Status koleksi buku yang sudah terdaftar sampai `end_date`
+            cur.execute(
+                "SELECT COUNT(*) AS titles, "
+                "COALESCE(SUM(stock), 0) AS current_stock, "
+                "COALESCE(SUM(CASE WHEN DATE(created_at) = %s THEN stock ELSE 0 END), 0) AS added_on_end "
+                "FROM buku WHERE DATE(created_at) <= %s",
+                (end_date, end_date),
+            )
+            book_row = cur.fetchone()
+
+            # Buku yang masih dipinjam pada posisi `end_date` & mutasi pada `end_date`
+            cur.execute(
+                "SELECT "
+                "COALESCE(SUM(p.status IN ('borrowed', 'returned') "
+                "  AND DATE(p.confirmed_at) <= %s "
+                "  AND (p.returned_at IS NULL OR DATE(p.returned_at) > %s)), 0) AS borrowed_at_end, "
+                "COALESCE(SUM(p.status IN ('borrowed', 'returned') "
+                "  AND DATE(p.confirmed_at) > %s "
+                "  AND DATE(b.created_at) <= %s), 0) AS borrowed_after_end, "
+                "COALESCE(SUM(p.status IN ('borrowed', 'returned') "
+                "  AND DATE(p.confirmed_at) = %s), 0) AS out_on_end, "
+                "COALESCE(SUM(p.status = 'returned' "
+                "  AND DATE(p.returned_at) = %s), 0) AS in_on_end "
+                "FROM peminjaman p "
+                "JOIN buku b ON b.id = p.book_id",
+                (end_date, end_date, end_date, end_date, end_date, end_date),
+            )
+            loan_book_row = cur.fetchone()
+
+            # 5. Keanggotaan yang sudah terdaftar sampai `end_date`
+            cur.execute(
+                "SELECT COUNT(*) AS total, "
+                "COALESCE(SUM(COALESCE(status, 'active') = 'active'), 0) AS active, "
+                "COALESCE(SUM(status = 'suspended'), 0) AS suspended, "
+                "COALESCE(SUM(DATE(created_at) BETWEEN %s AND %s), 0) AS new_period "
+                "FROM `user` WHERE role = 'member' AND DATE(created_at) <= %s",
+                (start_date, end_date, end_date),
+            )
+            member_row = cur.fetchone()
+
+        days = [start_date + timedelta(days=i) for i in range(span_days)]
+        daily = [
+            {
+                "date": str(d),
+                "loans": loans_map.get(d, 0),
+                "visits": visits_map.get(d, 0),
+                "returns": returns_map.get(d, 0),
+            }
+            for d in days
+        ]
+
+        total_loans = sum(x["loans"] for x in daily)
+        total_visits = sum(x["visits"] for x in daily)
+        total_returns = sum(x["returns"] for x in daily)
+
+        borrowed = int(loan_book_row["borrowed_at_end"])
+        # Stok tersedia pada `end_date` = stok sekarang + yang dipinjam setelah `end_date`
+        available = int(book_row["current_stock"]) + int(loan_book_row["borrowed_after_end"])
+        maintenance = 0
+        added_end = int(book_row["added_on_end"])
+        out_end = int(loan_book_row["out_on_end"])
+        in_end = int(loan_book_row["in_on_end"])
+
+        total_members = int(member_row["total"])
+        active_members = int(member_row["active"])
+        suspended_members = int(member_row["suspended"])
+
+        return {
+            "start_date": str(start_date),
+            "end_date": str(end_date),
+            "days_count": span_days,
+            "generated_at": str(today),
+            "totals": {
+                "loans": total_loans,
+                "prev_loans": prev_loans,
+                "visits": total_visits,
+                "prev_visits": prev_visits,
+                "returns": total_returns,
+                "prev_returns": prev_returns,
+            },
+            "daily": daily,
+            "collection": {
+                "titles": int(book_row["titles"]),
+                "total_copies": available + borrowed + maintenance,
+                "available": available,
+                "borrowed": borrowed,
+                "maintenance": maintenance,
+                "added_today": added_end,
+                "out_today": out_end,
+                "net_today": added_end + in_end - out_end,
+            },
+            "members": {
+                "total": total_members,
+                "active": active_members,
+                "suspended": suspended_members,
+                "new_in_period": int(member_row["new_period"]),
+            },
+        }
