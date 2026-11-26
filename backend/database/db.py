@@ -1,12 +1,13 @@
 from contextlib import contextmanager
-
+import time
 import mysql.connector
+from mysql.connector import Error
 
 from config import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER, SCHEMA_PATH
 
 
 def get_connection(use_database: bool = True):
-    """Buat koneksi baru ke MySQL dengan zona waktu WIB (+07:00)."""
+    """Buat koneksi baru ke MySQL dengan zona waktu WIB (+07:00) dan mekanisme retry."""
     params = dict(
         host=DB_HOST,
         port=DB_PORT,
@@ -19,33 +20,79 @@ def get_connection(use_database: bool = True):
     )
     if use_database:
         params["database"] = DB_NAME
-    conn = mysql.connector.connect(**params)
-    cur = conn.cursor()
-    try:
-        cur.execute("SET time_zone = '+07:00'")
-    finally:
-        cur.close()
-    return conn
+
+    max_attempts = 3
+    delay = 1
+    last_error = None
+
+    for attempt in range(max_attempts):
+        try:
+            conn = mysql.connector.connect(**params)
+            cur = conn.cursor()
+            try:
+                cur.execute("SET time_zone = '+07:00'")
+            finally:
+                cur.close()
+            return conn
+        except Error as e:
+            last_error = e
+            if attempt < max_attempts - 1:
+                time.sleep(delay)
+                continue
+            raise last_error
 
 
 @contextmanager
 def cursor():
     """
     Otomatis commit kalau sukses, rollback kalau error, dan koneksi selalu ditutup.
+    Dilengkapi auto-reconnect jika koneksi idle terputus (gone away).
     """
-    conn = get_connection()
+    conn = None
     cur = None
-    try:
-        cur = conn.cursor(dictionary=True, buffered=True)
-        yield cur
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        if cur is not None:
-            cur.close()
-        conn.close()
+    max_attempts = 2
+
+    for attempt in range(max_attempts):
+        try:
+            conn = get_connection()
+            cur = conn.cursor(dictionary=True, buffered=True)
+            yield cur
+            conn.commit()
+            break
+        except (mysql.connector.OperationalError, mysql.connector.InterfaceError) as e:
+            # Error khas koneksi terputus / idle timeout (misal: MySQL server has gone away)
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+            
+            if attempt < max_attempts - 1:
+                time.sleep(1)
+                continue  # Coba buat koneksi baru dan jalankan ulang
+            raise e
+        except Exception:
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+            raise
+        finally:
+            if cur is not None:
+                try:
+                    cur.close()
+                except Exception:
+                    pass
+            if conn is not None:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
 
 
 def _split_statements(script: str) -> list:
