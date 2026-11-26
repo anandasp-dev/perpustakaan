@@ -26,13 +26,36 @@
     });
   }
 
-  // "2026-11-22" atau "2026-11-22 16:02:29" -> objek tanggal
+// "2026-11-22" atau "2026-11-22 16:02:29" -> objek tanggal
   function parseTanggal(teks) {
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(teks || ""));
     return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
   }
-  function keIso(d) { return d.getFullYear() + "-" + dua(d.getMonth() + 1) + "-" + dua(d.getDate()); }
-  function tglPendek(d) { return dua(d.getDate()) + " " + BULAN[d.getMonth()]; }      // 22 Nov
+
+  // Diperkuat agar otomatis membersihkan suffix ekstra (seperti :1) atau format string lain
+  function keIso(d) {
+    if (!d) return new Date().toISOString().split("T")[0];
+    
+    // Jika berupa string (misal terkirim "2026-11-26:1"), ambil murni 10 karakter pertama YYYY-MM-DD
+    if (typeof d === "string") {
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d);
+      if (m) return m[1] + "-" + m[2] + "-" + m[3];
+    }
+    
+    // Jika berupa objek Date yang valid
+    if (d instanceof Date && !isNaN(d)) {
+      return d.getFullYear() + "-" + dua(d.getMonth() + 1) + "-" + dua(d.getDate());
+    }
+    
+    // Fallback terakhir jika format lain
+    const parsed = new Date(d);
+    if (!isNaN(parsed)) {
+      return parsed.getFullYear() + "-" + dua(parsed.getMonth() + 1) + "-" + dua(parsed.getDate());
+    }
+    
+    return new Date().toISOString().split("T")[0];
+  }
+  function tglPendek(d) { return dua(d.getDate()) + " " + BULAN[d.getMonth()]; }      // 22 Nov   // 22 Nov
   function tglPanjang(d) { return tglPendek(d) + " " + d.getFullYear(); }             // 22 Nov 2026
   function waktu(teks) {                                                               // 22 Nov, 16:02
     const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(teks || ""));

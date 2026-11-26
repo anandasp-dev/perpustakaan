@@ -96,10 +96,15 @@ class Handler(BaseHTTPRequestHandler):
                 self._redirect(LOGIN_PAGE + ("?" + query if query else ""))
             else:
                 self._serve_static(request)
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+            # Diabaikan karena klien sudah menutup koneksi (misal refresh browser)
+            pass
         except Exception:
             traceback.print_exc()
-            error("Terjadi kesalahan pada server", 500).send(self)
-
+            try:
+                error("Terjadi kesalahan pada server", 500).send(self)
+            except Exception:
+                pass  # Mencegah error susulan jika socket sudah tertutup
     def _current_user(self, request):
         user_id = session.get_user_id(request.cookies.get(session.COOKIE_NAME))
         return User.find_by_id(user_id) if user_id else None
