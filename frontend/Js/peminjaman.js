@@ -29,7 +29,6 @@ lucide.createIcons();
     });
   }
 
-  // "2026-11-22" atau "2026-11-22 16:02:29" -> objek tanggal
   function parseTanggal(teks) {
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(teks || ""));
     return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
@@ -58,7 +57,6 @@ lucide.createIcons();
     return "https://wa.me/" + wa + "?text=" + encodeURIComponent(pesan);
   }
 
-  // pemberitahuan kecil di pojok kanan bawah
   function toast(teks, galat) {
     let kotak = document.getElementById("admin-toast");
     if (!kotak) {
@@ -76,7 +74,6 @@ lucide.createIcons();
     kotak._timer = setTimeout(function () { kotak.style.opacity = "0"; }, 3500);
   }
 
-  // memanggil server; kalau gagal, lempar error berisi pesan dari server
   async function panggil(url, opsi) {
     const respons = await fetch(url, opsi);
     const data = await respons.json().catch(function () { return {}; });
@@ -107,7 +104,6 @@ lucide.createIcons();
   const tombolBerikut = pager.querySelectorAll("button")[1];
   const pilPager = pager.querySelector(".pill");
 
-  // filter status ditambah dengan status baru
   pilihStatus.insertBefore(new Option("Tunggu konfirmasi", "pending"), pilihStatus.options[1]);
   pilihStatus.appendChild(new Option("Dibatalkan", "cancelled"));
   pilihStatus.appendChild(new Option("Hangus", "expired"));
@@ -115,7 +111,7 @@ lucide.createIcons();
   pilihTanggal.removeAttribute("onchange");
 
   const state = { q: "", status: "all", tanggal: "all", page: 1 };
-  let daftar = [];   // transaksi yang sedang tampil
+  let daftar = [];
 
   // ---------------- alamat (?q=...&status=...&tanggal=...&hal=...) ----------------
   function bacaUrl() {
@@ -134,7 +130,6 @@ lucide.createIcons();
   }
 
   function simpanUrl() {
-    // pertahankan parameter ?page=peminjaman milik admin-shell
     const p = new URLSearchParams(window.location.search);
     ["q", "status", "tanggal", "hal"].forEach(function (k) { p.delete(k); });
     if (state.q) p.set("q", state.q);
@@ -240,10 +235,9 @@ lucide.createIcons();
     const lambat = cariKartu("Pinjaman terlambat");
     if (lambat) isi(lambat.querySelector(".stat-number"), angka(r.overdue));
 
-    // kartu info di bagian bawah halaman
     const kartuInfo = Array.from(document.querySelectorAll(".info-cards .card")).find(function (k) {
       const h = k.querySelector("h3");
-      return h && h.textContent.indexOf("Pengingat ramah") === 0;
+      return h && h.textContent.indexOf("Pengingat") === 0;
     });
     if (kartuInfo) {
       isi(kartuInfo.querySelector(".meta"),
@@ -324,14 +318,348 @@ lucide.createIcons();
     }
   });
 
-  // ---------------- jendela: tambah peminjaman ----------------
+  // ---------------- dropdown otomatis & validasi peminjam + buku ----------------
+  let semuaAnggotaDb = [];
+  let anggotaAktifDb = [];
+  let sedangMuatAnggota = false;
+
+  let semuaBukuDb = [];
+  let bukuTersediaDb = [];
+  let sedangMuatBuku = false;
+
   const modalTambah = document.getElementById("loanModal");
   const formTambah = document.getElementById("loanForm");
 
-  function tutup(modal) { modal.classList.remove("show"); }
+  const inputPeminjam = document.getElementById("lPeminjam");
+  const inputPeminjamCode = document.getElementById("lPeminjamCode");
+  const listDropdownPeminjam = document.getElementById("memberDropdownList");
+  const errorPeminjamEl = document.getElementById("lPeminjamError");
 
-  document.getElementById("openAddLoan").addEventListener("click", function () {
+  const inputBuku = document.getElementById("lBuku");
+  const inputBukuCode = document.getElementById("lBukuCode");
+  const listDropdownBuku = document.getElementById("bookDropdownList");
+  const errorBukuEl = document.getElementById("lBukuError");
+
+  function setErrorField(inputEl, errEl, pesan) {
+    if (!errEl || !inputEl) return;
+    if (pesan) {
+      errEl.textContent = pesan;
+      errEl.style.display = "block";
+      inputEl.style.borderColor = "#dc2626";
+    } else {
+      errEl.textContent = "";
+      errEl.style.display = "none";
+      inputEl.style.borderColor = "";
+    }
+  }
+
+  // --- Peminjam (Anggota) ---
+  async function muatDaftarAnggota() {
+    if (sedangMuatAnggota) return;
+    sedangMuatAnggota = true;
+    try {
+      const pertama = await panggil("/api/admin/members?page=1");
+      const gabungan = Array.isArray(pertama.members) ? pertama.members.slice() : [];
+      const totalHalaman = Number(pertama.pages || 1);
+
+      for (let hal = 2; hal <= totalHalaman; hal++) {
+        const lanjutan = await panggil("/api/admin/members?page=" + hal);
+        if (Array.isArray(lanjutan.members)) {
+          gabungan.push.apply(gabungan, lanjutan.members);
+        }
+      }
+
+      semuaAnggotaDb = gabungan;
+      anggotaAktifDb = gabungan.filter(function (m) {
+        return String(m.status || "active").toLowerCase() === "active";
+      });
+    } catch (galat) {
+      console.warn("Gagal memuat daftar anggota:", galat);
+    } finally {
+      sedangMuatAnggota = false;
+    }
+  }
+
+  function tampilkanDropdownPeminjam(kataKunci) {
+    if (!listDropdownPeminjam) return;
+    const q = String(kataKunci || "").trim().toLowerCase();
+
+    if (sedangMuatAnggota && semuaAnggotaDb.length === 0) {
+      listDropdownPeminjam.innerHTML =
+        '<div style="padding:10px 12px;font-size:13px;color:#64748b;">Memuat daftar anggota...</div>';
+      listDropdownPeminjam.style.display = "block";
+      return;
+    }
+
+    const hasil = anggotaAktifDb.filter(function (m) {
+      const nama = String(m.name || "").toLowerCase();
+      const npm = String(m.npm || "").toLowerCase();
+      const kode = String(m.code || "").toLowerCase();
+      const email = String(m.email || "").toLowerCase();
+      return !q || nama.includes(q) || npm.includes(q) || kode.includes(q) || email.includes(q);
+    });
+
+    if (hasil.length === 0) {
+      listDropdownPeminjam.innerHTML =
+        '<div style="padding:10px 12px;font-size:13px;color:#64748b;">Tidak ada anggota aktif yang cocok.</div>';
+    } else {
+      listDropdownPeminjam.innerHTML = hasil.map(function (m) {
+        const label = m.name + (m.npm ? " (" + m.npm + ")" : " (" + m.code + ")");
+        return (
+          '<div class="member-combo-item" data-code="' + esc(m.code) + '" data-label="' + esc(label) + '" ' +
+            'style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;">' +
+            '<div>' +
+              '<div style="font-weight:600;color:#0f172a;">' + esc(m.name) + '</div>' +
+              '<div style="font-size:11px;color:#64748b;">NPM: ' + esc(m.npm || "-") + '</div>' +
+            '</div>' +
+            '<span style="font-size:11px;font-weight:600;color:#0f766e;background:#f0fdfa;padding:2px 8px;border-radius:999px;white-space:nowrap;">' +
+              esc(m.code) +
+            '</span>' +
+          '</div>'
+        );
+      }).join("");
+    }
+
+    listDropdownPeminjam.style.display = "block";
+  }
+
+  function validasiInputPeminjam() {
+    const teks = inputPeminjam.value.trim();
+    const kodeTerpilih = inputPeminjamCode ? inputPeminjamCode.value.trim() : "";
+
+    if (!teks) {
+      setErrorField(inputPeminjam, errorPeminjamEl, "Peminjam wajib diisi dan dipilih dari daftar.");
+      return null;
+    }
+
+    let cocok = null;
+    if (kodeTerpilih) {
+      cocok = semuaAnggotaDb.find(function (m) { return m.code === kodeTerpilih; }) || null;
+    }
+
+    if (!cocok) {
+      const q = teks.toLowerCase();
+      const daftarCocok = semuaAnggotaDb.filter(function (m) {
+        const label = (m.name + (m.npm ? " (" + m.npm + ")" : " (" + m.code + ")")).toLowerCase();
+        return String(m.npm || "").trim().toLowerCase() === q ||
+               String(m.code || "").trim().toLowerCase() === q ||
+               String(m.name || "").trim().toLowerCase() === q ||
+               label === q;
+      });
+
+      if (daftarCocok.length === 0) {
+        setErrorField(inputPeminjam, errorPeminjamEl, "Anggota tidak ditemukan di database. Silakan pilih dari daftar.");
+        return null;
+      }
+      if (daftarCocok.length > 1) {
+        setErrorField(inputPeminjam, errorPeminjamEl, "Ada lebih dari satu anggota yang cocok. Silakan pilih langsung dari daftar.");
+        return null;
+      }
+      cocok = daftarCocok[0];
+    }
+
+    if (String(cocok.status || "active").toLowerCase() !== "active") {
+      setErrorField(inputPeminjam, errorPeminjamEl, 'Akun anggota "' + cocok.name + '" sedang ditangguhkan / tidak aktif.');
+      return null;
+    }
+
+    if (inputPeminjamCode) inputPeminjamCode.value = cocok.code;
+    setErrorField(inputPeminjam, errorPeminjamEl, "");
+    return cocok;
+  }
+
+  if (inputPeminjam && listDropdownPeminjam) {
+    inputPeminjam.addEventListener("focus", async function () {
+      if (listDropdownBuku) listDropdownBuku.style.display = "none";
+      if (semuaAnggotaDb.length === 0) await muatDaftarAnggota();
+      tampilkanDropdownPeminjam(inputPeminjam.value);
+    });
+
+    inputPeminjam.addEventListener("click", function () {
+      if (listDropdownBuku) listDropdownBuku.style.display = "none";
+      tampilkanDropdownPeminjam(inputPeminjam.value);
+    });
+
+    inputPeminjam.addEventListener("input", function () {
+      if (inputPeminjamCode) inputPeminjamCode.value = "";
+      setErrorField(inputPeminjam, errorPeminjamEl, "");
+      tampilkanDropdownPeminjam(inputPeminjam.value);
+    });
+
+    listDropdownPeminjam.addEventListener("mousedown", function (e) {
+      const item = e.target.closest(".member-combo-item");
+      if (!item) return;
+      inputPeminjam.value = item.dataset.label;
+      if (inputPeminjamCode) inputPeminjamCode.value = item.dataset.code;
+      setErrorField(inputPeminjam, errorPeminjamEl, "");
+      listDropdownPeminjam.style.display = "none";
+    });
+  }
+
+  // --- Buku ---
+  async function muatDaftarBuku() {
+    if (sedangMuatBuku) return;
+    sedangMuatBuku = true;
+    try {
+      const pertama = await panggil("/api/admin/books?page=1");
+      const gabungan = Array.isArray(pertama.books) ? pertama.books.slice() : [];
+      const totalHalaman = Number(pertama.pages || 1);
+
+      for (let hal = 2; hal <= totalHalaman; hal++) {
+        const lanjutan = await panggil("/api/admin/books?page=" + hal);
+        if (Array.isArray(lanjutan.books)) {
+          gabungan.push.apply(gabungan, lanjutan.books);
+        }
+      }
+
+      semuaBukuDb = gabungan;
+      bukuTersediaDb = gabungan.filter(function (b) {
+        return Number(b.available || 0) > 0;
+      });
+    } catch (galat) {
+      console.warn("Gagal memuat katalog buku:", galat);
+    } finally {
+      sedangMuatBuku = false;
+    }
+  }
+
+  function tampilkanDropdownBuku(kataKunci) {
+    if (!listDropdownBuku) return;
+    const q = String(kataKunci || "").trim().toLowerCase();
+
+    if (sedangMuatBuku && semuaBukuDb.length === 0) {
+      listDropdownBuku.innerHTML =
+        '<div style="padding:10px 12px;font-size:13px;color:#64748b;">Memuat daftar buku...</div>';
+      listDropdownBuku.style.display = "block";
+      return;
+    }
+
+    const hasil = bukuTersediaDb.filter(function (b) {
+      const judul = String(b.title || "").toLowerCase();
+      const kode = String(b.code || "").toLowerCase();
+      const penulis = String(b.author || "").toLowerCase();
+      return !q || judul.includes(q) || kode.includes(q) || penulis.includes(q);
+    });
+
+    if (hasil.length === 0) {
+      listDropdownBuku.innerHTML =
+        '<div style="padding:10px 12px;font-size:13px;color:#64748b;">Tidak ada buku tersedia yang cocok.</div>';
+    } else {
+      listDropdownBuku.innerHTML = hasil.map(function (b) {
+        return (
+          '<div class="book-combo-item" data-code="' + esc(b.code) + '" data-title="' + esc(b.title) + '" ' +
+            'style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;">' +
+            '<div>' +
+              '<div style="font-weight:600;color:#0f172a;">' + esc(b.title) +
+                ' <span style="font-weight:400;color:#64748b;font-size:11px;">(' + esc(b.code) + ')</span></div>' +
+              '<div style="font-size:11px;color:#64748b;">' + esc(b.author || "-") + '</div>' +
+            '</div>' +
+            '<span style="font-size:11px;font-weight:600;color:#1d4ed8;background:#eff6ff;padding:2px 8px;border-radius:999px;white-space:nowrap;">' +
+              'Stok: ' + esc(b.available) +
+            '</span>' +
+          '</div>'
+        );
+      }).join("");
+    }
+
+    listDropdownBuku.style.display = "block";
+  }
+
+  function validasiInputBuku() {
+    const teks = inputBuku.value.trim();
+    const kodeTerpilih = inputBukuCode ? inputBukuCode.value.trim() : "";
+
+    if (!teks) {
+      setErrorField(inputBuku, errorBukuEl, "Judul buku wajib diisi dan dipilih dari daftar.");
+      return null;
+    }
+
+    let cocok = null;
+    if (kodeTerpilih) {
+      cocok = semuaBukuDb.find(function (b) { return b.code === kodeTerpilih; }) || null;
+    }
+
+    if (!cocok) {
+      const q = teks.toLowerCase();
+      const daftarCocok = semuaBukuDb.filter(function (b) {
+        return String(b.title || "").trim().toLowerCase() === q ||
+               String(b.code || "").trim().toLowerCase() === q;
+      });
+
+      if (daftarCocok.length === 0) {
+        setErrorField(inputBuku, errorBukuEl, "Buku tidak ditemukan di database. Silakan pilih buku dari daftar.");
+        return null;
+      }
+      if (daftarCocok.length > 1) {
+        setErrorField(inputBuku, errorBukuEl, "Ada lebih dari satu buku dengan judul sama. Silakan pilih langsung dari daftar.");
+        return null;
+      }
+      cocok = daftarCocok[0];
+    }
+
+    if (Number(cocok.available || 0) <= 0) {
+      setErrorField(inputBuku, errorBukuEl, 'Stok buku "' + cocok.title + '" sudah habis (0 tersedia).');
+      return null;
+    }
+
+    if (inputBukuCode) inputBukuCode.value = cocok.code;
+    setErrorField(inputBuku, errorBukuEl, "");
+    return cocok;
+  }
+
+  if (inputBuku && listDropdownBuku) {
+    inputBuku.addEventListener("focus", async function () {
+      if (listDropdownPeminjam) listDropdownPeminjam.style.display = "none";
+      if (semuaBukuDb.length === 0) await muatDaftarBuku();
+      tampilkanDropdownBuku(inputBuku.value);
+    });
+
+    inputBuku.addEventListener("click", function () {
+      if (listDropdownPeminjam) listDropdownPeminjam.style.display = "none";
+      tampilkanDropdownBuku(inputBuku.value);
+    });
+
+    inputBuku.addEventListener("input", function () {
+      if (inputBukuCode) inputBukuCode.value = "";
+      setErrorField(inputBuku, errorBukuEl, "");
+      tampilkanDropdownBuku(inputBuku.value);
+    });
+
+    listDropdownBuku.addEventListener("mousedown", function (e) {
+      const item = e.target.closest(".book-combo-item");
+      if (!item) return;
+      inputBuku.value = item.dataset.title;
+      if (inputBukuCode) inputBukuCode.value = item.dataset.code;
+      setErrorField(inputBuku, errorBukuEl, "");
+      listDropdownBuku.style.display = "none";
+    });
+  }
+
+  document.addEventListener("click", function (e) {
+    if (inputPeminjam && listDropdownPeminjam && !inputPeminjam.contains(e.target) && !listDropdownPeminjam.contains(e.target)) {
+      listDropdownPeminjam.style.display = "none";
+    }
+    if (inputBuku && listDropdownBuku && !inputBuku.contains(e.target) && !listDropdownBuku.contains(e.target)) {
+      listDropdownBuku.style.display = "none";
+    }
+  });
+
+  // ---------------- jendela: tambah peminjaman ----------------
+  function tutup(modal) {
+    modal.classList.remove("show");
+    if (listDropdownPeminjam) listDropdownPeminjam.style.display = "none";
+    if (listDropdownBuku) listDropdownBuku.style.display = "none";
+  }
+
+  document.getElementById("openAddLoan").addEventListener("click", async function () {
     formTambah.reset();
+    if (inputPeminjamCode) inputPeminjamCode.value = "";
+    if (inputBukuCode) inputBukuCode.value = "";
+    setErrorField(inputPeminjam, errorPeminjamEl, "");
+    setErrorField(inputBuku, errorBukuEl, "");
+    if (listDropdownPeminjam) listDropdownPeminjam.style.display = "none";
+    if (listDropdownBuku) listDropdownBuku.style.display = "none";
+
     const hariIni = new Date();
     const tempo = new Date();
     tempo.setDate(tempo.getDate() + 14);
@@ -343,19 +671,34 @@ lucide.createIcons();
     document.getElementById("lStatus").value = "borrowed";
     document.getElementById("lStatus").disabled = true;
     document.getElementById("lKembali").disabled = true;
-    document.getElementById("lPeminjam").placeholder = "NPM, ID anggota (MB-0008), atau nama lengkap";
-    document.getElementById("lBuku").placeholder = "Judul buku (persis) atau kode BK-007";
     modalTambah.classList.add("show");
+
+    await Promise.all([muatDaftarAnggota(), muatDaftarBuku()]);
   });
 
   formTambah.addEventListener("submit", async function (e) {
     e.preventDefault();
+
+    const anggotaValid = validasiInputPeminjam();
+    if (!anggotaValid) {
+      inputPeminjam.focus();
+      toast(errorPeminjamEl.textContent, true);
+      return;
+    }
+
+    const bukuValid = validasiInputBuku();
+    if (!bukuValid) {
+      inputBuku.focus();
+      toast(errorBukuEl.textContent, true);
+      return;
+    }
+
     const tombol = formTambah.querySelector('button[type="submit"]');
     tombol.disabled = true;
     try {
       const data = await panggil("/api/admin/loans", kirimJson({
-        member: document.getElementById("lPeminjam").value,
-        book: document.getElementById("lBuku").value,
+        member: anggotaValid.npm || anggotaValid.code,
+        book: bukuValid.code,
         due_date: document.getElementById("lTempo").value
       }));
       tutup(modalTambah);
@@ -363,6 +706,7 @@ lucide.createIcons();
       state.page = 1;
       simpanUrl();
       await muat();
+      await muatDaftarBuku();
     } catch (galat) {
       toast(galat.message, true);
     } finally {
@@ -503,4 +847,6 @@ lucide.createIcons();
   // ---------------- mulai ----------------
   bacaUrl();
   muat();
+  muatDaftarAnggota();
+  muatDaftarBuku();
 })();

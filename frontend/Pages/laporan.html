@@ -1,388 +1,245 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Laporan - Keyto Perpustakaan</title>
-    <link rel="stylesheet" href="../Style/styleNtransisi.css">
-    <link rel="stylesheet" href="../Style/memberNnotif.css">
-    <link rel="stylesheet" href="../Style/reportNvisit.css">
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
+<main class="content">
 
-    <aside class="sidebar">
-        <div class="logo">
-            <i data-lucide="book-open"></i>
-            Keyto Perpustakaan
+    <div class="page-head">
+        <div>
+            <h1>Data Laporan</h1>
+            <p>Satu-satunya hal yang benar-benar harus Anda ketahui adalah lokasi perpustakaan.</p>
         </div>
-        <span class="badge">ADMIN WORKSPACE</span>
-
-        <nav class="menu">
-            <a href="home.html"><i data-lucide="layout-dashboard"></i>Dashboard</a>
-            <a href="anggota.html"><i data-lucide="users"></i>Anggota</a>
-            <a href="bukustorage.html"><i data-lucide="book-open"></i>Buku</a>
-            <a href="peminjaman.html"><i data-lucide="arrow-left-right"></i>Peminjaman</a>
-            <a href="pengunjung.html"><i data-lucide="footprints"></i>Pengunjung</a>
-            <a href="laporan.html" class="active"><i data-lucide="chart-no-axes-combined"></i>Laporan</a>
-            <a href="pengaturan.html"><i data-lucide="settings"></i>Pengaturan</a>
-            <a href="#"><i data-lucide="log-out"></i>Logout</a>
-        </nav>
-    </aside>
-
-    <div class="main">
-
-        <header class="topbar">
-            <span class="crumb">Workspace / Laporan</span>
-
-            <div class="user">
-                <div class="notif">
-
-                    <button type="button" class="bell" id="bellBtn" aria-label="Notifikasi">
-                        <i data-lucide="bell"></i>
-                        <span class="bell-dot" id="bellDot"></span>
-                    </button>
-
-                    <div class="notif-panel" id="notifPanel">
-
-                        <div class="notif-head">
-                            <div>
-                                <h3>Notifikasi</h3>
-                                <p id="notifCount">3 belum dibaca</p>
-                            </div>
-                            <button type="button" class="btn-outline" id="markAll">Tandai Semua Dibaca</button>
-                        </div>
-
-                        <div class="notif-list">
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="book-open"></i></span>
-                                <div class="notif-text">
-                                    <b>Buku dikembalikan</b>
-                                    <small>Pengembalian &bull; The Creative Act sudah kembali ke rak.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>2 menit lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="clock"></i></span>
-                                <div class="notif-text">
-                                    <b>Peminjaman hampir jatuh tempo</b>
-                                    <small>Segera jatuh tempo &bull; Sapiens jatuh tempo besok.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>1 jam lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="user-plus"></i></span>
-                                <div class="notif-text">
-                                    <b>Anggota baru terdaftar</b>
-                                    <small>Anggota &bull; Amara Okafor bergabung di perpustakaan.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>3 jam lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item">
-                                <span class="notif-icon gray"><i data-lucide="footprints"></i></span>
-                                <div class="notif-text">
-                                    <b>Pengunjung check-in</b>
-                                    <small>Pengunjung &bull; Oliver James check-in.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>Kemarin</span>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item">
-                                <span class="notif-icon red"><i data-lucide="circle-alert"></i></span>
-                                <div class="notif-text">
-                                    <b>Buku terlambat</b>
-                                    <small>Terlambat &bull; A Little Life perlu diingatkan.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>Kemarin</span>
-                                </div>
-                            </a>
-
-                        </div>
-
-                        <a href="#" class="notif-foot">Lihat Semua Notifikasi <i data-lucide="arrow-right"></i></a>
-
-                    </div>
-                </div>
-
-                <div class="avatar">ER</div>
-                <div class="user-info">
-                    <strong>Emma Reed</strong>
-                    <span>Admin</span>
-                </div>
-            </div>
-        </header>
-
-        <main class="content">
-
-            <div class="page-head">
-                <div>
-                    <h1>Data Laporan</h1>
-                    <p>Satu-satunya hal yang benar-benar harus Anda ketahui adalah lokasi perpustakaan.</p>
-                </div>
-            </div>
-
-            <form class="card filter-card" method="GET" action="laporan.html">
-                <div class="filter-grid">
-
-                    <div class="field">
-                        <label for="periode">Periode laporan</label>
-                        <select id="periode" name="periode">
-                            <option value="7">7 hari terakhir</option>
-                            <option value="30">30 hari terakhir</option>
-                            <option value="month">Bulan ini</option>
-                            <option value="custom">Kustom</option>
-                        </select>
-                    </div>
-
-                    <div class="field">
-                        <label for="mulai">Tanggal mulai</label>
-                        <input type="date" id="mulai" name="mulai" value="2026-09-29">
-                    </div>
-
-                    <div class="field">
-                        <label for="akhir">Tanggal akhir</label>
-                        <input type="date" id="akhir" name="akhir" value="2026-10-05">
-                    </div>
-
-                    <div class="field">
-                        <label for="kategori">Kategori laporan</label>
-                        <select id="kategori" name="kategori">
-                            <option value="all">Semua kategori</option>
-                            <option value="loans">Peminjaman</option>
-                            <option value="visits">Kunjungan</option>
-                            <option value="members">Anggota</option>
-                            <option value="books">Koleksi buku</option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <div class="filter-note">
-                    <span>Aktivitas: 29 Sep-05 Okt 2026 &bull; Stok dan keanggotaan: per 05 Okt 2026</span>
-                    <span>Diperbarui 05 Okt 2026, 17.00</span>
-                </div>
-            </form>
-
-            <div class="tabs" id="reportTabs">
-                <button type="button" class="tab active" data-tab="all">Semua laporan</button>
-                <button type="button" class="tab" data-tab="loans">Peminjaman</button>
-                <button type="button" class="tab" data-tab="visits">Kunjungan</button>
-                <button type="button" class="tab" data-tab="members">Anggota</button>
-                <button type="button" class="tab" data-tab="books">Koleksi buku</button>
-            </div>
-
-            <section class="stats">
-
-                <div class="card stat" data-cat="loans">
-                    <div class="stat-top">
-                        <span>Total peminjaman</span>
-                        <i data-lucide="arrow-up-right"></i>
-                    </div>
-                    <div class="stat-number">566</div>
-                    <div class="stat-note">29 Sep-05 Okt &bull; 7 hari</div>
-                </div>
-
-                <div class="card stat" data-cat="visits">
-                    <div class="stat-top">
-                        <span>Total kunjungan</span>
-                        <i data-lucide="footprints"></i>
-                    </div>
-                    <div class="stat-number">1.040</div>
-                    <div class="stat-note">Rata-rata 148,6 kunjungan / hari</div>
-                </div>
-
-                <div class="card stat" data-cat="loans">
-                    <div class="stat-top">
-                        <span>Total pengembalian</span>
-                        <i data-lucide="book-check"></i>
-                    </div>
-                    <div class="stat-number">420</div>
-                    <div class="stat-note">Data contoh &bull; 7 hari</div>
-                </div>
-
-                <div class="card stat" data-cat="members">
-                    <div class="stat-top">
-                        <span>Anggota aktif</span>
-                        <i data-lucide="users"></i>
-                    </div>
-                    <div class="stat-number">1.248</div>
-                    <div class="stat-note">Data per 05 Okt 2026</div>
-                </div>
-
-            </section>
-
-            <section class="charts">
-
-                <div class="card" data-cat="loans">
-                    <h3>Tren peminjaman</h3>
-                    <p class="meta">29 Sep-05 Okt 2026 &bull; buku dipinjam per hari</p>
-                    <div class="chart-total">
-                        <span><b>566</b> pinjaman</span>
-                        <span class="pill">84 hari ini</span>
-                    </div>
-                    <div class="chart-box">
-                        <canvas id="trenPinjam"></canvas>
-                    </div>
-                    <p class="chart-foot">Puncak: 102 pinjaman pada 04 Okt &bull; 62 pengembalian hari ini</p>
-                </div>
-
-                <div class="card" data-cat="visits">
-                    <h3>Tren kunjungan</h3>
-                    <p class="meta">29 Sep-05 Okt 2026 &bull; kunjungan per hari</p>
-                    <div class="chart-total">
-                        <span><b>1.040</b> kunjungan</span>
-                        <span class="pill">156 hari ini</span>
-                    </div>
-                    <div class="chart-box">
-                        <canvas id="trenKunjungan"></canvas>
-                    </div>
-                    <p class="chart-foot">Puncak: 188 kunjungan pada 04 Okt &bull; 20% di atas Senin lalu</p>
-                </div>
-
-            </section>
-
-            <section class="card return-card" data-cat="loans">
-                <div class="return-info">
-                    <h3>Tren pengembalian</h3>
-                    <p class="meta">29 Sep-05 Okt 2026 &bull; buku kembali per hari</p>
-                    <div class="chart-total">
-                        <span><b>420</b> pengembalian</span>
-                    </div>
-                    <span class="pill">Data contoh: 29 Sep-04 Okt</span>
-                    <p class="chart-foot">05 Okt: 62 pengembalian sesuai catatan harian. Selisih periode: +146 buku dipinjam (566 - 420).</p>
-                </div>
-                <div class="return-chart">
-                    <div class="chart-box tall">
-                        <canvas id="trenKembali"></canvas>
-                    </div>
-                    <p class="chart-foot">Jumlah buku dikembalikan, nilai ditampilkan pada setiap batang.</p>
-                </div>
-            </section>
-
-            <section class="charts">
-
-                <div class="card" data-cat="books">
-                    <h3>Status koleksi buku</h3>
-                    <p class="meta">Data per 05 Okt 2026 &bull; 1.248 judul unik</p>
-
-                    <div class="donut-wrap">
-                        <div class="donut">
-                            <canvas id="donutKoleksi"></canvas>
-                            <div class="donut-center">
-                                <b>12.480</b>
-                                <span>total golongan</span>
-                            </div>
-                        </div>
-
-                        <div class="legend">
-                            <div><span><i class="dot dot-1"></i>Tersedia</span><b>9.340 &bull; 74,84%</b></div>
-                            <div><span><i class="dot dot-2"></i>Dipinjam</span><b>2.860 &bull; 22,92%</b></div>
-                            <div><span><i class="dot dot-3"></i>Perawatan</span><b>280 &bull; 2,24%</b></div>
-                        </div>
-                    </div>
-
-                    <div class="mini">
-                        <div><b>32</b><span>Ditambahkan hari ini</span></div>
-                        <div><b>8</b><span>Dikeluarkan hari ini</span></div>
-                        <div><b>+24</b><span>Perubahan stok bersih hari ini</span></div>
-                    </div>
-                </div>
-
-                <div class="card" data-cat="members">
-                    <h3>Laporan keanggotaan</h3>
-                    <p class="meta">Data per 05 Okt 2026 &bull; bulan berjalan</p>
-
-                    <div class="row"><span>Anggota terdaftar</span><b>1.286</b></div>
-                    <div class="row"><span>Anggota aktif</span><b>1.248</b></div>
-                    <div class="row"><span>Keanggotaan ditangguhkan</span><b>38</b></div>
-
-                    <div class="row prop-row"><span>Proporsi anggota aktif</span><b>97,0%</b></div>
-                    <div class="prop-bar"><span style="width:97%"></span></div>
-
-                    <div class="note-box">
-                        <b>+24 anggota aktif bulan ini</b>
-                        <p>Aktivitas kunjungan dihitung per kunjungan, bukan jumlah pengunjung unik.</p>
-                    </div>
-                </div>
-
-            </section>
-            
-            <section class="card table-card">
-                <h3>Ringkasan laporan terperinci</h3>
-                <p class="meta">Semua kategori &bull; aktivitas periode dan posisi akhir &bull; 2026</p>
-
-                <table class="summary-table">
-                    <thead>
-                        <tr>
-                            <th>KATEGORI LAPORAN</th>
-                            <th>RINCIAN</th>
-                            <th>HASIL</th>
-                            <th>PERIODE / TANGGAL</th>
-                            <th>BASIS DATA</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr data-cat="loans">
-                            <td><b>Peminjaman</b></td>
-                            <td>566 dipinjam &bull; 420 kembali&sup1; &bull; selisih +146</td>
-                            <td>566 buku</td>
-                            <td>29 Sep-05 Okt</td>
-                            <td><span class="basis">Periode</span></td>
-                        </tr>
-                        <tr data-cat="visits">
-                            <td><b>Kunjungan</b></td>
-                            <td>Rata-rata 148,6 / hari &bull; puncak 188 pada 04 Okt</td>
-                            <td>1.040 kunjungan</td>
-                            <td>29 Sep-05 Okt</td>
-                            <td><span class="basis">Periode</span></td>
-                        </tr>
-                        <tr data-cat="members">
-                            <td><b>Anggota</b></td>
-                            <td>1.286 terdaftar &bull; 38 ditangguhkan</td>
-                            <td>1.248 aktif</td>
-                            <td>05 Okt 2026</td>
-                            <td><span class="basis basis-end">Posisi akhir</span></td>
-                        </tr>
-                        <tr data-cat="books">
-                            <td><b>Koleksi buku</b></td>
-                            <td>1.248 judul &bull; 9.340 tersedia &bull; 280 perawatan</td>
-                            <td>12.480 buku</td>
-                            <td>05 Okt 2026</td>
-                            <td><span class="basis basis-end">Posisi akhir</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <p class="chart-foot">&sup1; Pengembalian 29 Sep-04 Okt adalah data contoh; 05 Okt (62 buku) sesuai catatan harian.</p>
-            </section>
-
-            <footer class="footer">
-                <span>&copy; 2026 Keyto Perpustakaan</span>
-                <span>Bantuan &amp; dukungan</span>
-            </footer>
-
-        </main>
     </div>
 
-    <script src="../Js/notifikasi.js"></script>
-    <script src="../Js/laporan.js"></script>
-    <script src="../Js/transisi.js"></script>
-</body>
-</html>
+    <form class="card filter-card" method="GET" action="laporan.html">
+        <div class="filter-grid">
+
+            <div class="field">
+                <label for="periode">Periode laporan</label>
+                <select id="periode" name="periode">
+                    <option value="7">7 hari terakhir</option>
+                    <option value="30">30 hari terakhir</option>
+                    <option value="month">Bulan ini</option>
+                    <option value="custom">Kustom</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="mulai">Tanggal mulai</label>
+                <input type="date" id="mulai" name="mulai">
+            </div>
+
+            <div class="field">
+                <label for="akhir">Tanggal akhir</label>
+                <input type="date" id="akhir" name="akhir">
+            </div>
+
+            <div class="field">
+                <label for="kategori">Kategori laporan</label>
+                <select id="kategori" name="kategori">
+                    <option value="all">Semua kategori</option>
+                    <option value="loans">Peminjaman</option>
+                    <option value="visits">Kunjungan</option>
+                    <option value="members">Anggota</option>
+                    <option value="books">Koleksi buku</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="filter-note">
+            <span>Memuat periode laporan...</span>
+            <span>Memuat waktu pembaruan...</span>
+        </div>
+    </form>
+
+    <div class="tabs" id="reportTabs">
+        <button type="button" class="tab active" data-tab="all">Semua laporan</button>
+        <button type="button" class="tab" data-tab="loans">Peminjaman</button>
+        <button type="button" class="tab" data-tab="visits">Kunjungan</button>
+        <button type="button" class="tab" data-tab="members">Anggota</button>
+        <button type="button" class="tab" data-tab="books">Koleksi buku</button>
+    </div>
+
+    <section class="stats">
+
+        <div class="card stat" data-cat="loans">
+            <div class="stat-top">
+                <span>Total peminjaman</span>
+                <i data-lucide="arrow-up-right"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat data...</div>
+        </div>
+
+        <div class="card stat" data-cat="visits">
+            <div class="stat-top">
+                <span>Total kunjungan</span>
+                <i data-lucide="footprints"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat data...</div>
+        </div>
+
+        <div class="card stat" data-cat="loans">
+            <div class="stat-top">
+                <span>Total pengembalian</span>
+                <i data-lucide="book-check"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat data...</div>
+        </div>
+
+        <div class="card stat" data-cat="members">
+            <div class="stat-top">
+                <span>Anggota aktif</span>
+                <i data-lucide="users"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat data...</div>
+        </div>
+
+    </section>
+
+    <section class="charts">
+
+        <div class="card" data-cat="loans">
+            <h3>Tren peminjaman</h3>
+            <p class="meta">Memuat periode...</p>
+            <div class="chart-total">
+                <span><b>...</b> pinjaman</span>
+                <span class="pill">Memuat...</span>
+            </div>
+            <div class="chart-box">
+                <canvas id="trenPinjam"></canvas>
+            </div>
+            <p class="chart-foot">Memuat ringkasan...</p>
+        </div>
+
+        <div class="card" data-cat="visits">
+            <h3>Tren kunjungan</h3>
+            <p class="meta">Memuat periode...</p>
+            <div class="chart-total">
+                <span><b>...</b> kunjungan</span>
+                <span class="pill">Memuat...</span>
+            </div>
+            <div class="chart-box">
+                <canvas id="trenKunjungan"></canvas>
+            </div>
+            <p class="chart-foot">Memuat ringkasan...</p>
+        </div>
+
+    </section>
+
+    <section class="card return-card" data-cat="loans">
+        <div class="return-info">
+            <h3>Tren pengembalian</h3>
+            <p class="meta">Memuat periode...</p>
+            <div class="chart-total">
+                <span><b>...</b> pengembalian</span>
+            </div>
+            <span class="pill">Memuat data...</span>
+            <p class="chart-foot">Memuat rincian pengembalian...</p>
+        </div>
+        <div class="return-chart">
+            <div class="chart-box tall">
+                <canvas id="trenKembali"></canvas>
+            </div>
+            <p class="chart-foot">Jumlah buku dikembalikan, nilai ditampilkan pada setiap batang.</p>
+        </div>
+    </section>
+
+    <section class="charts">
+
+        <div class="card" data-cat="books">
+            <h3>Status koleksi buku</h3>
+            <p class="meta">Memuat data koleksi...</p>
+
+            <div class="donut-wrap">
+                <div class="donut">
+                    <canvas id="donutKoleksi"></canvas>
+                    <div class="donut-center">
+                        <b>...</b>
+                        <span>total golongan</span>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <div><span><i class="dot dot-1"></i>Tersedia</span><b>...</b></div>
+                    <div><span><i class="dot dot-2"></i>Dipinjam</span><b>...</b></div>
+                    <div><span><i class="dot dot-3"></i>Perawatan</span><b>...</b></div>
+                </div>
+            </div>
+
+            <div class="mini">
+                <div><b>...</b><span>Ditambahkan hari ini</span></div>
+                <div><b>...</b><span>Dikeluarkan hari ini</span></div>
+                <div><b>...</b><span>Perubahan stok bersih hari ini</span></div>
+            </div>
+        </div>
+
+        <div class="card" data-cat="members">
+            <h3>Laporan keanggotaan</h3>
+            <p class="meta">Memuat data keanggotaan...</p>
+
+            <div class="row"><span>Anggota terdaftar</span><b>...</b></div>
+            <div class="row"><span>Anggota aktif</span><b>...</b></div>
+            <div class="row"><span>Keanggotaan ditangguhkan</span><b>...</b></div>
+
+            <div class="row prop-row"><span>Proporsi anggota aktif</span><b>...</b></div>
+            <div class="prop-bar"><span style="width:0%"></span></div>
+
+            <div class="note-box">
+                <b>Memuat ringkasan anggota...</b>
+                <p>Aktivitas kunjungan dihitung per kunjungan, bukan jumlah pengunjung unik.</p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="card table-card">
+        <h3>Ringkasan laporan terperinci</h3>
+        <p class="meta">Memuat ringkasan...</p>
+
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>KATEGORI LAPORAN</th>
+                    <th>RINCIAN</th>
+                    <th>HASIL</th>
+                    <th>PERIODE / TANGGAL</th>
+                    <th>BASIS DATA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-cat="loans">
+                    <td><b>Peminjaman</b></td>
+                    <td>Memuat...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td><span class="basis">Periode</span></td>
+                </tr>
+                <tr data-cat="visits">
+                    <td><b>Kunjungan</b></td>
+                    <td>Memuat...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td><span class="basis">Periode</span></td>
+                </tr>
+                <tr data-cat="members">
+                    <td><b>Anggota</b></td>
+                    <td>Memuat...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td><span class="basis basis-end">Posisi akhir</span></td>
+                </tr>
+                <tr data-cat="books">
+                    <td><b>Koleksi buku</b></td>
+                    <td>Memuat...</td>
+                    <td>...</td>
+                    <td>...</td>
+                    <td><span class="basis basis-end">Posisi akhir</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="chart-foot">Data laporan diambil dari catatan sistem perpustakaan.</p>
+    </section>
+
+</main>

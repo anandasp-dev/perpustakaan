@@ -1,294 +1,155 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pengaturan - Keyto Perpustakaan</title>
-    <link rel="stylesheet" href="../Style/styleNtransisi.css">
-    <link rel="stylesheet" href="../Style/memberNnotif.css">
-    <link rel="stylesheet" href="../Style/settingNloan.css">
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-</head>
-<body>
+<main class="content">
 
-    <aside class="sidebar">
-        <div class="logo">
-            <i data-lucide="book-open"></i>
-            Keyto Perpustakaan
+    <div class="card settings-card">
+
+        <div class="settings-head">
+            <div>
+                <h1>Pengaturan Profil &amp; Akun</h1>
+                <p>Kelola informasi profil dan keamanan akun Anda.</p>
+            </div>
+            <button type="button" class="btn-soft" id="editProfile">Edit Profil</button>
         </div>
-        <span class="badge">ADMIN WORKSPACE</span>
 
-        <nav class="menu">
-            <a href="home.html"><i data-lucide="layout-dashboard"></i>Dashboard</a>
-            <a href="anggota.html"><i data-lucide="users"></i>Anggota</a>
-            <a href="bukustorage.html"><i data-lucide="book-open"></i>Buku</a>
-            <a href="peminjaman.html"><i data-lucide="arrow-left-right"></i>Peminjaman</a>
-            <a href="pengunjung.html"><i data-lucide="footprints"></i>Pengunjung</a>
-            <a href="laporan.html"><i data-lucide="chart-no-axes-combined"></i>Laporan</a>
-            <a href="pengaturan.html" class="active"><i data-lucide="settings"></i>Pengaturan</a>
-            <a href="#"><i data-lucide="log-out"></i>Logout</a>
-        </nav>
-    </aside>
-
-    <div class="main">
-
-        <header class="topbar">
-            <span class="crumb">Pengaturan / Profil </span>
-
-            <div class="user">
-                <div class="notif">
-
-                    <button type="button" class="bell" id="bellBtn" aria-label="Notifikasi">
-                        <i data-lucide="bell"></i>
-                        <span class="bell-dot" id="bellDot"></span>
-                    </button>
-
-                    <div class="notif-panel" id="notifPanel">
-
-                        <div class="notif-head">
-                            <div>
-                                <h3>Notifikasi</h3>
-                                <p id="notifCount">3 belum dibaca</p>
-                            </div>
-                            <button type="button" class="btn-outline" id="markAll">Tandai Semua Dibaca</button>
-                        </div>
-
-                        <div class="notif-list">
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="book-open"></i></span>
-                                <div class="notif-text">
-                                    <b>Buku dikembalikan</b>
-                                    <small>Pengembalian &bull; The Creative Act sudah kembali ke rak.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>2 menit lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="clock"></i></span>
-                                <div class="notif-text">
-                                    <b>Peminjaman hampir jatuh tempo</b>
-                                    <small>Segera jatuh tempo &bull; Sapiens jatuh tempo besok.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>1 jam lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="user-plus"></i></span>
-                                <div class="notif-text">
-                                    <b>Anggota baru terdaftar</b>
-                                    <small>Anggota &bull; Amara Okafor bergabung di perpustakaan.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>3 jam lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item">
-                                <span class="notif-icon gray"><i data-lucide="footprints"></i></span>
-                                <div class="notif-text">
-                                    <b>Pengunjung check-in</b>
-                                    <small>Pengunjung &bull; Oliver James check-in.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>Kemarin</span>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item">
-                                <span class="notif-icon red"><i data-lucide="circle-alert"></i></span>
-                                <div class="notif-text">
-                                    <b>Buku terlambat</b>
-                                    <small>Terlambat &bull; A Little Life perlu diingatkan.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>Kemarin</span>
-                                </div>
-                            </a>
-
-                        </div>
-
-                        <a href="#" class="notif-foot">Lihat Semua Notifikasi <i data-lucide="arrow-right"></i></a>
-
-                    </div>
-                </div>
-
-                <div class="avatar">ER</div>
-                <div class="user-info">
-                    <strong>Emma Reed</strong>
-                    <span>Admin</span>
-                </div>
-            </div>
-        </header>
-
-        <main class="content">
-
-            <div class="card settings-card">
-
-            <div class="settings-head">
-                <div>
-                    <h1>Pengaturan Profil &amp; Akun</h1>
-                    <p>Kelola informasi profil dan keamanan akun Anda.</p>
-                </div>
-                <button type="button" class="btn-soft" id="editProfile">Edit Profil</button>
-            </div>
-
-            <section class="s-section">
-                <h2>Informasi Pribadi</h2>
-                <div class="s-grid">
-                    <div class="s-item">
-                        <span class="s-label">Nama Lengkap</span>
-                        <span class="s-value">Emma Reed</span>
-                    </div>
-                    <div class="s-item">
-                        <span class="s-label">NPM</span>
-                        <span class="s-value">202511223330</span>
-                    </div>
-                    <div class="s-item">
-                        <span class="s-label">Alamat Email</span>
-                        <span class="s-value">emma@gmail.com</span>
-                    </div>
-                    <div class="s-item">
-                        <span class="s-label">Nomor Telepon</span>
-                        <span class="s-value">0812-3456-7890</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="s-section">
-                <h2>Informasi Akun</h2>
-                <div class="s-grid">
-                    <div class="s-item">
-                        <span class="s-label">Peran</span>
-                        <span class="s-value">Admin</span>
-                    </div>
-                    <div class="s-item">
-                        <span class="s-label s-bold">Status Akun</span>
-                        <div class="status-box">
-                            <span class="p-dot"></span>
-                            <b>Aktif</b>
-                        </div>
-                    </div>
-                    <div class="s-item span-2">
-                        <span class="s-label s-bold">Program Studi</span>
-                        <div class="value-box">Teknik Informatika (S1)</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="s-section">
-                <h2>Ubah Kata Sandi</h2>
-                <p class="s-hint">Kata sandi tetap aman. Perubahan kata sandi bersifat opsional melalui Edit Profil.</p>
-            </section>
-
-            <section class="s-section">
-                <h2>Aktivitas Login</h2>
+        <section class="s-section">
+            <h2>Informasi Pribadi</h2>
+            <div class="s-grid">
                 <div class="s-item">
-                    <span class="s-label s-bold">Terakhir Login</span>
-                    <span class="s-value">10 Oktober 2026, 10:05 WIB</span>
+                    <span class="s-label">Nama Lengkap</span>
+                    <span class="s-value">Memuat...</span>
                 </div>
-            </section>
+                <div class="s-item">
+                    <span class="s-label">NPM</span>
+                    <span class="s-value">Memuat...</span>
+                </div>
+                <div class="s-item">
+                    <span class="s-label">Alamat Email</span>
+                    <span class="s-value">Memuat...</span>
+                </div>
+                <div class="s-item">
+                    <span class="s-label">Nomor Telepon</span>
+                    <span class="s-value">Memuat...</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="s-section">
+            <h2>Informasi Akun</h2>
+            <div class="s-grid">
+                <div class="s-item">
+                    <span class="s-label">Peran</span>
+                    <span class="s-value">Admin</span>
+                </div>
+                <div class="s-item">
+                    <span class="s-label s-bold">Status Akun</span>
+                    <div class="status-box">
+                        <span class="p-dot"></span>
+                        <b>Aktif</b>
+                    </div>
+                </div>
+                <div class="s-item span-2">
+                    <span class="s-label s-bold">Program Studi</span>
+                    <div class="value-box">Teknik Informatika (S1)</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="s-section">
+            <h2>Ubah Kata Sandi</h2>
+            <p class="s-hint">Kata sandi tetap aman. Perubahan kata sandi bersifat opsional melalui Edit Profil.
+            </p>
+        </section>
+
+        <section class="s-section">
+            <h2>Aktivitas Login</h2>
+            <div class="s-item">
+                <span class="s-label s-bold">Terakhir Login</span>
+                <span class="s-value">Memuat...</span>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<div class="modal-overlay" id="profileModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+        <form method="POST" action="#" id="profileForm">
+
+            <div class="modal-head">
+                <div class="modal-title">
+                    <h2 id="profileTitle">Edit Profil</h2>
+                    <p>Perbarui informasi pribadi dan keamanan akun.</p>
+                </div>
+                <button type="button" class="modal-close" data-close aria-label="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <h3 class="m-title">Informasi Pribadi</h3>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="nama">Nama Lengkap</label>
+                        <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
+                    </div>
+                    <div class="field">
+                        <label for="npm">NPM</label>
+                        <input type="text" id="npm" name="npm" placeholder="Masukkan NPM" required>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="email">Alamat Email</label>
+                        <input type="email" id="email" name="email" placeholder="Masukkan alamat email" required>
+                    </div>
+                    <div class="field">
+                        <label for="telepon">Nomor Telepon</label>
+                        <input type="tel" id="telepon" name="telepon" placeholder="08xxxxxxxxxx">
+                    </div>
+                </div>
+
+                <div class="m-title-row">
+                    <h3 class="m-title">Ubah Kata Sandi</h3>
+                    <span class="m-optional">Opsional</span>
+                </div>
+                <p class="s-hint">Kosongkan semua kolom ini untuk mempertahankan kata sandi.</p>
+
+                <div class="field">
+                    <label for="sandiLama">Kata Sandi Saat Ini</label>
+                    <input type="password" id="sandiLama" name="password_lama"
+                        placeholder="Masukkan kata sandi saat ini">
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="sandiBaru">Kata Sandi Baru</label>
+                        <input type="password" id="sandiBaru" name="password_baru"
+                            placeholder="Masukkan kata sandi baru" minlength="8">
+                    </div>
+                    <div class="field">
+                        <label for="sandiKonfirmasi">Konfirmasi Kata Sandi Baru</label>
+                        <input type="password" id="sandiKonfirmasi" name="password_baru_confirmation"
+                            placeholder="Ulangi kata sandi baru" minlength="8">
+                    </div>
+                </div>
+
+                <label class="check" for="showPassword">
+                    <input type="checkbox" id="showPassword">
+                    <span>Tampilkan kata sandi</span>
+                </label>
 
             </div>
 
-            <footer class="footer">
-                    <span>&copy; 2026 Keyto Perpustakaan</span>
-                    <span>Bantuan &amp; dukungan</span>
-                </footer>
+            <div class="modal-foot">
+                <button type="button" class="btn-outline" data-close>Batal</button>
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="check"></i>
+                    Simpan Perubahan
+                </button>
+            </div>
 
-        </main>
+        </form>
     </div>
-
-    <div class="modal-overlay" id="profileModal">
-                <div class="modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
-                    <form method="POST" action="#" id="profileForm">
-
-                        <div class="modal-head">
-                            <div class="modal-title">
-                                <h2 id="profileTitle">Edit Profil</h2>
-                                <p>Perbarui informasi pribadi dan keamanan akun.</p>
-                            </div>
-                            <button type="button" class="modal-close" data-close aria-label="Tutup">
-                                <i data-lucide="x"></i>
-                            </button>
-                        </div>
-
-                        <div class="modal-body">
-
-                            <h3 class="m-title">Informasi Pribadi</h3>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="nama">Nama Lengkap</label>
-                                    <input type="text" id="nama" name="nama" value="Emma Reed" required>
-                                </div>
-                                <div class="field">
-                                    <label for="npm">NPM</label>
-                                    <input type="text" id="npm" name="npm" value="202511223330" required>
-                                </div>
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="email">Alamat Email</label>
-                                    <input type="email" id="email" name="email" value="emma@gmail.com" required>
-                                </div>
-                                <div class="field">
-                                    <label for="telepon">Nomor Telepon</label>
-                                    <input type="tel" id="telepon" name="telepon" value="0812-3456-7890">
-                                </div>
-                            </div>
-
-                            <div class="m-title-row">
-                                <h3 class="m-title">Ubah Kata Sandi</h3>
-                                <span class="m-optional">Opsional</span>
-                            </div>
-                            <p class="s-hint">Kosongkan semua kolom ini untuk mempertahankan kata sandi.</p>
-
-                            <div class="field">
-                                <label for="sandiLama">Kata Sandi Saat Ini</label>
-                                <input type="password" id="sandiLama" name="password_lama" placeholder="Masukkan kata sandi saat ini">
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="sandiBaru">Kata Sandi Baru</label>
-                                    <input type="password" id="sandiBaru" name="password_baru" placeholder="Masukkan kata sandi baru" minlength="8">
-                                </div>
-                                <div class="field">
-                                    <label for="sandiKonfirmasi">Konfirmasi Kata Sandi Baru</label>
-                                    <input type="password" id="sandiKonfirmasi" name="password_baru_confirmation" placeholder="Ulangi kata sandi baru" minlength="8">
-                                </div>
-                            </div>
-
-                            <label class="check" for="showPassword">
-                                <input type="checkbox" id="showPassword">
-                                <span>Tampilkan kata sandi</span>
-                            </label>
-
-                        </div>
-
-                        <div class="modal-foot">
-                            <button type="button" class="btn-outline" data-close>Batal</button>
-                            <button type="submit" class="btn-primary">
-                                <i data-lucide="check"></i>
-                                Simpan Perubahan
-                            </button>
-                        </div>
-
-                    </form>
-                </div>
-    </div>
-
-    <script src="../Js/notifikasi.js"></script>
-    <script src="../Js/pengaturan.js"></script>
-    <script src="../Js/transisi.js"></script>
-</body>
-</html>
+</div>

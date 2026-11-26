@@ -9,12 +9,12 @@
   // nilai ?page= -> file isi + judul. Halaman baru = tambah satu baris di sini.
   const PAGES = {
     home:        { file: "/Pages/home",        title: "Home",       scripts: ["/Js/kalender.js", "/Js/script.js", "/Js/admin-dashboard.js"] },
-    anggota:     { file: "/Pages/anggota",     title: "Anggota",    scripts: ["/Js/anggota.js"] },
-    bukustorage: { file: "/Pages/bukustorage", title: "Buku",       scripts: ["/Js/buku.js"] },
-    peminjaman:  { file: "/Pages/peminjaman",  title: "Peminjaman", scripts: ["/Js/peminjaman.js"] },
-    pengunjung:  { file: "/Pages/pengunjung",  title: "Pengunjung", scripts: ["/Js/pengunjung.js"] },
-    laporan:     { file: "/Pages/laporan",     title: "Laporan",    scripts: ["/Js/laporan.js"] },
-    pengaturan:  { file: "/Pages/pengaturan",  title: "Pengaturan", scripts: ["/Js/pengaturan.js"] }
+    anggota:     { file: "/Pages/anggota",     title: "Anggota",    scripts: ["/Js/anggota.js", "/Js/script.js"] },
+    bukustorage: { file: "/Pages/bukustorage", title: "Buku",       scripts: ["/Js/buku.js", "/Js/script.js"] },
+    peminjaman:  { file: "/Pages/peminjaman",  title: "Peminjaman", scripts: ["/Js/peminjaman.js", "/Js/script.js"] },
+    pengunjung:  { file: "/Pages/pengunjung",  title: "Pengunjung", scripts: ["/Js/pengunjung.js", "/Js/script.js"] },
+    laporan:     { file: "/Pages/laporan",     title: "Laporan",    scripts: ["/Js/laporan.js", "/Js/script.js"] },
+    pengaturan:  { file: "/Pages/pengaturan",  title: "Pengaturan", scripts: ["/Js/pengaturan.js", "/Js/script.js"] }
   };
 
   const view = document.getElementById("pageView");

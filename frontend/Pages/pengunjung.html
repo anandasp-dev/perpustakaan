@@ -1,509 +1,282 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pengunjung - Keyto Perpustakaan</title>
-    <link rel="stylesheet" href="../Style/styleNtransisi.css">
-    <link rel="stylesheet" href="../Style/memberNnotif.css">
-    <link rel="stylesheet" href="../Style/reportNvisit.css">
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-</head>
-<body>
+<main class="content">
 
-    <aside class="sidebar">
-        <div class="logo">
-            <i data-lucide="book-open"></i>
-            Keyto Perpustakaan
-        </div>
-        <span class="badge">ADMIN WORKSPACE</span>
-
-        <nav class="menu">
-            <a href="home.html"><i data-lucide="layout-dashboard"></i>Dashboard</a>
-            <a href="anggota.html"><i data-lucide="users"></i>Anggota</a>
-            <a href="bukustorage.html"><i data-lucide="book-open"></i>Buku</a>
-            <a href="peminjaman.html"><i data-lucide="arrow-left-right"></i>Peminjaman</a>
-            <a href="pengunjung.html" class="active"><i data-lucide="footprints"></i>Pengunjung</a>
-            <a href="laporan.html"><i data-lucide="chart-no-axes-combined"></i>Laporan</a>
-            <a href="pengaturan.html"><i data-lucide="settings"></i>Pengaturan</a>
-            <a href="#"><i data-lucide="log-out"></i>Logout</a>
-        </nav>
-    </aside>
-
-    <div class="main">
-
-        <header class="topbar">
-            <span class="crumb">Workspace / Pengunjung</span>
-
-            <div class="user">
-                
-                <div class="notif">
-
-                    <button type="button" class="bell" id="bellBtn" aria-label="Notifikasi">
-                        <i data-lucide="bell"></i>
-                        <span class="bell-dot" id="bellDot"></span>
-                    </button>
-
-                    <div class="notif-panel" id="notifPanel">
-
-                        <div class="notif-head">
-                            <div>
-                                <h3>Notifikasi</h3>
-                                <p id="notifCount">3 belum dibaca</p>
-                            </div>
-                            <button type="button" class="btn-outline" id="markAll">Tandai Semua Dibaca</button>
-                        </div>
-
-                        <div class="notif-list">
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="book-open"></i></span>
-                                <div class="notif-text">
-                                    <b>Buku dikembalikan</b>
-                                    <small>Pengembalian &bull; The Creative Act sudah kembali ke rak.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>2 menit lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="clock"></i></span>
-                                <div class="notif-text">
-                                    <b>Peminjaman hampir jatuh tempo</b>
-                                    <small>Segera jatuh tempo &bull; Sapiens jatuh tempo besok.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>1 jam lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="user-plus"></i></span>
-                                <div class="notif-text">
-                                    <b>Anggota baru terdaftar</b>
-                                    <small>Anggota &bull; Amara Okafor bergabung di perpustakaan.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>3 jam lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item">
-                                <span class="notif-icon gray"><i data-lucide="footprints"></i></span>
-                                <div class="notif-text">
-                                    <b>Pengunjung check-in</b>
-                                    <small>Pengunjung &bull; Oliver James check-in.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>Kemarin</span>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item">
-                                <span class="notif-icon red"><i data-lucide="circle-alert"></i></span>
-                                <div class="notif-text">
-                                    <b>Buku terlambat</b>
-                                    <small>Terlambat &bull; A Little Life perlu diingatkan.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>Kemarin</span>
-                                </div>
-                            </a>
-
-                        </div>
-
-                        <a href="#" class="notif-foot">Lihat Semua Notifikasi <i data-lucide="arrow-right"></i></a>
-
-                    </div>
-                </div>
-
-                <div class="avatar">ER</div>
-                <div class="user-info">
-                    <strong>Emma Reed</strong>
-                    <span>Administrator</span>
-                </div>
+    <div class="page-head">
+        <div class="title-icon">
+            <div>
+                <h1>Data Pengunjung</h1>
+                <p>Satu kunjungan ke perpustakaan adalah satu langkah lebih dekat menuju dirimu yang bijaksana.
+                </p>
             </div>
-        </header>
+        </div>
+        <button type="button" class="btn-primary" id="openAddVisitor">
+            <i data-lucide="user-plus"></i>
+            Tambah Pengunjung
+        </button>
+    </div>
 
-        <main class="content">
+    <section class="stats stats-3">
 
-            <div class="page-head">
-                <div class="title-icon">
-                    <div>
-                        <h1>Data Pengunjung</h1>
-                        <p>Satu kunjungan ke perpustakaan adalah satu langkah lebih dekat menuju dirimu yang bijaksana.</p>
+        <div class="card stat">
+            <div class="stat-top">
+                <span class="teal">Pengunjung Hari Ini</span>
+                <i data-lucide="footprints"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat tanggal...</div>
+        </div>
+
+        <div class="card stat">
+            <div class="stat-top">
+                <span class="teal">Pengunjung Minggu Ini</span>
+                <i data-lucide="arrow-up-right"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat periode...</div>
+        </div>
+
+        <div class="card stat">
+            <div class="stat-top">
+                <span class="teal">Pengunjung Bulan Ini</span>
+                <i data-lucide="book-open"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat data...</div>
+        </div>
+
+    </section>
+
+    <form method="GET" action="pengunjung.html">
+
+        <div class="search search-full">
+            <i data-lucide="search"></i>
+            <input type="text" name="q" placeholder="Cari pengunjung: nama, ID pengunjung, NPM / ID anggota">
+        </div>
+
+        <div class="filter-type">
+            <label for="tipe">Filter berdasarkan tipe pengunjung</label>
+            <select class="select" id="tipe" name="tipe" onchange="this.form.submit()">
+                <option value="all">Semua tipe pengunjung</option>
+                <option value="member">Anggota</option>
+                <option value="guest">Tamu</option>
+            </select>
+        </div>
+
+    </form>
+
+    <h2 class="section-title">Direktori Pengunjung</h2>
+    <p class="section-sub">Memuat catatan kunjungan...</p>
+
+    <div class="card table-wrap">
+        <table class="member-table visitor-table">
+            <thead>
+                <tr>
+                    <th>ID PENGUNJUNG</th>
+                    <th>NPM / ID ANGGOTA</th>
+                    <th>NAMA PENGUNJUNG</th>
+                    <th>TIPE</th>
+                    <th>TANGGAL KUNJUNGAN</th>
+                    <th>JAM MASUK</th>
+                    <th>JAM KELUAR</th>
+                    <th>TUJUAN</th>
+                    <th>STATUS</th>
+                    <th>UBAH</th>
+                </tr>
+            </thead>
+            <tbody id="visitorBody">
+                <tr>
+                    <td colspan="10" class="muted" style="text-align:center;padding:24px;">Memuat data
+                        pengunjung...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="table-foot">
+            <span class="muted">Memuat halaman...</span>
+            <div class="pager">
+                <button type="button" class="btn-outline">Sebelumnya</button>
+                <span class="pill">...</span>
+                <button type="button" class="btn-outline">Berikutnya</button>
+            </div>
+        </div>
+
+        <p class="table-note">&mdash; = data belum tersedia. Waktu masuk/keluar dan tujuan kunjungan diisi dari
+            catatan kunjungan.</p>
+    </div>
+
+    <footer class="footer">
+        <span>&copy; 2026 Keyto Perpustakaan</span>
+        <span>Bantuan &amp; dukungan</span>
+    </footer>
+</main>
+
+<div class="modal-overlay" id="visitorModal">
+    <div class="modal modal-md" role="dialog" aria-modal="true" aria-labelledby="visitorTitle">
+        <form method="POST" action="#" id="visitorForm">
+
+            <div class="modal-head">
+                <div class="modal-icon"><i data-lucide="book-plus"></i></div>
+                <div class="modal-title">
+                    <h2 id="visitorTitle">Tambah Pengunjung</h2>
+                    <p>Isi data kunjungan baru.</p>
+                </div>
+                <button type="button" class="modal-close" data-close aria-label="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="vId">ID Pengunjung</label>
+                        <input type="text" id="vId" value="Dibuat otomatis" readonly class="readonly">
+                    </div>
+                    <div class="field">
+                        <label for="vStatus">Status</label>
+                        <select id="vStatus" name="status">
+                            <option value="recorded">Tercatat</option>
+                            <option value="unrecorded">Tidak tercatat</option>
+                        </select>
                     </div>
                 </div>
-                <button type="button" class="btn-primary" id="openAddVisitor">
-                    <i data-lucide="user-plus"></i>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="vNama">Nama Pengunjung</label>
+                        <input type="text" id="vNama" name="nama" placeholder="Masukkan nama pengunjung" required>
+                    </div>
+                    <div class="field">
+                        <label for="vTipe">Tipe Pengunjung</label>
+                        <select id="vTipe" name="tipe">
+                            <option value="member">Anggota</option>
+                            <option value="guest">Tamu</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="vNpm">NPM / ID Anggota</label>
+                        <input type="text" id="vNpm" name="npm" placeholder="Masukkan NPM / ID anggota">
+                    </div>
+                    <div class="field">
+                        <label for="vTanggal">Tanggal Kunjungan</label>
+                        <input type="date" id="vTanggal" name="tanggal" required>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="vMasuk">Jam Masuk</label>
+                        <input type="time" id="vMasuk" name="jam_masuk">
+                    </div>
+                    <div class="field">
+                        <label for="vKeluar">Jam Keluar</label>
+                        <input type="time" id="vKeluar" name="jam_keluar">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="vTujuan">Tujuan Kunjungan</label>
+                    <input type="text" id="vTujuan" name="tujuan" placeholder="Masukkan tujuan kunjungan">
+                </div>
+
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn-outline" data-close>Batal</button>
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="plus"></i>
                     Tambah Pengunjung
                 </button>
             </div>
 
-            <section class="stats stats-3">
-
-                <div class="card stat">
-                    <div class="stat-top">
-                        <span class="teal">Pengunjung Hari Ini</span>
-                        <i data-lucide="footprints"></i>
-                    </div>
-                    <div class="stat-number">156</div>
-                    <div class="stat-note">05 Oktober 2026</div>
-                </div>
-
-                <div class="card stat">
-                    <div class="stat-top">
-                        <span class="teal">Pengunjung Minggu Ini</span>
-                        <i data-lucide="arrow-up-right"></i>
-                    </div>
-                    <div class="stat-number">1,040</div>
-                    <div class="stat-note">29 Sep - 05 Okt 2026</div>
-                </div>
-
-                <div class="card stat">
-                    <div class="stat-top">
-                        <span class="teal">Pengunjung Bulan Ini</span>
-                        <i data-lucide="book-open"></i>
-                    </div>
-                    <div class="stat-number">&mdash;</div>
-                    <div class="stat-note">Total bulanan belum tersedia</div>
-                </div>
-
-            </section>
-
-            <form method="GET" action="pengunjung.html">
-
-                <div class="search search-full">
-                    <i data-lucide="search"></i>
-                    <input type="text" name="q" placeholder="Cari pengunjung: nama, ID pengunjung, NPM / ID anggota">
-                </div>
-
-                <div class="filter-type">
-                    <label for="tipe">Filter berdasarkan tipe pengunjung</label>
-                    <select class="select" id="tipe" name="tipe" onchange="this.form.submit()">
-                        <option value="all">Semua tipe pengunjung</option>
-                        <option value="member">Anggota</option>
-                        <option value="guest">Tamu</option>
-                    </select>
-                </div>
-
-            </form>
-
-            <h2 class="section-title">Direktori Pengunjung</h2>
-            <p class="section-sub">Catatan kunjungan 01-05 Oktober 2026 &bull; diurutkan berdasarkan kunjungan terbaru</p>
-
-            <div class="card table-wrap">
-                <table class="member-table visitor-table">
-                    <thead>
-                        <tr>
-                            <th>ID PENGUNJUNG</th>
-                            <th>NPM / ID ANGGOTA</th>
-                            <th>NAMA PENGUNJUNG</th>
-                            <th>TIPE</th>
-                            <th>TANGGAL KUNJUNGAN</th>
-                            <th>JAM MASUK</th>
-                            <th>JAM KELUAR</th>
-                            <th>TUJUAN</th>
-                            <th>STATUS</th>
-                            <th>UBAH</th>
-                        </tr>
-                    </thead>
-                    <tbody id="visitorBody">
-                        <tr>
-                            <td class="muted">VS-0108</td>
-                            <td class="muted">MB-0108</td>
-                            <td><b>Maya Chen</b></td>
-                            <td>Anggota</td>
-                            <td>05 Okt 2026</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td><span class="status status-active">Tercatat</span></td>
-                            <td><button type="button" class="icon-act icon-edit" aria-label="Ubah"><i data-lucide="pencil"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td class="muted">VS-0214</td>
-                            <td class="muted">MB-0214</td>
-                            <td><b>Daniel Brooks</b></td>
-                            <td>Anggota</td>
-                            <td>05 Okt 2026</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td><span class="status status-active">Tercatat</span></td>
-                            <td><button type="button" class="icon-act icon-edit" aria-label="Ubah"><i data-lucide="pencil"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td class="muted">VS-0326</td>
-                            <td class="muted">MB-0326</td>
-                            <td><b>Sofia Martinez</b></td>
-                            <td>Anggota</td>
-                            <td>05 Okt 2026</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td><span class="status status-active">Tercatat</span></td>
-                            <td><button type="button" class="icon-act icon-edit" aria-label="Ubah"><i data-lucide="pencil"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td class="muted">VS-0412</td>
-                            <td class="muted">MB-0412</td>
-                            <td><b>Oliver James</b></td>
-                            <td>Anggota</td>
-                            <td>04 Okt 2026</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td><span class="status status-active">Tercatat</span></td>
-                            <td><button type="button" class="icon-act icon-edit" aria-label="Ubah"><i data-lucide="pencil"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td class="muted">VS-0538</td>
-                            <td class="muted">MB-0538</td>
-                            <td><b>Amara Okafor</b></td>
-                            <td>Anggota</td>
-                            <td>04 Okt 2026</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td><span class="status status-active">Tercatat</span></td>
-                            <td><button type="button" class="icon-act icon-edit" aria-label="Ubah"><i data-lucide="pencil"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td class="muted">VS-0619</td>
-                            <td class="muted">MB-0619</td>
-                            <td><b>Noah Wilson</b></td>
-                            <td>Anggota</td>
-                            <td>02 Okt 2026</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td><span class="status status-active">Tercatat</span></td>
-                            <td><button type="button" class="icon-act icon-edit" aria-label="Ubah"><i data-lucide="pencil"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td class="muted">VS-0721</td>
-                            <td class="muted">MB-0721</td>
-                            <td><b>Isla Thompson</b></td>
-                            <td>Anggota</td>
-                            <td>01 Okt 2026</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td><span class="status status-unrecorded">Tidak tercatat</span></td>
-                            <td><button type="button" class="icon-act icon-edit" aria-label="Ubah"><i data-lucide="pencil"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td class="muted">VS-0845</td>
-                            <td class="muted">MB-0845</td>
-                            <td><b>Leo Anderson</b></td>
-                            <td>Anggota</td>
-                            <td>01 Okt 2026</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td class="dash">&mdash;</td>
-                            <td><span class="status status-active">Tercatat</span></td>
-                            <td><button type="button" class="icon-act icon-edit" aria-label="Ubah"><i data-lucide="pencil"></i></button></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="table-foot">
-                    <span class="muted">Menampilkan 1-8 dari 1.040 catatan kunjungan &bull; 8 per halaman</span>
-                    <div class="pager">
-                        <button type="button" class="btn-outline">Sebelumnya</button>
-                        <span class="pill">1 / 130</span>
-                        <button type="button" class="btn-outline">Berikutnya</button>
-                    </div>
-                </div>
-
-                <p class="table-note">&mdash; = data belum tersedia. Waktu masuk/keluar dan tujuan kunjungan diisi dari catatan kunjungan.</p>
-            </div>
-
-            <footer class="footer">
-                <span>&copy; 2026 Keyto Perpustakaan</span>
-                <span>Bantuan &amp; dukungan</span>
-            </footer>
-        </main>
+        </form>
     </div>
+</div>
 
-            <div class="modal-overlay" id="visitorModal">
-                <div class="modal modal-md" role="dialog" aria-modal="true" aria-labelledby="visitorTitle">
-                    <form method="POST" action="#" id="visitorForm">
+<div class="modal-overlay" id="editVisitorModal">
+    <div class="modal modal-md" role="dialog" aria-modal="true" aria-labelledby="editVisitorTitle">
+        <form method="POST" action="#" id="editVisitorForm">
 
-                        <div class="modal-head">
-                            <div class="modal-icon"><i data-lucide="book-plus"></i></div>
-                            <div class="modal-title">
-                                <h2 id="visitorTitle">Tambah Pengunjung</h2>
-                                <p>Isi data kunjungan baru.</p>
-                            </div>
-                            <button type="button" class="modal-close" data-close aria-label="Tutup">
-                                <i data-lucide="x"></i>
-                            </button>
-                        </div>
-
-                        <div class="modal-body">
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="vId">ID Pengunjung</label>
-                                    <input type="text" id="vId" value="Dibuat otomatis" readonly class="readonly">
-                                </div>
-                                <div class="field">
-                                    <label for="vStatus">Status</label>
-                                    <select id="vStatus" name="status">
-                                        <option value="recorded">Tercatat</option>
-                                        <option value="unrecorded">Tidak tercatat</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="vNama">Nama Pengunjung</label>
-                                    <input type="text" id="vNama" name="nama" placeholder="Masukkan nama pengunjung" required>
-                                </div>
-                                <div class="field">
-                                    <label for="vTipe">Tipe Pengunjung</label>
-                                    <select id="vTipe" name="tipe">
-                                        <option value="member">Anggota</option>
-                                        <option value="guest">Tamu</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="vNpm">NPM / ID Anggota</label>
-                                    <input type="text" id="vNpm" name="npm" placeholder="Masukkan NPM / ID anggota">
-                                </div>
-                                <div class="field">
-                                    <label for="vTanggal">Tanggal Kunjungan</label>
-                                    <input type="date" id="vTanggal" name="tanggal" required>
-                                </div>
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="vMasuk">Jam Masuk</label>
-                                    <input type="time" id="vMasuk" name="jam_masuk">
-                                </div>
-                                <div class="field">
-                                    <label for="vKeluar">Jam Keluar</label>
-                                    <input type="time" id="vKeluar" name="jam_keluar">
-                                </div>
-                            </div>
-
-                            <div class="field">
-                                <label for="vTujuan">Tujuan Kunjungan</label>
-                                <input type="text" id="vTujuan" name="tujuan" placeholder="Masukkan tujuan kunjungan">
-                            </div>
-
-                        </div>
-
-                        <div class="modal-foot">
-                            <button type="button" class="btn-outline" data-close>Batal</button>
-                            <button type="submit" class="btn-primary">
-                                <i data-lucide="plus"></i>
-                                Tambah Pengunjung
-                            </button>
-                        </div>
-
-                    </form>
+            <div class="modal-head">
+                <div class="modal-icon"><i data-lucide="pencil"></i></div>
+                <div class="modal-title">
+                    <h2 id="editVisitorTitle">Ubah Pengunjung</h2>
+                    <p id="editVisitorSub">VS-0000 &bull; Nama pengunjung</p>
                 </div>
+                <button type="button" class="modal-close" data-close aria-label="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
 
-            <div class="modal-overlay" id="editVisitorModal">
-                <div class="modal modal-md" role="dialog" aria-modal="true" aria-labelledby="editVisitorTitle">
-                    <form method="POST" action="#" id="editVisitorForm">
+            <div class="modal-body">
 
-                        <div class="modal-head">
-                            <div class="modal-icon"><i data-lucide="pencil"></i></div>
-                            <div class="modal-title">
-                                <h2 id="editVisitorTitle">Ubah Pengunjung</h2>
-                                <p id="editVisitorSub">VS-0000 &bull; Nama pengunjung</p>
-                            </div>
-                            <button type="button" class="modal-close" data-close aria-label="Tutup">
-                                <i data-lucide="x"></i>
-                            </button>
-                        </div>
-
-                        <div class="modal-body">
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="evId">ID Pengunjung</label>
-                                    <input type="text" id="evId" name="id_pengunjung" readonly class="readonly">
-                                </div>
-                                <div class="field">
-                                    <label for="evStatus">Status</label>
-                                    <select id="evStatus" name="status">
-                                        <option value="recorded">Tercatat</option>
-                                        <option value="unrecorded">Tidak tercatat</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="evNama">Nama Pengunjung</label>
-                                    <input type="text" id="evNama" name="nama" required>
-                                </div>
-                                <div class="field">
-                                    <label for="evTipe">Tipe Pengunjung</label>
-                                    <select id="evTipe" name="tipe">
-                                        <option value="member">Anggota</option>
-                                        <option value="guest">Tamu</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="evNpm">NPM / ID Anggota</label>
-                                    <input type="text" id="evNpm" name="npm">
-                                </div>
-                                <div class="field">
-                                    <label for="evTanggal">Tanggal Kunjungan</label>
-                                    <input type="date" id="evTanggal" name="tanggal" required>
-                                </div>
-                            </div>
-
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="evMasuk">Jam Masuk</label>
-                                    <input type="time" id="evMasuk" name="jam_masuk">
-                                </div>
-                                <div class="field">
-                                    <label for="evKeluar">Jam Keluar</label>
-                                    <input type="time" id="evKeluar" name="jam_keluar">
-                                </div>
-                            </div>
-
-                            <div class="field">
-                                <label for="evTujuan">Tujuan Kunjungan</label>
-                                <input type="text" id="evTujuan" name="tujuan" placeholder="Masukkan tujuan kunjungan">
-                            </div>
-
-                        </div>
-
-                        <div class="modal-foot">
-                            <button type="button" class="btn-outline" data-close>Batal</button>
-                            <button type="submit" class="btn-primary">
-                                <i data-lucide="check"></i>
-                                Simpan Perubahan
-                            </button>
-                        </div>
-
-                    </form>
+                <div class="field-row">
+                    <div class="field">
+                        <label for="evId">ID Pengunjung</label>
+                        <input type="text" id="evId" name="id_pengunjung" readonly class="readonly">
+                    </div>
+                    <div class="field">
+                        <label for="evStatus">Status</label>
+                        <select id="evStatus" name="status">
+                            <option value="recorded">Tercatat</option>
+                            <option value="unrecorded">Tidak tercatat</option>
+                        </select>
+                    </div>
                 </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="evNama">Nama Pengunjung</label>
+                        <input type="text" id="evNama" name="nama" required>
+                    </div>
+                    <div class="field">
+                        <label for="evTipe">Tipe Pengunjung</label>
+                        <select id="evTipe" name="tipe">
+                            <option value="member">Anggota</option>
+                            <option value="guest">Tamu</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="evNpm">NPM / ID Anggota</label>
+                        <input type="text" id="evNpm" name="npm">
+                    </div>
+                    <div class="field">
+                        <label for="evTanggal">Tanggal Kunjungan</label>
+                        <input type="date" id="evTanggal" name="tanggal" required>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="evMasuk">Jam Masuk</label>
+                        <input type="time" id="evMasuk" name="jam_masuk">
+                    </div>
+                    <div class="field">
+                        <label for="evKeluar">Jam Keluar</label>
+                        <input type="time" id="evKeluar" name="jam_keluar">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="evTujuan">Tujuan Kunjungan</label>
+                    <input type="text" id="evTujuan" name="tujuan" placeholder="Masukkan tujuan kunjungan">
+                </div>
+
             </div>
-    <script src="../Js/notifikasi.js"></script>
-    <script src="../Js/pengunjung.js"></script>
-    <script src="../Js/transisi.js"></script>
-</body>
-</html>
+
+            <div class="modal-foot">
+                <button type="button" class="btn-outline" data-close>Batal</button>
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="check"></i>
+                    Simpan Perubahan
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

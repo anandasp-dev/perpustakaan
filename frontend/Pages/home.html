@@ -1,225 +1,177 @@
 <main class="content">
-            
-            <div class="page-head">
-                <div>
-                    <h1>Selamat Datang di Admin Perpustakaan Keyto!</h1>
-                    <p>Menemukan diri sendiri di antara rak-rak perpustakaan.</p>
-                </div>
-                    
-                <div class="date-picker">
 
-                    <button type="button" class="date-btn" id="dateBtn">
-                        <i data-lucide="calendar"></i>
-                        <span id="dateLabel">01 NOV 2026</span>
+    <div class="page-head">
+        <div>
+            <h1>Selamat Datang di Admin Perpustakaan Keyto!</h1>
+            <p>Menemukan diri sendiri di antara rak-rak perpustakaan.</p>
+        </div>
+
+        <div class="date-picker">
+
+            <button type="button" class="date-btn" id="dateBtn">
+                <i data-lucide="calendar"></i>
+                <span id="dateLabel">Memuat...</span>
+            </button>
+
+            <div class="calendar" id="calendar">
+
+                <div class="cal-head">
+                    <button type="button" class="cal-nav" id="calPrev" aria-label="Bulan sebelumnya">
+                        <i data-lucide="chevron-left"></i>
                     </button>
+                    <b id="calTitle">Memuat...</b>
+                    <button type="button" class="cal-nav" id="calNext" aria-label="Bulan berikutnya">
+                        <i data-lucide="chevron-right"></i>
+                    </button>
+                </div>
 
-                    <div class="calendar" id="calendar">
+                <div class="cal-week">
+                    <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span>
+                    <span>Kam</span><span>Jum</span><span>Sab</span>
+                </div>
 
-                        <div class="cal-head">
-                        <button type="button" class="cal-nav" id="calPrev" aria-label="Bulan sebelumnya">
-                            <i data-lucide="chevron-left"></i>
-                        </button>
-                        <b id="calTitle">Oktober 2026</b>
-                        <button type="button" class="cal-nav" id="calNext" aria-label="Bulan berikutnya">
-                            <i data-lucide="chevron-right"></i>
-                        </button>
-                        </div>
+                <div class="cal-grid" id="calGrid"></div>
 
-                        <div class="cal-week">
-                            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span>
-                            <span>Kam</span><span>Jum</span><span>Sab</span>
-                        </div>
-
-                        <div class="cal-grid" id="calGrid"></div>
-
-                        <div class="cal-foot">
-                            <button type="button" class="chip" data-quick="today">Hari ini</button>
-                            <button type="button" class="chip" data-quick="yesterday">Kemarin</button>
-                            <button type="button" class="chip" data-quick="week">Minggu ini</button>
-                            <button type="button" class="cal-apply" id="calApply">Terapkan</button>
-                        </div>
-                    </div>
+                <div class="cal-foot">
+                    <button type="button" class="chip" data-quick="today">Hari ini</button>
+                    <button type="button" class="chip" data-quick="yesterday">Kemarin</button>
+                    <button type="button" class="chip" data-quick="week">Minggu ini</button>
+                    <button type="button" class="cal-apply" id="calApply">Terapkan</button>
                 </div>
             </div>
+        </div>
+    </div>
 
-                <section class="stats">
+    <section class="stats">
 
-                    <div class="card stat">
-                        <div class="stat-top">
-                            <span>Pengunjung hari ini</span>
-                            <i data-lucide="footprints"></i>
-                        </div>
-                        <div class="stat-number">156</div>
-                        <div class="stat-note">+20% dibanding Senin lalu</div>
-                        </div>
+        <div class="card stat">
+            <div class="stat-top">
+                <span>Pengunjung hari ini</span>
+                <i data-lucide="footprints"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat data...</div>
+        </div>
 
-                    <div class="card stat">
-                        <div class="stat-top">
-                            <span>Buku dipinjam hari ini</span>
-                            <i data-lucide="arrow-up-right"></i>
-                        </div>
-                        <div class="stat-number">84</div>
-                        <div class="stat-note">+12 dibanding Senin lalu</div>
+        <div class="card stat">
+            <div class="stat-top">
+                <span>Buku dipinjam hari ini</span>
+                <i data-lucide="arrow-up-right"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat data...</div>
+        </div>
+
+        <div class="card stat">
+            <div class="stat-top">
+                <span>Total buku</span>
+                <i data-lucide="book-open"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat data...</div>
+        </div>
+
+        <div class="card stat">
+            <div class="stat-top">
+                <span>Anggota aktif</span>
+                <i data-lucide="users"></i>
+            </div>
+            <div class="stat-number">...</div>
+            <div class="stat-note">Memuat data...</div>
+        </div>
+    </section>
+
+    <section class="charts">
+
+        <div class="card">
+            <h3>Buku dipinjam per hari</h3>
+            <p class="meta">Senin - Minggu &bull; 7 Hari terakhir</p>
+            <div class="chart-total">
+                <span><b>...</b> Pinjaman</span>
+                <span class="pill">Memuat...</span>
+            </div>
+            <div class="chart-box">
+                <canvas id="peminjamanChart"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Status koleksi buku</h3>
+            <p class="meta">Stok langsung &bull; Memuat...</p>
+
+            <div class="donut-wrap">
+                <div class="donut">
+                    <canvas id="donutChart"></canvas>
+                    <div class="donut-center">
+                        <b>...</b>
+                        <span>Total buku</span>
                     </div>
+                </div>
 
-                    <div class="card stat">
-                        <div class="stat-top">
-                            <span>Total buku</span>
-                            <i data-lucide="book-open"></i>
-                        </div>
-                        <div class="stat-number">12,480</div>
-                        <div class="stat-note">1.248 judul unik</div>
-                    </div>
+                <div class="legend">
+                    <div><span><i class="dot dot-1"></i>Tersedia</span><b>...</b></div>
+                    <div><span><i class="dot dot-2"></i>Dipinjam</span><b>...</b></div>
+                    <div><span><i class="dot dot-3"></i>Perawatan/Rusak</span><b>...</b></div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                    <div class="card stat">
-                        <div class="stat-top">
-                            <span>Anggota aktif</span>
-                            <i data-lucide="users"></i>
-                        </div>
-                        <div class="stat-number">1,286</div>
-                        <div class="stat-note">+24 bulan ini</div>
-                    </div>
-                </section>
+    <section class="charts">
 
-                <section class="charts">
+        <div class="card">
+            <h3>Layanan pemakaian hari ini</h3>
+            <p class="meta">Memuat aktivitas hari ini...</p>
 
-                    <div class="card">
-                        <h3>Buku dipinjam per hari</h3>
-                        <p class="meta">Senin - Minggu &bull; 7 Hari terakhir</p>
-                        <div class="chart-total">
-                            <span><b>566</b> Pinjaman</span>
-                            <span class="pill">84 hari ini</span>
-                        </div>
-                        <div class="chart-box">
-                            <canvas id="peminjamanChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h3>Status koleksi buku</h3>
-                        <p class="meta">Stok langsung &bull; 01 Nov 2026</p>
+            <div class="tiles">
+                <div class="tile"><b>...</b><span>Dipinjam</span></div>
+                <div class="tile"><b>...</b><span>Dikembalikan</span></div>
+                <div class="tile"><b>...</b><span>Pinjaman bersih</span></div>
+            </div>
 
-                        <div class="donut-wrap">
-                            <div class="donut">
-                                <canvas id="donutChart"></canvas>
-                                <div class="donut-center">
-                                    <b>12,480</b>
-                                    <span>Total buku</span>
-                                </div>
-                            </div>
+            <h4 class="sub-title">Ringkasan anggota</h4>
+            <div class="row"><span>Anggota terdaftar</span><b>...</b></div>
+            <div class="row"><span>Anggota aktif</span><b>...</b></div>
+            <div class="row"><span>Anggota ditangguhkan</span><b>...</b></div>
 
-                            <div class="legend">
-                                <div><span><i class="dot dot-1"></i>Tersedia</span><b>9,340</b></div>
-                                <div><span><i class="dot dot-2"></i>Dipinjam</span><b>2,860</b></div>
-                                <div><span><i class="dot dot-3"></i>Perawatan/Rusak</span><b>280</b></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+            <div class="alert">
+                <i data-lucide="clock"></i>
+                Memeriksa pinjaman terlambat...
+            </div>
+        </div>
+        <div class="card">
+            <h3>Peminjam paling aktif</h3>
+            <p class="meta">Memuat data bulan ini...</p>
 
-                <section class="charts">
+            <div class="list-head"><span>ANGGOTA</span><span>BUKU PINJAMAN</span></div>
 
-                    <div class="card">
-                        <h3>Layanan pemakaian hari ini</h3>
-                        <p class="meta">Minggu, 01 Nov &bull; Aktivitas sampai 17:00</p>
+            <div class="muted" style="padding:12px 0;">Memuat peminjam aktif...</div>
+        </div>
+    </section>
 
-                        <div class="tiles">
-                            <div class="tile"><b>84</b><span>Dipinjam</span></div>
-                            <div class="tile"><b>62</b><span>Dikembalikan</span></div>
-                            <div class="tile"><b>+22</b><span>Pinjaman bersih</span></div>
-                        </div>
+    <section class="card table-card">
+        <h3>Peminjaman terbaru</h3>
+        <p class="meta">Memuat peminjaman terbaru...</p>
 
-                        <h4 class="sub-title">Ringkasan anggota</h4>
-                            <div class="row"><span>Anggota terdaftar</span><b>1,286</b></div>
-                            <div class="row"><span>Anggota aktif</span><b>1,248</b></div>
-                            <div class="row"><span>Anggota ditangguhkan</span><b>38</b></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>PEMINJAM</th>
+                    <th>JUDUL BUKU</th>
+                    <th>WAKTU PINJAM</th>
+                    <th>JATUH TEMPO</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5" class="muted" style="text-align:center;padding:16px;">Memuat data peminjaman...</td>
+                </tr>
+            </tbody>
+        </table>
 
-                        <div class="alert">
-                            <i data-lucide="clock"></i>
-                            18 pinjaman terlambat perlu diingatkan!
-                        </div>
-                    </div>     
-                    <div class="card">
-                        <h3>Peminjam paling aktif</h3>
-                        <p class="meta">01 Nov 2026 &bull; Bulan ini</p>
-
-                        <div class="list-head"><span>ANGGOTA</span><span>BUKU PINJAMAN</span></div>
-
-                        <div class="list-item">
-                            <span class="no">01</span>
-                            <span class="av">MC</span>
-                            <span class="name">Maya Chen<small>MB-0108</small></span>
-                            <span class="val">6</span>
-                        </div>
-                        <div class="list-item">
-                            <span class="no">02</span>
-                            <span class="av">DB</span>
-                            <span class="name">Daniel Brooks<small>MB-0214</small></span>
-                            <span class="val">5</span>
-                        </div>
-                        <div class="list-item">
-                            <span class="no">03</span>
-                            <span class="av">SM</span>
-                            <span class="name">Sofia Martinez<small>MB-0326</small></span>
-                            <span class="val">4</span>
-                        </div>
-                        <div class="list-item">
-                            <span class="no">04</span>
-                            <span class="av">OJ</span>
-                            <span class="name">Oliver James<small>MB-0412</small></span>
-                            <span class="val">4</span>
-                        </div>
-                    </div>   
-                </section>
-
-                <section class="card table-card">
-                    <h3>Peminjaman terbaru</h3>
-                    <p class="meta">Peminjaman terbaru hari ini &bull; 4 dari 84 pinjaman</p>
-
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>PEMINJAM</th>
-                                <th>JUDUL BUKU</th>
-                                <th>WAKTU PINJAM</th>
-                                <th>JATUH TEMPO</th>
-                                <th>STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Daniel Brooks</td>
-                                <td>The Creative Act</td>
-                                <td class="muted">10:42</td>
-                                <td>15 Nov 2026</td>
-                                <td><span class="tag">Dipinjam</span></td>
-                            </tr>
-                            <tr>
-                                <td>Sofia Martinez</td>
-                                <td>Sapiens</td>
-                                <td><span class="muted">10:18</span></td>
-                                <td>15 Nov 2026</td>
-                                <td><span class="tag">Dipinjam</span></td>
-                            </tr>
-                            <tr>
-                                <td>Oliver James</td>
-                                <td>A Little Life</td>
-                                <td><span class="muted">09:54</span></td>
-                                <td>15 Nov 2026</td>
-                                <td><span class="tag">Dipinjam</span></td>
-                            </tr>
-                            <tr>
-                                <td>Amara Okafor</td>
-                                <td>The Little Prince</td>
-                                <td><span class="muted">09:36</span></td>
-                                <td>15 Nov 2026</td>
-                                <td><span class="tag">Dipinjam</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <a href="?admin=peminjaman" class="link">
-                        Lihat semua peminjaman
-                        <i data-lucide="arrow-right"></i>
-                    </a>
-                </section>
-        </main>
+        <a href="?admin=peminjaman" class="link">
+            Lihat semua peminjaman
+            <i data-lucide="arrow-right"></i>
+        </a>
+    </section>
+</main>
