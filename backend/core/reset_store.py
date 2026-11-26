@@ -1,53 +1,66 @@
+import base64
 import hashlib
-import secrets
-import threading
+import hmac
+import json
+import os
 import time
 
-RESET_TTL = 1800  # 30 menit
+from models.user import User
 
-_lock = threading.Lock()
-_tokens = {}  # {hash_token: (user_id, waktu_kedaluwarsa)}
+RESET_TTL = 30 * 60  # 30 menit (detik)
+
+_RAW_SECRET = (
+    os.environ.get("SECRET_KEY")
+    or os.environ.get("DB_PASSWORD")
+    or "perpustakaan-local-secret-key"
+)
+_SECRET = (_RAW_SECRET + ":reset").encode("utf-8")
 
 
-def _hash(token):
-    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+def _sign(payload_b64: str) -> str:
+    return hmac.new(_SECRET, payload_b64.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
-def _purge(now):
-    """Buang catatan yang sudah kedaluwarsa. Panggil hanya saat memegang _lock."""
-    for key in [k for k, (_, exp) in _tokens.items() if exp <= now]:
-        del _tokens[key]
+def _pw_tag(user) -> str:
+    pw_hash = (user or {}).get("password_hash") or ""
+    return hashlib.sha256(pw_hash.encode("utf-8")).hexdigest()[:16]
 
 
 def create(user_id, ttl=RESET_TTL):
-    """Buat kode baru. Kode lama milik user yang sama otomatis dibuang."""
-    token = secrets.token_urlsafe(32)
-    now = time.time()
-    with _lock:
-        _purge(now)
-        for key in [k for k, (uid, _) in _tokens.items() if uid == user_id]:
-            del _tokens[key]
-        _tokens[_hash(token)] = (user_id, now + ttl)
-    return token
+    """Buat token reset password bertanda tangan (stateless)."""
+    user = User.find_by_id(user_id)
+    if not user:
+        return None
+    payload = {
+        "uid": user_id,
+        "exp": int(time.time() + ttl),
+        "pwh": _pw_tag(user),
+    }
+    raw = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    payload_b64 = base64.urlsafe_b64encode(raw).decode("utf-8")
+    return f"{payload_b64}.{_sign(payload_b64)}"
 
 
 def peek(token):
-    """Cek kode tanpa menghapusnya. Hasil: user_id atau None."""
-    if not isinstance(token, str) or not token:
+    """Periksa validitas token tanpa menghanguskannya; kembalikan user_id atau None."""
+    if not token or not isinstance(token, str) or "." not in token:
         return None
-    now = time.time()
-    with _lock:
-        _purge(now)
-        item = _tokens.get(_hash(token))
-    return item[0] if item else None
+    try:
+        payload_b64, sig = token.rsplit(".", 1)
+        if not hmac.compare_digest(_sign(payload_b64), sig):
+            return None
+        raw = base64.urlsafe_b64decode(payload_b64.encode("utf-8"))
+        data = json.loads(raw.decode("utf-8"))
+        if data.get("exp", 0) <= time.time():
+            return None
+        user = User.find_by_id(data.get("uid"))
+        if not user or _pw_tag(user) != data.get("pwh"):
+            return None
+        return user["id"]
+    except Exception:
+        return None
 
 
 def consume(token):
-    """Cek kode lalu hapus (sekali pakai). Hasil: user_id atau None."""
-    if not isinstance(token, str) or not token:
-        return None
-    now = time.time()
-    with _lock:
-        _purge(now)
-        item = _tokens.pop(_hash(token), None)
-    return item[0] if item else None
+    """Validasi token saat submit reset password (otomatis hangus setelah password berubah)."""
+    return peek(token)
