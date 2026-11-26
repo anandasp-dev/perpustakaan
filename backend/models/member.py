@@ -37,7 +37,7 @@ _SORTS = {
     "borrowed": "loans_total DESC, u.id ASC",
 }
 
-# total pinjam = pinjaman yang pernah dikonfirmasi; kunjungan = yang berstatus tercatat
+# total pinjam = pinjaman yang pernah dikonfirmasi; kunjungan = total catatan kunjungan
 _ADMIN_SELECT = (
     "SELECT u.id, u.npm, u.full_name, u.email, u.phone, u.status, u.created_at, "
     "COALESCE(l.total, 0) AS loans_total, "
@@ -47,7 +47,7 @@ _ADMIN_SELECT = (
     "           WHERE status IN ('borrowed', 'returned') GROUP BY user_id) l "
     "ON l.user_id = u.id "
     "LEFT JOIN (SELECT user_id, COUNT(*) AS total, MAX(visit_date) AS last_visit FROM kunjungan "
-    "           WHERE status = 'recorded' AND user_id IS NOT NULL GROUP BY user_id) v "
+    "           WHERE user_id IS NOT NULL GROUP BY user_id) v "
     "ON v.user_id = u.id "
 )
 
@@ -221,7 +221,7 @@ class Member:
 
             cur.execute(
                 "SELECT COUNT(*) AS total FROM kunjungan "
-                "WHERE user_id = %s AND status = 'recorded' "
+                "WHERE user_id = %s "
                 "AND YEAR(visit_date) = YEAR(CURRENT_DATE()) "
                 "AND MONTH(visit_date) = MONTH(CURRENT_DATE())",
                 (user_id,),

@@ -111,6 +111,7 @@ def create_member(request):
     except MemberRuleError as exc:
         return error(str(exc), 409)
 
+
 def update_member(request):
     member_id = _path_id(request)
     if member_id is None:
@@ -297,6 +298,7 @@ def dashboard(request):
     Loan.expire_stale()
     return Response(200, Stats.dashboard(ref))
 
+
 def reports(request):
     today = _today_wib()
     period = str(request.query.get("period") or "7").strip().lower()
@@ -325,6 +327,7 @@ def reports(request):
 
     Loan.expire_stale()
     return Response(200, Stats.reports(start_date, end_date, today))
+
 
 def _display_status(row):
     """Status untuk tampilan: 'borrowed' yang lewat jatuh tempo jadi 'overdue'."""
@@ -535,7 +538,6 @@ def notifications(request):
             cur.execute(
                 "SELECT k.id, k.created_at, k.purpose, COALESCE(u.full_name, k.visitor_name) AS name "
                 "FROM kunjungan k LEFT JOIN `user` u ON u.id = k.user_id "
-                "WHERE k.status = 'recorded' "
                 "ORDER BY k.created_at DESC LIMIT 3"
             )
             for r in cur.fetchall():
@@ -625,7 +627,7 @@ def visitors(request):
     week_start = today - timedelta(days=6)
 
     with cursor() as cur:
-        where = ["k.status = 'recorded'"]
+        where = ["1=1"]
         params = []
 
         if q:
@@ -661,9 +663,9 @@ def visitors(request):
 
         cur.execute(
             "SELECT "
-            "COALESCE(SUM(status = 'recorded' AND DATE(visit_date) = %s), 0) AS today_total, "
-            "COALESCE(SUM(status = 'recorded' AND DATE(visit_date) BETWEEN %s AND %s), 0) AS week_total, "
-            "COALESCE(SUM(status = 'recorded' AND YEAR(visit_date) = YEAR(%s) AND MONTH(visit_date) = MONTH(%s)), 0) AS month_total "
+            "COALESCE(SUM(DATE(visit_date) = %s), 0) AS today_total, "
+            "COALESCE(SUM(DATE(visit_date) BETWEEN %s AND %s), 0) AS week_total, "
+            "COALESCE(SUM(YEAR(visit_date) = YEAR(%s) AND MONTH(visit_date) = MONTH(%s)), 0) AS month_total "
             "FROM kunjungan",
             (today, week_start, today, today, today),
         )
@@ -694,7 +696,7 @@ def create_visitor(request):
 
     with cursor() as cur:
         cur.execute(
-            "INSERT INTO kunjungan (user_id, visit_date, purpose, status) VALUES (%s, %s, %s, 'recorded')",
+            "INSERT INTO kunjungan (user_id, visit_date, purpose) VALUES (%s, %s, %s)",
             (data["user_id"], data["visit_date"], data["purpose"]),
         )
         new_id = cur.lastrowid
@@ -719,7 +721,7 @@ def update_visitor(request):
             return error("Data pengunjung tidak ditemukan", 404)
 
         cur.execute(
-            "UPDATE kunjungan SET user_id = %s, visit_date = %s, purpose = %s, status = 'recorded' WHERE id = %s",
+            "UPDATE kunjungan SET user_id = %s, visit_date = %s, purpose = %s WHERE id = %s",
             (data["user_id"], data["visit_date"], data["purpose"], visitor_id),
         )
 
