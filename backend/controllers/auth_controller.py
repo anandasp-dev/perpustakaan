@@ -38,15 +38,15 @@ def _record_daily_login_visit(user):
         with cursor() as cur:
             cur.execute(
                 "SELECT id FROM kunjungan "
-                "WHERE user_id = %s AND visit_date = CURRENT_DATE() AND status = 'recorded' "
+                "WHERE user_id = %s AND visit_date = CURRENT_DATE() "
                 "LIMIT 1",
                 (user["id"],),
             )
             if cur.fetchone() is None:
                 cur.execute(
                     "INSERT INTO kunjungan "
-                    "(user_id, visitor_name, visitor_type, visit_date, time_in, purpose, status) "
-                    "VALUES (%s, %s, 'member', CURRENT_DATE(), CURRENT_TIME(), 'Login portal anggota', 'recorded')",
+                    "(user_id, visitor_name, visitor_type, visit_date, time_in, purpose) "
+                    "VALUES (%s, %s, 'member', CURRENT_DATE(), CURRENT_TIME(), 'Login portal anggota')",
                     (user["id"], user["full_name"]),
                 )
     except Exception:
