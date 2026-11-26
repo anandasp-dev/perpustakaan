@@ -1,5 +1,5 @@
 /* =========================================================
-   UNINDRA LIBRARY — SKRIP HALAMAN LOGIN & REGISTER
+   Keyto LIBRARY — SKRIP HALAMAN LOGIN & REGISTER
    Tampilan (tab, toast, ikon mata) disalin dari app.js temanmu.
    Login/register sekarang memanggil API Python, bukan data palsu.
    ========================================================= */

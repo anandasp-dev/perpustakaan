@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Buku — Unindra Library</title>
+  <title>Buku — Keyto Library</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="../Style/css/global.css" />
   <link rel="stylesheet" href="../Style/css/buku.css" />
 </head>
+
 <body data-page="buku">
 
   <div class="app-wrapper">
@@ -18,12 +22,13 @@
       <div class="container navbar-inner">
         <a href="dashboard.html" class="brand-nav">
           <span class="brand-icon-soft">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
             </svg>
           </span>
-          <span class="brand-nav-text">Unindra Library</span>
+          <span class="brand-nav-text">Keyto Library</span>
         </a>
 
         <nav class="nav-menu" aria-label="Navigasi Utama">
@@ -36,7 +41,8 @@
 
         <div class="nav-right">
           <div class="notif-wrapper">
-            <button type="button" class="icon-bell-btn" id="notif-bell-btn" aria-label="Notifikasi" onclick="toggleNotifDropdown(event)">
+            <button type="button" class="icon-bell-btn" id="notif-bell-btn" aria-label="Notifikasi"
+              onclick="toggleNotifDropdown(event)">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -49,18 +55,21 @@
               <div class="notif-drop-head">
                 <div>
                   <div class="notif-drop-title">Notifications</div>
-                  <div class="notif-drop-sub" id="notif-unread-count">3 unread</div>
+                  <div class="notif-drop-sub" id="notif-unread-count">Memuat...</div>
                 </div>
-                <button type="button" class="btn-mark-read" onclick="markAllNotificationsRead()">Mark All as Read</button>
+                <button type="button" class="btn-mark-read" onclick="markAllNotificationsRead()">Mark All as
+                  Read</button>
               </div>
-              <div class="notif-drop-list" id="notif-drop-list"></div>
+              <div class="notif-drop-list" id="notif-drop-list">
+                <p style="padding:12px;color:#64748b;font-size:13px;">Memuat notifikasi...</p>
+              </div>
               <button type="button" class="notif-drop-foot" onclick="openMemberNotificationsModal()">
                 View All Notifications →
               </button>
             </div>
           </div>
 
-          <a href="profile.html" class="avatar-circle" id="navbar-avatar" title="Profil Saya">MC</a>
+          <a href="profile.html" class="avatar-circle" id="navbar-avatar" title="Profil Saya">...</a>
         </div>
       </div>
     </header>
@@ -105,18 +114,22 @@
             <div class="section-header">
               <h2 class="section-title" id="books-catalog-heading">Direkomendasikan untuk Anda</h2>
             </div>
-            <div class="books-grid" id="books-catalog-grid"></div>
+            <div class="books-grid" id="books-catalog-grid">
+              <p style="color:#64748b;font-size:14px;">Memuat katalog buku...</p>
+            </div>
           </section>
 
           <!-- Bagian Sedang Anda Pinjam -->
           <section id="books-loans-section" class="section-block">
             <h2 class="section-title hidden" id="books-category-loan-banner" style="margin-bottom: 12px;">
-              Buku kategori Arts sedang Anda pinjam
+              Memuat...
             </h2>
             <div class="section-header">
               <h2 class="section-title">Sedang Anda pinjam</h2>
             </div>
-            <div class="loans-grid" id="books-loans-grid"></div>
+            <div class="loans-grid" id="books-loans-grid">
+              <p style="color:#64748b;font-size:14px;">Memuat daftar pinjaman...</p>
+            </div>
           </section>
 
           <p class="books-policy-note">
@@ -132,10 +145,10 @@
             <img id="detail-book-cover" src="../assets/Book cover.png" alt="Sampul Buku" class="detail-cover-img" />
 
             <div class="detail-book-info">
-              <div id="detail-book-category" class="detail-category">Nature</div>
-              <h1 id="detail-book-title" class="detail-title">Braiding Sweetgrass</h1>
-              <div id="detail-book-author" class="detail-author">Robin Wall Kimmerer</div>
-              <div id="detail-book-copies" class="detail-copies">Tersedia · 6 eksemplar</div>
+              <div id="detail-book-category" class="detail-category">Memuat...</div>
+              <h1 id="detail-book-title" class="detail-title">Memuat judul buku...</h1>
+              <div id="detail-book-author" class="detail-author">Memuat penulis...</div>
+              <div id="detail-book-copies" class="detail-copies">Memuat ketersediaan...</div>
               <div class="detail-rules">Masa pinjam 14 hari • Maksimal 5 buku aktif</div>
 
               <button type="button" id="detail-borrow-btn" class="btn btn-primary detail-borrow-btn">
@@ -151,12 +164,13 @@
           <section class="detail-extra-section">
             <h2 class="detail-section-heading">Tentang buku</h2>
             <p id="detail-book-synopsis" class="detail-section-text">
-              Kumpulan esai yang mempertemukan pengetahuan tumbuhan, sains, dan hubungan manusia dengan alam.
+              Memuat deskripsi buku...
             </p>
 
             <h2 class="detail-section-heading">Informasi peminjaman</h2>
             <p class="detail-section-text">
-              Periksa tanggal jatuh tempo di Pinjaman Saya. Perpanjangan tersedia 1 kali jika buku tidak dipesan anggota lain.
+              Periksa tanggal jatuh tempo di Pinjaman Saya. Perpanjangan tersedia 1 kali jika buku tidak dipesan anggota
+              lain.
             </p>
           </section>
         </div>
@@ -166,8 +180,10 @@
     <!-- Footer -->
     <footer class="site-footer">
       <div class="container site-footer-inner">
-        <span>© 2026 Unindra Library</span>
-        <a href="#support" onclick="showToast('Layanan bantuan perpustakaan: perpustakaan@unindra.ac.id'); return false;">Help &amp; support ↗</a>
+        <span>© 2026 Keyto Library</span>
+        <a href="#support"
+          onclick="showToast('Layanan bantuan perpustakaan: perpustakaan@Keyto.ac.id'); return false;">Help &amp;
+          support ↗</a>
       </div>
     </footer>
   </div>
@@ -187,7 +203,8 @@
 
       <div class="modal-actions-stack" style="margin-top: 20px;">
         <a href="pinjaman.html" class="btn btn-primary btn-block">Lihat Pinjaman Saya</a>
-        <button type="button" class="btn btn-outline btn-block" onclick="closeModal('modal-member-notifications')">Tutup</button>
+        <button type="button" class="btn btn-outline btn-block"
+          onclick="closeModal('modal-member-notifications')">Tutup</button>
       </div>
     </div>
   </div>
@@ -196,14 +213,16 @@
   <div id="modal-renew-confirm" class="modal-backdrop hidden">
     <div class="modal-card">
       <h3 class="modal-title">Perpanjang pinjaman?</h3>
-      <div id="renew-modal-book-title" style="font-weight: 700; font-size: 15px; margin-bottom: 8px;">The Creative Act</div>
+      <div id="renew-modal-book-title" style="font-weight: 700; font-size: 15px; margin-bottom: 8px;">Memuat...</div>
       <p class="modal-desc" id="renew-modal-new-date" style="margin-bottom: 10px;">
-        Perpanjangan 7 hari. Tanggal pengembalian baru: 19 Oct 2026.
+        Memuat tanggal pengembalian baru...
       </p>
       <p class="modal-desc">Hanya 1 kali perpanjangan untuk setiap pinjaman.</p>
       <div class="modal-actions-stack">
-        <button type="button" class="btn btn-primary btn-block" onclick="confirmRenewLoan()">Konfirmasi perpanjangan</button>
-        <button type="button" class="btn btn-outline btn-block" onclick="closeModal('modal-renew-confirm')">Batal</button>
+        <button type="button" class="btn btn-primary btn-block" onclick="confirmRenewLoan()">Konfirmasi
+          perpanjangan</button>
+        <button type="button" class="btn btn-outline btn-block"
+          onclick="closeModal('modal-renew-confirm')">Batal</button>
       </div>
     </div>
   </div>
@@ -217,7 +236,8 @@
       </p>
       <div class="modal-actions-stack">
         <a href="pinjaman.html" class="btn btn-primary btn-block">Lihat pinjaman</a>
-        <button type="button" class="btn btn-outline btn-block" onclick="closeModal('modal-renew-complete')">Tutup</button>
+        <button type="button" class="btn btn-outline btn-block"
+          onclick="closeModal('modal-renew-complete')">Tutup</button>
       </div>
     </div>
   </div>
@@ -225,4 +245,5 @@
   <script src="../Js/api.js"></script>
   <script src="../Js/app.js"></script>
 </body>
+
 </html>

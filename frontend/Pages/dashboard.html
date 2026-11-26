@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Home — Unindra Library</title>
+  <title>Home — Keyto Library</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="../Style/css/global.css" />
   <link rel="stylesheet" href="../Style/css/home.css" />
 </head>
+
 <body data-page="home">
 
   <div class="app-wrapper">
@@ -18,12 +22,13 @@
       <div class="container navbar-inner">
         <a href="dashboard.html" class="brand-nav">
           <span class="brand-icon-soft">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
             </svg>
           </span>
-          <span class="brand-nav-text">Unindra Library</span>
+          <span class="brand-nav-text">Keyto Library</span>
         </a>
 
         <nav class="nav-menu" aria-label="Navigasi Utama">
@@ -36,7 +41,8 @@
 
         <div class="nav-right">
           <div class="notif-wrapper">
-            <button type="button" class="icon-bell-btn" id="notif-bell-btn" aria-label="Notifikasi" onclick="toggleNotifDropdown(event)">
+            <button type="button" class="icon-bell-btn" id="notif-bell-btn" aria-label="Notifikasi"
+              onclick="toggleNotifDropdown(event)">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -49,18 +55,21 @@
               <div class="notif-drop-head">
                 <div>
                   <div class="notif-drop-title">Notifications</div>
-                  <div class="notif-drop-sub" id="notif-unread-count">3 unread</div>
+                  <div class="notif-drop-sub" id="notif-unread-count">Memuat...</div>
                 </div>
-                <button type="button" class="btn-mark-read" onclick="markAllNotificationsRead()">Mark All as Read</button>
+                <button type="button" class="btn-mark-read" onclick="markAllNotificationsRead()">Mark All as
+                  Read</button>
               </div>
-              <div class="notif-drop-list" id="notif-drop-list"></div>
+              <div class="notif-drop-list" id="notif-drop-list">
+                <p style="padding:12px;color:#64748b;font-size:13px;">Memuat notifikasi...</p>
+              </div>
               <button type="button" class="notif-drop-foot" onclick="openMemberNotificationsModal()">
                 View All Notifications →
               </button>
             </div>
           </div>
 
-          <a href="profile.html" class="avatar-circle" id="navbar-avatar" title="Profil Saya">MC</a>
+          <a href="profile.html" class="avatar-circle" id="navbar-avatar" title="Profil Saya">...</a>
         </div>
       </div>
     </header>
@@ -71,19 +80,19 @@
         <!-- Hero Banner -->
         <section class="hero-banner">
           <div class="hero-content">
-            <div class="hero-date">MONDAY, 05 OCTOBER 2026</div>
-            <h1 class="hero-title" id="home-greeting">A new chapter, Maya.</h1>
+            <div class="hero-date">MEMUAT TANGGAL...</div>
+            <h1 class="hero-title" id="home-greeting">Memuat...</h1>
             <p class="hero-subtitle">Bacaan menarik berikutnya menanti. Anggaplah seperti rumah sendiri.</p>
             <div class="hero-member-info">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 <path d="m9 12 2 2 4-4"></path>
               </svg>
-              <span id="home-member-meta">Maya Putri · NPM 202511223344 · MB-0108 · Active member</span>
+              <span id="home-member-meta">Memuat data anggota...</span>
             </div>
           </div>
           <div class="hero-media">
-            <img src="../assets/Library still life.png" alt="Ilustrasi buku Unindra Library" />
+            <img src="../assets/Library still life.png" alt="Ilustrasi buku Keyto Library" />
           </div>
         </section>
 
@@ -97,7 +106,7 @@
                 <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
               </svg>
             </div>
-            <div class="stat-value" id="stat-active-loans">02</div>
+            <div class="stat-value" id="stat-active-loans">...</div>
             <div class="stat-footnote">dari 5 jatah pinjaman</div>
           </article>
 
@@ -108,20 +117,24 @@
                 <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
               </svg>
             </div>
-            <div class="stat-value" id="stat-monthly-loans">06</div>
-            <div class="stat-footnote">Peminjaman Oktober</div>
+            <div class="stat-value" id="stat-monthly-loans">...</div>
+            <div class="stat-footnote">Memuat...</div>
           </article>
 
           <article class="stat-card">
             <div class="stat-card-top">
               <span class="stat-label">Kunjungan perpustakaan</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"></path>
-                <path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"></path>
+                <path
+                  d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z">
+                </path>
+                <path
+                  d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z">
+                </path>
               </svg>
             </div>
-            <div class="stat-value">12</div>
-            <div class="stat-footnote">Kunjungan Oktober</div>
+            <div class="stat-value">...</div>
+            <div class="stat-footnote">Memuat...</div>
           </article>
         </section>
 
@@ -131,14 +144,16 @@
             <h2 class="section-title">Sedang dipinjam</h2>
             <a href="pinjaman.html" class="text-link">Lihat semua →</a>
           </div>
-          <div class="loans-grid" id="home-loans-grid"></div>
+          <div class="loans-grid" id="home-loans-grid">
+            <p style="color:#64748b;font-size:14px;">Memuat daftar pinjaman...</p>
+          </div>
         </section>
 
         <!-- Section: Temukan Bacaan Favorit Berikutnya -->
         <section class="section-block">
           <div class="section-header">
             <h2 class="section-title">Temukan bacaan favorit berikutnya</h2>
-            <span class="section-meta">1.248 judul untuk dijelajahi</span>
+            <span class="section-meta">Memuat koleksi...</span>
           </div>
 
           <form class="search-bar-row" onsubmit="submitHomeSearch(event)">
@@ -166,7 +181,9 @@
             <button type="button" class="pill-btn" onclick="filterHomeBooks('Nature', this)">Nature</button>
           </div>
 
-          <div class="books-grid" id="home-books-grid"></div>
+          <div class="books-grid" id="home-books-grid">
+            <p style="color:#64748b;font-size:14px;">Memuat daftar buku...</p>
+          </div>
         </section>
 
         <!-- Event Banner -->
@@ -180,7 +197,8 @@
             </svg>
             <span>Between the Pages · Autumn reading club · Saturday, 10 Oct · 11:00 AM</span>
           </div>
-          <button type="button" class="text-link strong" id="btn-save-seat" onclick="toggleEventSeat()">Save your seat →</button>
+          <button type="button" class="text-link strong" id="btn-save-seat" onclick="toggleEventSeat()">Save your seat
+            →</button>
         </section>
       </div>
     </main>
@@ -188,8 +206,10 @@
     <!-- Footer -->
     <footer class="site-footer">
       <div class="container site-footer-inner">
-        <span>© 2026 Unindra Library</span>
-        <a href="#support" onclick="showToast('Layanan bantuan perpustakaan: perpustakaan@unindra.ac.id'); return false;">Help &amp; support ↗</a>
+        <span>© 2026 Keyto Library</span>
+        <a href="#support"
+          onclick="showToast('Layanan bantuan perpustakaan: perpustakaan@Keyto.ac.id'); return false;">Help &amp;
+          support ↗</a>
       </div>
     </footer>
   </div>
@@ -209,7 +229,8 @@
 
       <div class="modal-actions-stack" style="margin-top: 20px;">
         <a href="pinjaman.html" class="btn btn-primary btn-block">Lihat Pinjaman Saya</a>
-        <button type="button" class="btn btn-outline btn-block" onclick="closeModal('modal-member-notifications')">Tutup</button>
+        <button type="button" class="btn btn-outline btn-block"
+          onclick="closeModal('modal-member-notifications')">Tutup</button>
       </div>
     </div>
   </div>
@@ -218,14 +239,16 @@
   <div id="modal-renew-confirm" class="modal-backdrop hidden">
     <div class="modal-card">
       <h3 class="modal-title">Perpanjang pinjaman?</h3>
-      <div id="renew-modal-book-title" style="font-weight: 700; font-size: 15px; margin-bottom: 8px;">The Creative Act</div>
+      <div id="renew-modal-book-title" style="font-weight: 700; font-size: 15px; margin-bottom: 8px;">Memuat...</div>
       <p class="modal-desc" id="renew-modal-new-date" style="margin-bottom: 10px;">
-        Perpanjangan 7 hari. Tanggal pengembalian baru: 19 Oct 2026.
+        Memuat tanggal pengembalian baru...
       </p>
       <p class="modal-desc">Hanya 1 kali perpanjangan untuk setiap pinjaman.</p>
       <div class="modal-actions-stack">
-        <button type="button" class="btn btn-primary btn-block" onclick="confirmRenewLoan()">Konfirmasi perpanjangan</button>
-        <button type="button" class="btn btn-outline btn-block" onclick="closeModal('modal-renew-confirm')">Batal</button>
+        <button type="button" class="btn btn-primary btn-block" onclick="confirmRenewLoan()">Konfirmasi
+          perpanjangan</button>
+        <button type="button" class="btn btn-outline btn-block"
+          onclick="closeModal('modal-renew-confirm')">Batal</button>
       </div>
     </div>
   </div>
@@ -239,7 +262,8 @@
       </p>
       <div class="modal-actions-stack">
         <a href="pinjaman.html" class="btn btn-primary btn-block">Lihat pinjaman</a>
-        <button type="button" class="btn btn-outline btn-block" onclick="closeModal('modal-renew-complete')">Tutup</button>
+        <button type="button" class="btn btn-outline btn-block"
+          onclick="closeModal('modal-renew-complete')">Tutup</button>
       </div>
     </div>
   </div>
@@ -247,4 +271,5 @@
   <script src="../Js/api.js"></script>
   <script src="../Js/app.js"></script>
 </body>
+
 </html>

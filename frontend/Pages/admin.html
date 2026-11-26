@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,9 +9,13 @@
     <link rel="stylesheet" href="../Style/calenNbook.css">
     <link rel="stylesheet" href="../Style/settingNloan.css">
     <link rel="stylesheet" href="../Style/memberNnotif.css">
+    <link rel="stylesheet" href="../Style/auth.css">
+    <link rel="stylesheet" href="../Style/global.css">
+    <link rel="stylesheet" href="../Style/reportNvisit.css">
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
     <aside class="sidebar">
@@ -19,9 +24,10 @@
             Keyto Perpustakaan
         </div>
         <span class="badge">ADMIN WORKSPACE</span>
-        
+
         <nav class="menu">
-            <a href="admin?page=home" data-page="home" class="active"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+            <a href="admin?page=home" data-page="home" class="active"><i
+                    data-lucide="layout-dashboard"></i>Dashboard</a>
             <a href="admin?page=anggota" data-page="anggota"><i data-lucide="users"></i>Anggota</a>
             <a href="admin?page=bukustorage" data-page="bukustorage"><i data-lucide="book-open"></i>Buku</a>
             <a href="admin?page=peminjaman" data-page="peminjaman"><i data-lucide="arrow-left-right"></i>Peminjaman</a>
@@ -35,7 +41,7 @@
     <div class="main">
         <header class="topbar">
             <span class="crumb">Workspace / Dashboard</span>
-        
+
             <div class="user">
                 <div class="notif">
 
@@ -49,71 +55,13 @@
                         <div class="notif-head">
                             <div>
                                 <h3>Notifikasi</h3>
-                                <p id="notifCount">3 belum dibaca</p>
+                                <p id="notifCount">Memuat...</p>
                             </div>
                             <button type="button" class="btn-outline" id="markAll">Tandai Semua Dibaca</button>
                         </div>
 
                         <div class="notif-list">
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="book-open"></i></span>
-                                <div class="notif-text">
-                                    <b>Buku dikembalikan</b>
-                                    <small>Pengembalian &bull; The Creative Act sudah kembali ke rak.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>2 menit lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="clock"></i></span>
-                                <div class="notif-text">
-                                    <b>Peminjaman hampir jatuh tempo</b>
-                                    <small>Segera jatuh tempo &bull; Sapiens jatuh tempo besok.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>1 jam lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item unread">
-                                <span class="notif-icon blue"><i data-lucide="user-plus"></i></span>
-                                <div class="notif-text">
-                                    <b>Anggota baru terdaftar</b>
-                                    <small>Anggota &bull; Amara Okafor bergabung di perpustakaan.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>3 jam lalu</span>
-                                    <i class="notif-dot"></i>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item">
-                                <span class="notif-icon gray"><i data-lucide="footprints"></i></span>
-                                <div class="notif-text">
-                                    <b>Pengunjung check-in</b>
-                                    <small>Pengunjung &bull; Oliver James check-in.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>Kemarin</span>
-                                </div>
-                            </a>
-
-                            <a href="#" class="notif-item">
-                                <span class="notif-icon red"><i data-lucide="circle-alert"></i></span>
-                                <div class="notif-text">
-                                    <b>Buku terlambat</b>
-                                    <small>Terlambat &bull; A Little Life perlu diingatkan.</small>
-                                </div>
-                                <div class="notif-meta">
-                                    <span>Kemarin</span>
-                                </div>
-                            </a>
-
+                            <div class="muted" style="padding:16px;text-align:center;">Memuat notifikasi...</div>
                         </div>
 
                         <a href="#" class="notif-foot">Lihat Semua Notifikasi <i data-lucide="arrow-right"></i></a>
@@ -121,19 +69,24 @@
                     </div>
                 </div>
 
-                <div id="openAdminProfile" role="button" tabindex="0" title="Kelola Profil Admin" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:4px 8px;border-radius:12px;">
-                    <div class="avatar" id="topbarAvatar">AD</div>
-                    
+                <div id="openAdminProfile" role="button" tabindex="0" title="Kelola Profil Admin"
+                    style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:4px 8px;border-radius:12px;">
+                    <div class="avatar" id="topbarAvatar">...</div>
+
                     <div class="user-info">
                         <strong id="topbarName">Memuat...</strong>
-                        <span id="topbarRole">Admin</span>
+                        <span id="topbarRole">Memuat...</span>
                     </div>
                 </div>
             </div>
         </header>
 
         <main class="content">
-            <div id="pageView" style="display: contents;"></div>
+            <div id="pageView" style="display: contents;">
+                <div class="card" style="padding:24px;text-align:center;">
+                    <p class="muted">Memuat halaman...</p>
+                </div>
+            </div>
 
             <footer class="footer">
                 <span>&copy; 2026 Keyto Perpustakaan</span>
@@ -193,12 +146,14 @@
                         </div>
                         <div class="field">
                             <label for="profPhone">Nomor HP / WhatsApp</label>
-                            <input type="tel" id="profPhone" inputmode="numeric" maxlength="13" placeholder="08xxxxxxxxxx">
+                            <input type="tel" id="profPhone" inputmode="numeric" maxlength="13"
+                                placeholder="08xxxxxxxxxx">
                         </div>
                     </div>
 
                     <hr style="border:none;border-top:1px solid #e2e8f0;margin:8px 0 4px;">
-                    <p class="muted" style="font-size:12px;margin:0;">Ubah Kata Sandi (kosongkan jika tidak ingin mengganti kata sandi)</p>
+                    <p class="muted" style="font-size:12px;margin:0;">Ubah Kata Sandi (kosongkan jika tidak ingin
+                        mengganti kata sandi)</p>
 
                     <div class="field">
                         <label for="profCurrentPw">Kata Sandi Saat Ini</label>
@@ -223,7 +178,8 @@
                         <div class="field">
                             <label for="profConfirmPw">Konfirmasi Kata Sandi Baru</label>
                             <div class="pw">
-                                <input type="password" id="profConfirmPw" placeholder="Ulangi kata sandi baru" minlength="8">
+                                <input type="password" id="profConfirmPw" placeholder="Ulangi kata sandi baru"
+                                    minlength="8">
                                 <button type="button" class="toggle-prof-pw" aria-label="Tampilkan kata sandi">
                                     <i data-lucide="eye-off"></i>
                                 </button>
@@ -249,14 +205,15 @@
         lucide.createIcons();
     </script>
 
-<!-- JS Global & Utilitas (dimuat sekali) -->
-<script src="/Js/api.js"></script>
-<script src="/Js/auth.js"></script>
-<script src="/Js/notifikasi.js"></script>
-<script src="/Js/app.js"></script>
-<script src="/Js/transisi.js"></script>
+    <!-- JS Global & Utilitas (dimuat sekali) -->
+    <script src="/Js/api.js"></script>
+    <script src="/Js/auth.js"></script>
+    <script src="/Js/notifikasi.js"></script>
+    <script src="/Js/app.js"></script>
+    <script src="/Js/transisi.js"></script>
 
-<!-- Kerangka Utama (harus paling bawah agar semua fungsi global di atas sudah siap) -->
-<script src="/Js/admin-shell.js"></script>
+    <!-- Kerangka Utama (harus paling bawah agar semua fungsi global di atas sudah siap) -->
+    <script src="/Js/admin-shell.js"></script>
 </body>
+
 </html>
