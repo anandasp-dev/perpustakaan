@@ -1,18 +1,19 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from math import ceil
+import re
+from zoneinfo import ZoneInfo
 
 from controllers.loan_controller import loan_data
 from core.response import Response, error
-
-from utils.files import CoverError, delete_cover_file, save_cover
 from models.book import CATEGORIES, Book, BookNotFoundError, BookRuleError
 from models.loan import MAX_DUE_DAYS, Loan, LoanNotFoundError, LoanRuleError
+from models.member import Member, MemberNotFoundError, MemberRuleError
 from models.stats import Stats
 from models.user import User
-from models.member import Member, MemberNotFoundError, MemberRuleError
+from utils.files import CoverError, delete_cover_file, save_cover
 from utils.text import initials
-import re
 
+WIB = ZoneInfo("Asia/Jakarta")
 PER_PAGE = 8   # transaksi per halaman, sesuai tulisan di desain
 BOOKS_PER_PAGE = 8
 MEMBERS_PER_PAGE = 8
@@ -22,6 +23,15 @@ NAME_RE = re.compile(r"(?:[^\W\d_]|[ .'\-]){3,100}")
 NPM_RE = re.compile(r"[0-9]{12}")
 PHONE_RE = re.compile(r"08[0-9]{8,11}")
 EMAIL_RE = re.compile(r"[^@\s]{1,64}@[^@\s]+\.[^@\s]+")
+
+
+def _now_wib():
+    return datetime.now(WIB).replace(tzinfo=None)
+
+
+def _today_wib():
+    return datetime.now(WIB).date()
+
 
 def _member_row(row):
     name = row["full_name"]
@@ -127,6 +137,7 @@ def update_member(request):
     except MemberRuleError as exc:
         return error(str(exc), 409)
 
+
 def delete_member(request):
     member_id = _path_id(request)
     if member_id is None:
@@ -164,7 +175,7 @@ def _book_row(row):
         "author": row["author"],
         "category": row["category"],
         "cover": row["cover"],
-        "total": available + row["active"],       # stok total = tersedia + yang sedang keluar
+        "total": available + row["active"],
         "available": available,
         "status": "available" if available > 0 else "on-loan",
     }
@@ -256,7 +267,7 @@ def delete_book(request):
     except BookRuleError as exc:
         return error(str(exc), 409)
 
-    delete_cover_file(cover)   # berkas sampulnya ikut dihapus
+    delete_cover_file(cover)
     return Response(200, {"message": "Buku dihapus"})
 
 
@@ -273,28 +284,27 @@ def set_book_cover(request):
     try:
         row, old_cover = Book.admin_set_cover(book_id, path)
     except BookNotFoundError as exc:
-        delete_cover_file(path)    # bukunya ternyata tidak ada: buang berkas yang baru disimpan
+        delete_cover_file(path)
         return error(str(exc), 404)
 
-    delete_cover_file(old_cover)   # sampul lama diganti
+    delete_cover_file(old_cover)
     return Response(200, {"book": _book_row(row)})
 
 
 def dashboard(request):
-    # ?date=2026-11-22 -> tanggal acuan; kosong = hari ini
     raw = request.query.get("date", "")
     try:
-        ref = date.fromisoformat(raw) if raw else date.today()
+        ref = date.fromisoformat(raw) if raw else _today_wib()
     except ValueError:
         return error("Format tanggal harus YYYY-MM-DD", 400)
 
-    Loan.expire_stale()   # bereskan booking yang sudah hangus supaya angkanya akurat
+    Loan.expire_stale()
     return Response(200, Stats.dashboard(ref))
 
 
 def _display_status(row):
     """Status untuk tampilan: 'borrowed' yang lewat jatuh tempo jadi 'overdue'."""
-    if row["status"] == "borrowed" and row["due_date"] and row["due_date"] < date.today():
+    if row["status"] == "borrowed" and row["due_date"] and row["due_date"] < _today_wib():
         return "overdue"
     return row["status"]
 
@@ -372,7 +382,7 @@ def create_loan(request):
             due = date.fromisoformat(str(raw_due))
         except ValueError:
             return error("Format jatuh tempo harus YYYY-MM-DD", 400)
-        today = date.today()
+        today = _today_wib()
         if due < today or due > today + timedelta(days=MAX_DUE_DAYS):
             return error(
                 f"Jatuh tempo harus antara hari ini dan {MAX_DUE_DAYS} hari ke depan", 400
@@ -387,12 +397,12 @@ def create_loan(request):
     except LoanRuleError as exc:
         return error(str(exc), 409)
 
+
 def _relative_time(dt):
     """Ubah datetime MySQL jadi teks '2 menit lalu', '1 jam lalu', atau 'Kemarin'."""
     if dt is None:
         return ""
-    from datetime import datetime
-    now = datetime.now()
+    now = _now_wib()
     if isinstance(dt, date) and not isinstance(dt, datetime):
         diff_days = (now.date() - dt).days
         if diff_days <= 0:
@@ -421,7 +431,6 @@ def notifications(request):
     items = []
 
     with cursor() as cur:
-        # 1. Pinjaman terlambat
         cur.execute(
             "SELECT p.id, p.due_date, u.full_name, b.title "
             "FROM peminjaman p "
@@ -442,7 +451,6 @@ def notifications(request):
                 "page": "peminjaman",
             })
 
-        # 2. Menunggu konfirmasi peminjaman
         cur.execute(
             "SELECT p.id, p.borrowed_at, u.full_name, b.title "
             "FROM peminjaman p "
@@ -463,7 +471,6 @@ def notifications(request):
                 "page": "peminjaman",
             })
 
-        # 3. Pengembalian buku terbaru
         cur.execute(
             "SELECT p.id, p.returned_at, u.full_name, b.title "
             "FROM peminjaman p "
@@ -484,7 +491,6 @@ def notifications(request):
                 "page": "peminjaman",
             })
 
-        # 4. Anggota baru terdaftar
         cur.execute(
             "SELECT id, full_name, created_at FROM `user` "
             "WHERE role = 'member' ORDER BY created_at DESC, id DESC LIMIT 3"
@@ -501,7 +507,6 @@ def notifications(request):
                 "page": "anggota",
             })
 
-# 5. Pengunjung check-in terbaru
         try:
             cur.execute(
                 "SELECT k.id, k.created_at, k.purpose, COALESCE(u.full_name, k.visitor_name) AS name "
