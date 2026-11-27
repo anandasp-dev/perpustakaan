@@ -51,11 +51,10 @@ class Stats:
             )
             per_day = {row["day"]: row["total"] for row in cur.fetchall()}
 
-            # jumlah pengunjung tercatat per hari, dari 7 hari sebelum acuan sampai acuan
+            # jumlah pengunjung per hari (tanpa kolom status)
             cur.execute(
                 "SELECT DATE(visit_date) AS day, COUNT(*) AS total FROM kunjungan "
-                "WHERE status = 'recorded' "
-                "AND DATE(visit_date) BETWEEN %s AND %s "
+                "WHERE DATE(visit_date) BETWEEN %s AND %s "
                 "GROUP BY DATE(visit_date)",
                 (week_ago, ref),
             )
@@ -71,24 +70,24 @@ class Stats:
 
             # anggota paling aktif meminjam di bulan tanggal acuan
             cur.execute(
-                "SELECT u.id, u.full_name, COUNT(*) AS total "
+                "SELECT u.id, u.full_name, u.program_study, COUNT(*) AS total "
                 "FROM peminjaman p JOIN `user` u ON u.id = p.user_id "
                 "WHERE p.status IN ('borrowed', 'returned') "
                 "AND YEAR(p.confirmed_at) = YEAR(%s) AND MONTH(p.confirmed_at) = MONTH(%s) "
-                "GROUP BY u.id, u.full_name "
+                "GROUP BY u.id, u.full_name, u.program_study "
                 "ORDER BY total DESC, u.id "
                 "LIMIT %s",
                 (ref, ref, TOP_BORROWERS),
             )
             top_rows = cur.fetchall()
 
-            # pengunjung paling aktif pada bulan tanggal acuan
+            # pengunjung paling aktif pada bulan tanggal acuan (tanpa kolom status)
             cur.execute(
-                "SELECT u.id, u.full_name, COUNT(*) AS total "
+                "SELECT u.id, u.full_name, u.program_study, COUNT(*) AS total "
                 "FROM kunjungan k JOIN `user` u ON u.id = k.user_id "
-                "WHERE k.status = 'recorded' AND k.user_id IS NOT NULL "
+                "WHERE k.user_id IS NOT NULL "
                 "AND YEAR(k.visit_date) = YEAR(%s) AND MONTH(k.visit_date) = MONTH(%s) "
-                "GROUP BY u.id, u.full_name "
+                "GROUP BY u.id, u.full_name, u.program_study "
                 "ORDER BY total DESC, u.id "
                 "LIMIT %s",
                 (ref, ref, TOP_BORROWERS),
@@ -98,7 +97,7 @@ class Stats:
             # transaksi terbaru (termasuk yang masih menunggu konfirmasi)
             cur.execute(
                 "SELECT p.id, p.status, p.borrowed_at, p.confirmed_at, p.due_date, "
-                "b.title, u.full_name "
+                "b.title, u.full_name, u.program_study "
                 "FROM peminjaman p "
                 "JOIN buku b ON b.id = p.book_id "
                 "JOIN `user` u ON u.id = p.user_id "
@@ -125,6 +124,7 @@ class Stats:
             {
                 "member_id": f"MB-{row['id']:04d}",
                 "name": row["full_name"],
+                "program_study": row.get("program_study"),
                 "initials": initials(row["full_name"]),
                 "total": row["total"],
             }
@@ -135,6 +135,7 @@ class Stats:
             {
                 "member_id": f"MB-{row['id']:04d}",
                 "name": row["full_name"],
+                "program_study": row.get("program_study"),
                 "initials": initials(row["full_name"]),
                 "total": row["total"],
             }
@@ -145,6 +146,7 @@ class Stats:
             {
                 "id": row["id"],
                 "borrower": row["full_name"],
+                "program_study": row.get("program_study"),
                 "title": row["title"],
                 "status": row["status"],
                 "loaned_at": row["confirmed_at"] or row["borrowed_at"],
@@ -177,6 +179,7 @@ class Stats:
             "recent_loans": recent,
             "recent_total": recent_total,
         }
+
     @staticmethod
     def reports(start_date, end_date, today):
         """Agregasi data laporan sesuai rentang tanggal `start_date` s/d `end_date`."""
@@ -204,12 +207,11 @@ class Stats:
             )
             prev_loans = int(cur.fetchone()["total"])
 
-            # 2. Kunjungan tercatat per hari dalam periode
+            # 2. Kunjungan per hari dalam periode (tanpa kolom status)
             cur.execute(
                 "SELECT DATE(visit_date) AS day, COUNT(*) AS total "
                 "FROM kunjungan "
-                "WHERE status = 'recorded' "
-                "AND DATE(visit_date) BETWEEN %s AND %s "
+                "WHERE DATE(visit_date) BETWEEN %s AND %s "
                 "GROUP BY DATE(visit_date)",
                 (start_date, end_date),
             )
@@ -217,8 +219,7 @@ class Stats:
 
             cur.execute(
                 "SELECT COUNT(*) AS total FROM kunjungan "
-                "WHERE status = 'recorded' "
-                "AND DATE(visit_date) BETWEEN %s AND %s",
+                "WHERE DATE(visit_date) BETWEEN %s AND %s",
                 (prev_start, prev_end),
             )
             prev_visits = int(cur.fetchone()["total"])
@@ -252,7 +253,6 @@ class Stats:
             )
             book_row = cur.fetchone()
 
-            # Buku yang masih dipinjam pada posisi `end_date` & mutasi pada `end_date`
             cur.execute(
                 "SELECT "
                 "COALESCE(SUM(p.status IN ('borrowed', 'returned') "
@@ -274,8 +274,6 @@ class Stats:
             # 5. Keanggotaan yang sudah terdaftar sampai `end_date`
             cur.execute(
                 "SELECT COUNT(*) AS total, "
-                "COALESCE(SUM(COALESCE(status, 'active') = 'active'), 0) AS active, "
-                "COALESCE(SUM(status = 'suspended'), 0) AS suspended, "
                 "COALESCE(SUM(DATE(created_at) BETWEEN %s AND %s), 0) AS new_period "
                 "FROM `user` WHERE role = 'member' AND DATE(created_at) <= %s",
                 (start_date, end_date, end_date),
@@ -298,7 +296,6 @@ class Stats:
         total_returns = sum(x["returns"] for x in daily)
 
         borrowed = int(loan_book_row["borrowed_at_end"])
-        # Stok tersedia pada `end_date` = stok sekarang + yang dipinjam setelah `end_date`
         available = int(book_row["current_stock"]) + int(loan_book_row["borrowed_after_end"])
         maintenance = 0
         added_end = int(book_row["added_on_end"])
@@ -306,8 +303,8 @@ class Stats:
         in_end = int(loan_book_row["in_on_end"])
 
         total_members = int(member_row["total"])
-        active_members = int(member_row["active"])
-        suspended_members = int(member_row["suspended"])
+        active_members = total_members
+        suspended_members = 0
 
         return {
             "start_date": str(start_date),
