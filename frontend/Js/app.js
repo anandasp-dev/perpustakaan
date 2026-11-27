@@ -1218,7 +1218,7 @@
       state.notifications = results[3];
     } catch (error) {
       if (error.status === 401) {
-        window.location.href = "/Pages/index";
+        window.location.href = "/index";
         return;
       }
       console.warn("Gagal mengambil data dari server:", error);
