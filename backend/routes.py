@@ -1,4 +1,4 @@
-from controllers import auth_controller, book_controller, loan_controller, admin_controller, profile_controller
+from controllers import auth_controller, book_controller, loan_controller, admin_controller, profile_controller,notification_controller
 from core.router import Router
 
 router = Router()
@@ -44,3 +44,5 @@ router.add("GET", "/api/admin/admins", admin_controller.admins, roles=("admin",)
 router.add("POST", "/api/admin/admins", admin_controller.create_admin, roles=("admin",))
 router.add("POST", "/api/admin/admins/{id}", admin_controller.update_admin, roles=("admin",))
 router.add("POST", "/api/admin/admins/{id}/delete", admin_controller.delete_admin, roles=("admin",))
+router.add("GET", "/api/notifications", notification_controller.list_notifications, login=True)
+router.add("POST", "/api/notifications/read", notification_controller.mark_read, login=True)
