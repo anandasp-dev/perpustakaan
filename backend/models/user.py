@@ -53,7 +53,7 @@ class User:
     def find_by_id(user_id):
         with cursor() as cur:
             cur.execute(
-                "SELECT id, npm, full_name, email, phone, role, created_at "
+                "SELECT id, npm, full_name, email, phone, program_study, role, created_at "
                 "FROM `user` WHERE id = %s",
                 (user_id,),
             )
@@ -63,7 +63,7 @@ class User:
     def find_by_identifier(identifier):
         with cursor() as cur:
             cur.execute(
-                "SELECT id, npm, full_name, email, phone, "
+                "SELECT id, npm, full_name, email, phone, program_study, "
                 "password_hash, role, created_at "
                 "FROM `user` WHERE email = %s OR npm = %s",
                 (identifier, identifier),

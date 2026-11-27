@@ -110,9 +110,9 @@ def login(request):
         if cur.fetchone() is not None:
             cur.execute("SELECT status FROM `user` WHERE id = %s", (user["id"],))
             st = cur.fetchone()
-            if st and st.get("status") == "suspended":
-                return error("Akun Anda sedang ditangguhkan. Hubungi petugas perpustakaan.", 403)
-
+            if st and st.get("status") not in (None, "active"):
+                return error("Akun Anda sedang dinonaktifkan atau ditangguhkan. Hubungi administrator.", 403)
+            
     _record_daily_login_visit(user)
 
     session.destroy(request.cookies.get(session.COOKIE_NAME))  # buang sesi lama

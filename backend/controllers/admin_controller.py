@@ -1,6 +1,12 @@
 from datetime import date, datetime, timedelta
 from math import ceil
 import re
+import secrets
+import traceback
+from config import APP_BASE_URL
+from core import reset_store, session
+from utils import mailer
+from utils.security import hash_password
 from zoneinfo import ZoneInfo
 
 from controllers.loan_controller import loan_data
@@ -64,6 +70,299 @@ def _check_profile(body):
         return None, "Nomor HP harus diawali 08 dan 10-13 digit angka"
     return (name, email, phone or None), None
 
+def _ensure_deactivated_column(cur):
+    cur.execute("SHOW COLUMNS FROM `user` LIKE 'deactivated_at'")
+    if cur.fetchone() is None:
+        cur.execute(
+            "ALTER TABLE `user` "
+            "ADD COLUMN deactivated_at DATETIME NULL DEFAULT NULL AFTER status"
+        )
+
+
+def _admin_account_row(row, current_user_id):
+    return {
+        "id": row["id"],
+        "code": f"ADM-{row['id']:03d}",
+        "name": row["full_name"] or "Admin",
+        "email": row["email"],
+        "role": row["role"],
+        "status": row.get("status") or "active",
+        "created_at": row["created_at"],
+        "deactivated_at": row.get("deactivated_at"),
+        "is_self": row["id"] == current_user_id,
+    }
+
+
+def admins(request):
+    from database.db import cursor
+    from models.member import ensure_status_column
+
+    ensure_status_column()
+    q = str(request.query.get("q") or "").strip()
+
+    with cursor() as cur:
+        _ensure_deactivated_column(cur)
+        where = ["u.role = 'admin'"]
+        params = []
+        if q:
+            like = f"%{q}%"
+            where.append(
+                "(u.full_name LIKE %s OR u.email LIKE %s "
+                "OR CONCAT('ADM-', LPAD(u.id, 3, '0')) LIKE %s)"
+            )
+            params.extend([like, like, like])
+
+        cur.execute(
+            "SELECT u.id, u.full_name, u.email, u.role, u.status, u.created_at, u.deactivated_at "
+            "FROM `user` u "
+            f"WHERE {' AND '.join(where)} "
+            "ORDER BY u.id ASC",
+            tuple(params),
+        )
+        rows = cur.fetchall()
+
+        cur.execute(
+            "SELECT COUNT(*) AS total, "
+            "COALESCE(SUM(status = 'active'), 0) AS active_total, "
+            "COALESCE(SUM(status <> 'active'), 0) AS inactive_total "
+            "FROM `user` WHERE role = 'admin'"
+        )
+        srow = cur.fetchone()
+
+    uid = request.user["id"]
+    return Response(200, {
+        "admins": [_admin_account_row(r, uid) for r in rows],
+        "summary": {
+            "total": int(srow["total"]),
+            "active": int(srow["active_total"]),
+            "inactive": int(srow["inactive_total"]),
+        },
+    })
+
+
+ALLOWED_PRODI = {
+    "Bimbingan dan Konseling (S1)",
+    "Pendidikan Ekonomi (S1)",
+    "Pendidikan Sejarah (S1)",
+    "Bisnis Digital (S1)",
+    "Manajemen Ritel (S1)",
+    "Pendidikan Matematika (S1)",
+    "Biologi (S1)",
+    "Fisika (S1)",
+    "Teknik Informatika (S1)",
+    "Sistem Informasi (S1)",
+    "Teknik Industri (S1)",
+    "Arsitektur (S1)",
+    "Pendidikan Bahasa Indonesia (S1)",
+    "Pendidikan Bahasa Inggris (S1)",
+    "Desain Komunikasi Visual (S1)",
+    "Program Magister (S2)",
+    "Program Doktor (S3)",
+}
+
+
+def create_admin(request):
+    from database.db import cursor
+    from models.member import ensure_status_column
+
+    ensure_status_column()
+    body = request.json()
+    profile, problem = _check_profile(body)
+    if problem:
+        return error(problem, 400)
+
+    name, email, phone = profile
+    email = email.lower()
+
+    npm = str(body.get("npm") or "").strip()
+    if not NPM_RE.fullmatch(npm):
+        return error("NPM harus 12 digit angka", 400)
+    if not phone:
+        return error("Nomor telepon wajib diisi", 400)
+
+    program_study = str(body.get("program_study") or "").strip()
+    if program_study not in ALLOWED_PRODI:
+        return error("Pilih program studi yang tersedia pada daftar", 400)
+
+    password = body.get("password")
+    if not isinstance(password, str) or not (8 <= len(password) <= 128):
+        return error("Kata sandi harus 8-128 karakter", 400)
+
+    with cursor() as cur:
+        _ensure_deactivated_column(cur)
+        cur.execute(
+            "SELECT npm, email FROM `user` WHERE npm = %s OR email = %s LIMIT 1",
+            (npm, email),
+        )
+        clash = cur.fetchone()
+        if clash is not None:
+            if clash["email"] and clash["email"].lower() == email:
+                return error("Email sudah terdaftar pada akun lain", 409)
+            return error("NPM sudah terdaftar pada akun lain", 409)
+
+        cur.execute(
+            "INSERT INTO `user` (npm, full_name, program_study, email, phone, password_hash, role, status, deactivated_at) "
+            "VALUES (%s, %s, %s, %s, %s, %s, 'admin', 'active', NULL)",
+            (npm, name, program_study, email, phone, hash_password(password)),
+        )
+        new_id = cur.lastrowid
+
+    return Response(201, {
+        "id": new_id,
+        "code": f"ADM-{new_id:03d}",
+        "message": "Admin baru berhasil ditambahkan.",
+    })
+
+def _admin_account_row(row, current_user_id):
+    return {
+        "id": row["id"],
+        "code": f"ADM-{row['id']:03d}",
+        "name": row["full_name"] or "Admin",
+        "npm": row.get("npm") or "",
+        "email": row["email"],
+        "phone": row.get("phone") or "",
+        "program_study": row.get("program_study") or "",
+        "role": row["role"],
+        "status": row.get("status") or "active",
+        "created_at": row["created_at"],
+        "deactivated_at": row.get("deactivated_at"),
+        "is_self": row["id"] == current_user_id,
+    }
+
+def admins(request):
+    from database.db import cursor
+    from models.member import ensure_status_column
+
+    ensure_status_column()
+    q = str(request.query.get("q") or "").strip()
+
+    with cursor() as cur:
+        _ensure_deactivated_column(cur)
+        where = ["u.role = 'admin'"]
+        params = []
+        if q:
+            like = f"%{q}%"
+            where.append(
+                "(u.full_name LIKE %s OR u.email LIKE %s OR u.npm LIKE %s "
+                "OR CONCAT('ADM-', LPAD(u.id, 3, '0')) LIKE %s)"
+            )
+            params.extend([like, like, like, like])
+
+        cur.execute(
+            "SELECT u.id, u.npm, u.full_name, u.program_study, u.email, u.phone, "
+            "u.role, u.status, u.created_at, u.deactivated_at "
+            "FROM `user` u "
+            f"WHERE {' AND '.join(where)} "
+            "ORDER BY u.id ASC",
+            tuple(params),
+        )
+        rows = cur.fetchall()
+
+        cur.execute(
+            "SELECT COUNT(*) AS total, "
+            "COALESCE(SUM(status = 'active'), 0) AS active_total, "
+            "COALESCE(SUM(status <> 'active'), 0) AS inactive_total "
+            "FROM `user` WHERE role = 'admin'"
+        )
+        srow = cur.fetchone()
+
+    uid = request.user["id"]
+    return Response(200, {
+        "admins": [_admin_account_row(r, uid) for r in rows],
+        "summary": {
+            "total": int(srow["total"]),
+            "active": int(srow["active_total"]),
+            "inactive": int(srow["inactive_total"]),
+        },
+    })
+
+
+def update_admin(request):
+    from database.db import cursor
+    from models.member import ensure_status_column
+
+    ensure_status_column()
+    admin_id = _path_id(request)
+    if admin_id is None:
+        return error("Admin tidak ditemukan", 404)
+
+    body = request.json()
+    profile, problem = _check_profile(body)
+    if problem:
+        return error(problem, 400)
+
+    status = _check_member_status(body.get("status", "active"))
+    if status is None:
+        return error("Status akun tidak valid", 400)
+
+    if admin_id == request.user["id"] and status != "active":
+        return error("Anda tidak dapat menonaktifkan akun sendiri", 400)
+
+    name, email, phone = profile
+    email = email.lower()
+
+    npm = str(body.get("npm") or "").strip()
+    if not NPM_RE.fullmatch(npm):
+        return error("NPM harus 12 digit angka", 400)
+    if not phone:
+        return error("Nomor telepon wajib diisi", 400)
+
+    program_study = str(body.get("program_study") or "").strip()
+    if program_study not in ALLOWED_PRODI:
+        return error("Pilih program studi yang tersedia pada daftar", 400)
+
+    with cursor() as cur:
+        _ensure_deactivated_column(cur)
+        cur.execute("SELECT id FROM `user` WHERE id = %s AND role = 'admin'", (admin_id,))
+        if cur.fetchone() is None:
+            return error("Admin tidak ditemukan", 404)
+
+        cur.execute(
+            "SELECT npm, email FROM `user` WHERE (npm = %s OR email = %s) AND id <> %s LIMIT 1",
+            (npm, email, admin_id),
+        )
+        clash = cur.fetchone()
+        if clash is not None:
+            if clash["email"] and clash["email"].lower() == email:
+                return error("Email sudah dipakai akun lain", 409)
+            return error("NPM sudah dipakai akun lain", 409)
+
+        cur.execute(
+            "UPDATE `user` "
+            "SET npm = %s, full_name = %s, program_study = %s, email = %s, phone = %s, status = %s, "
+            "deactivated_at = IF(%s = 'active', NULL, COALESCE(deactivated_at, NOW())) "
+            "WHERE id = %s",
+            (npm, name, program_study, email, phone, status, status, admin_id),
+        )
+
+    if status != "active":
+        session.destroy_user(admin_id)
+
+    return Response(200, {"message": "Data admin berhasil diperbarui"})
+
+def delete_admin(request):
+    from database.db import cursor
+
+    admin_id = _path_id(request)
+    if admin_id is None:
+        return error("Admin tidak ditemukan", 404)
+
+    if admin_id == request.user["id"]:
+        return error("Anda tidak dapat menghapus akun sendiri", 400)
+
+    with cursor() as cur:
+        cur.execute("SELECT id FROM `user` WHERE id = %s AND role = 'admin'", (admin_id,))
+        if cur.fetchone() is None:
+            return error("Admin tidak ditemukan", 404)
+
+        cur.execute("SELECT COUNT(*) AS total FROM peminjaman WHERE user_id = %s", (admin_id,))
+        if cur.fetchone()["total"] > 0:
+            return error("Akun admin memiliki riwayat peminjaman sehingga tidak dapat dihapus", 409)
+
+        cur.execute("DELETE FROM `user` WHERE id = %s", (admin_id,))
+
+    session.destroy_user(admin_id)
+    return Response(200, {"message": "Akun admin berhasil dihapus"})
 
 def _check_member_status(raw):
     val = str(raw or "active").strip().lower()

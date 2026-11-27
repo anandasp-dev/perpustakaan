@@ -1,177 +1,67 @@
 <main class="content">
-
     <div class="card settings-card">
 
         <div class="settings-head">
-            <div>
-                <h1>Pengaturan Profil &amp; Akun</h1>
-                <p>Kelola informasi profil dan keamanan akun administrator Anda.</p>
+            <div class="profile-top">
+                <div>
+                    <h1>Pengaturan Profil &amp; Akun</h1>
+                    <p>Kelola informasi profil dan keamanan akun Anda.</p>
+                </div>
             </div>
             <button type="button" class="btn-soft" id="editProfile">Edit Profil</button>
         </div>
 
         <section class="s-section">
             <h2>Informasi Pribadi</h2>
-            <table
-                style="width:100%; border-collapse:collapse; background:rgba(248, 250, 252, 0.65); border:1px solid rgba(148, 163, 184, 0.2); border-radius:12px; overflow:hidden;">
-                <tbody>
-                    <tr style="border-bottom:1px solid rgba(148, 163, 184, 0.18);">
-                        <td
-                            style="width:50%; padding:14px 18px; vertical-align:top; border-right:1px solid rgba(148, 163, 184, 0.18);">
-                            <span class="s-label" style="display:block; margin-bottom:4px;">Nama Lengkap</span>
-                            <span class="s-value" id="dispName">Memuat...</span>
-                        </td>
-                        <td style="width:50%; padding:14px 18px; vertical-align:top;">
-                            <span class="s-label" style="display:block; margin-bottom:4px;">ID Admin</span>
-                            <span class="s-value" id="dispCode">Memuat...</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td
-                            style="width:50%; padding:14px 18px; vertical-align:top; border-right:1px solid rgba(148, 163, 184, 0.18);">
-                            <span class="s-label" style="display:block; margin-bottom:4px;">Alamat Email</span>
-                            <span class="s-value" id="dispEmail">Memuat...</span>
-                        </td>
-                        <td style="width:50%; padding:14px 18px; vertical-align:top;">
-                            <span class="s-label" style="display:block; margin-bottom:4px;">Nomor Telepon</span>
-                            <span class="s-value" id="dispPhone">Memuat...</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="s-grid">
+                <div class="s-item">
+                    <span class="s-label">Nama Lengkap</span>
+                    <span class="s-value" id="dispName">Memuat...</span>
+                </div>
+                <div class="s-item">
+                    <span class="s-label">NPM</span>
+                    <span class="s-value" id="dispNpm">Memuat...</span>
+                </div>
+                <div class="s-item">
+                    <span class="s-label">Alamat Email</span>
+                    <span class="s-value" id="dispEmail">Memuat...</span>
+                </div>
+                <div class="s-item">
+                    <span class="s-label">Nomor Telepon</span>
+                    <span class="s-value" id="dispPhone">Memuat...</span>
+                </div>
+                <div class="s-item span-2">
+                    <span class="s-label s-bold">Program Studi</span>
+                    <div class="value-box" id="dispProdi">Memuat...</div>
+                </div>
+            </div>
         </section>
 
         <section class="s-section">
             <h2>Informasi Akun</h2>
-            <table
-                style="width:100%; border-collapse:collapse; background:rgba(248, 250, 252, 0.65); border:1px solid rgba(148, 163, 184, 0.2); border-radius:12px; overflow:hidden;">
-                <tbody>
-                    <tr style="border-bottom:1px solid rgba(148, 163, 184, 0.18);">
-                        <td
-                            style="width:50%; padding:14px 18px; vertical-align:top; border-right:1px solid rgba(148, 163, 184, 0.18);">
-                            <span class="s-label" style="display:block; margin-bottom:4px;">Peran</span>
-                            <span class="s-value" id="dispRole">Admin</span>
-                        </td>
-                        <td style="width:50%; padding:14px 18px; vertical-align:top;">
-                            <span class="s-label s-bold" style="display:block; margin-bottom:4px;">Status Akun</span>
-                            <div class="status-box" style="background:transparent; padding:0;">
-                                <span class="p-dot" id="dispStatusDot"></span>
-                                <b id="dispStatus">Aktif</b>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="padding:14px 18px; vertical-align:top;">
-                            <span class="s-label" style="display:block; margin-bottom:4px;">Terdaftar Sejak</span>
-                            <span class="s-value" id="dispCreated">Memuat...</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="s-grid">
+                <div class="s-item">
+                    <span class="s-label">Peran</span>
+                    <span class="s-value" id="dispRole">Memuat...</span>
+                </div>
+                <div class="s-item">
+                    <span class="s-label s-bold">Status Akun</span>
+                    <div class="status-box">
+                        <span class="p-dot" id="dispStatusDot"></span>
+                        <b id="dispStatus">Memuat...</b>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section class="s-section">
-            <h2>Keamanan &amp; Aktivitas</h2>
-            <table
-                style="width:100%; border-collapse:collapse; background:rgba(248, 250, 252, 0.65); border:1px solid rgba(148, 163, 184, 0.2); border-radius:12px; overflow:hidden;">
-                <tbody>
-                    <tr>
-                        <td
-                            style="width:50%; padding:14px 18px; vertical-align:top; border-right:1px solid rgba(148, 163, 184, 0.18);">
-                            <span class="s-label" style="display:block; margin-bottom:4px;">Kata Sandi</span>
-                            <span class="s-value">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
-                        </td>
-                        <td style="width:50%; padding:14px 18px; vertical-align:top;">
-                            <span class="s-label s-bold" style="display:block; margin-bottom:4px;">Terakhir Login</span>
-                            <span class="s-value" id="dispLastLogin">Memuat...</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <h2>Aktivitas Login</h2>
+            <div class="s-item">
+                <span class="s-label s-bold">Terakhir Login</span>
+                <span class="s-value" id="dispLastLogin">Memuat...</span>
+            </div>
         </section>
 
     </div>
+
 </main>
-
-<div class="modal-overlay" id="profileModal">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle"
-        style="max-width:460px; border-radius:20px;">
-        <form method="POST" action="#" id="profileForm">
-
-            <div class="modal-head" style="border-bottom:none; padding-bottom:4px;">
-                <div class="modal-title">
-                    <h2 id="profileTitle" style="font-size:22px; color:#0f2952;">Edit profil</h2>
-                    <p id="profileSub" style="margin-top:4px;">Perbarui informasi pribadi Anda. ID Admin tetap.</p>
-                </div>
-                <button type="button" class="modal-close" data-close aria-label="Tutup">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-
-            <div class="modal-body" style="display:flex; flex-direction:column; gap:14px; padding-top:12px;">
-
-                <div class="field">
-                    <label for="nama">Nama Lengkap</label>
-                    <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
-                </div>
-
-                <div class="field">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" placeholder="Masukkan alamat email" required>
-                </div>
-
-                <div class="field">
-                    <label for="telepon">Nomor Telepon</label>
-                    <input type="tel" id="telepon" name="telepon" placeholder="08xxxxxxxxxx">
-                </div>
-
-                <div style="border-top:1px solid #e2e8f0; padding-top:14px; margin-top:2px;">
-                    <div class="m-title-row" style="margin-bottom:4px;">
-                        <h3 class="m-title" style="margin:0;">Ubah Kata Sandi</h3>
-                        <span class="m-optional">Opsional</span>
-                    </div>
-                    <p class="s-hint" style="margin-bottom:12px;">Kosongkan jika tidak ingin mengganti kata sandi.</p>
-
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        <div class="field">
-                            <label for="sandiLama">Kata Sandi Saat Ini</label>
-                            <input type="password" id="sandiLama" name="password_lama"
-                                placeholder="Masukkan kata sandi saat ini">
-                        </div>
-
-                        <div class="field">
-                            <label for="sandiBaru">Kata Sandi Baru</label>
-                            <input type="password" id="sandiBaru" name="password_baru" placeholder="Minimal 8 karakter"
-                                minlength="8">
-                        </div>
-
-                        <div class="field">
-                            <label for="sandiKonfirmasi">Konfirmasi Kata Sandi Baru</label>
-                            <input type="password" id="sandiKonfirmasi" name="password_baru_confirmation"
-                                placeholder="Ulangi kata sandi baru" minlength="8">
-                        </div>
-
-                        <label class="check" for="showPassword" style="margin-top:2px;">
-                            <input type="checkbox" id="showPassword">
-                            <span>Tampilkan kata sandi</span>
-                        </label>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="modal-foot"
-                style="display:flex; flex-direction:column; gap:10px; border-top:none; padding-top:6px;">
-                <button type="submit" class="btn-primary"
-                    style="width:100%; justify-content:center; padding:12px; border-radius:12px;">
-                    Simpan perubahan
-                </button>
-                <button type="button" class="btn-outline" data-close
-                    style="width:100%; justify-content:center; padding:11px; border-radius:12px;">
-                    Batal
-                </button>
-            </div>
-
-        </form>
-    </div>
-</div>
