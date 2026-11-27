@@ -14,7 +14,7 @@ from utils.files import CoverError, delete_cover_file, save_cover
 from utils.text import initials
 
 WIB = ZoneInfo("Asia/Jakarta")
-PER_PAGE = 8   # transaksi per halaman, sesuai tulisan di desain
+PER_PAGE = 8   
 BOOKS_PER_PAGE = 8
 MEMBERS_PER_PAGE = 8
 

@@ -3,7 +3,7 @@ import time
 import mysql.connector
 from mysql.connector import Error
 
-from config import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER, SCHEMA_PATH
+from config import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER, SCHEMA_PATH, PRODUCTION
 
 
 def get_connection(use_database: bool = True):
@@ -60,7 +60,6 @@ def cursor():
             conn.commit()
             break
         except (mysql.connector.OperationalError, mysql.connector.InterfaceError) as e:
-            # Error khas koneksi terputus / idle timeout (misal: MySQL server has gone away)
             if conn:
                 try:
                     conn.rollback()
@@ -73,7 +72,7 @@ def cursor():
             
             if attempt < max_attempts - 1:
                 time.sleep(1)
-                continue  # Coba buat koneksi baru dan jalankan ulang
+                continue
             raise e
         except Exception:
             if conn:
@@ -102,7 +101,10 @@ def _split_statements(script: str) -> list:
 
 
 def init_db() -> None:
-    """Buat database (kalau belum ada) lalu semua tabel dari schema.sql."""
+    """Inisialisasi database dilewati saat di production / Vercel."""
+    if PRODUCTION:
+        return  # Lewati otomatis karena database sudah ada di Clever Cloud
+
     conn = get_connection(use_database=False)
     try:
         cur = conn.cursor()
