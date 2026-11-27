@@ -173,6 +173,40 @@
     return body.profile;
   }
 
+    // "2026-11-23 10:15:00" -> "2 menit lalu"
+  function waktuRelatif(teks) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(teks || ""));
+    if (!m) return "";
+    const kapan = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]));
+    const menit = Math.round((Date.now() - kapan.getTime()) / 60000);
+    if (menit < 1) return "Baru saja";
+    if (menit < 60) return menit + " menit lalu";
+    const jam = Math.floor(menit / 60);
+    if (jam < 24) return jam + " jam lalu";
+    const hari = Math.floor(jam / 24);
+    return hari === 1 ? "Kemarin" : hari + " hari lalu";
+  }
+
+  // diubah ke bentuk yang dipahami dropdown lonceng milik app.js
+  async function getNotifications() {
+    const body = await request("/api/notifications");
+    return body.notifications.map(function (n) {
+      return {
+        id: n.id,
+        type: n.level,
+        icon: n.icon,
+        title: n.title,
+        desc: n.message,
+        time: waktuRelatif(n.time),
+        unread: n.unread
+      };
+    });
+  }
+
+  async function markNotificationsRead() {
+    await request("/api/notifications/read", { method: "POST" });
+  }
+
   window.LibraryApi = { 
     request: request, 
     getBooks: getBooks, 
@@ -180,6 +214,8 @@
     renewLoan: renewLoan, 
     cancelLoan: cancelLoan,
     getProfile: getProfile,
-    updateProfile: updateProfile
+    updateProfile: updateProfile,
+    getNotifications: getNotifications,
+    markNotificationsRead: markNotificationsRead
   };
 })();

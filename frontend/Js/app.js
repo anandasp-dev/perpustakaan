@@ -86,53 +86,7 @@
       }
     ],
     loanHistory: [],
-    notifications: [
-      {
-        id: "n1",
-        type: "info",
-        icon: "book",
-        title: "Book returned",
-        desc: "Returns · The Creative Act is back on the shelf.",
-        time: "2m ago",
-        unread: true
-      },
-      {
-        id: "n2",
-        type: "info",
-        icon: "clock",
-        title: "Borrowing almost due",
-        desc: "Due soon · Sapiens is due tomorrow.",
-        time: "1h ago",
-        unread: true
-      },
-      {
-        id: "n3",
-        type: "info",
-        icon: "user",
-        title: "New member registered",
-        desc: "Members · Amara Okafor joined the library.",
-        time: "3h ago",
-        unread: true
-      },
-      {
-        id: "n4",
-        type: "neutral",
-        icon: "steps",
-        title: "Visitor checked in",
-        desc: "Visitors · Oliver James checked in.",
-        time: "Yesterday",
-        unread: false
-      },
-      {
-        id: "n5",
-        type: "danger",
-        icon: "alert",
-        title: "Book overdue",
-        desc: "Overdue · A Little Life needs a reminder.",
-        time: "Yesterday",
-        unread: false
-      }
-    ]
+    notifications: []
   };
 
   let state = loadState();
@@ -417,6 +371,7 @@
 
     renderNotificationDropdown();
     startCountdown();
+    startNotificationPolling();
   }
 
   window.toggleNotifDropdown = function (e) {
@@ -425,11 +380,15 @@
     if (dropdown) dropdown.classList.toggle("hidden");
   };
 
-  window.markAllNotificationsRead = function () {
-    state.notifications.forEach((n) => (n.unread = false));
-    saveState();
-    renderNotificationDropdown();
-    showToast("Semua notifikasi ditandai sudah dibaca.");
+  window.markAllNotificationsRead = async function () {
+    try {
+      await window.LibraryApi.markNotificationsRead();   // tersimpan di database
+      state.notifications.forEach((n) => (n.unread = false));
+      renderNotificationDropdown();
+      showToast("Semua notifikasi ditandai sudah dibaca.");
+    } catch (error) {
+      showToast(error.message);
+    }
   };
 
   function getNotifSvg(icon) {
@@ -506,6 +465,11 @@
           `;
         })
         .join("");
+      if (state.notifications.length === 0) {
+      listEl.innerHTML =
+        '<div class="notif-drop-item"><div class="notif-item-body">' +
+        '<div class="notif-item-desc">Belum ada notifikasi.</div></div></div>';
+    }
     }
     openModal("modal-member-notifications");
   };
@@ -690,6 +654,20 @@
   let countdownTimer = null;
   let countdownRefreshing = false;
   let pendingCancelLoanId = null;
+  let notifTimer = null;
+    // cek notifikasi baru tiap 60 detik (mis. setelah admin mengonfirmasi bukumu)
+  
+  function startNotificationPolling() {
+    if (notifTimer) return;
+    notifTimer = setInterval(async function () {
+      try {
+        state.notifications = await window.LibraryApi.getNotifications();
+        renderNotificationDropdown();
+      } catch (error) {
+        /* abaikan, coba lagi 60 detik berikutnya */
+      }
+    }, 60000);
+  }
 
   // milidetik -> "23:41:12"
   function formatCountdown(ms) {
@@ -1214,31 +1192,33 @@
     // =========================================================
   // SINKRON DATA DARI SERVER (buku dari database)
   // =========================================================
-    async function syncCatalogAndLoansFromApi() {
+  async function syncCatalogAndLoansFromApi() {
     try {
       const results = await Promise.all([
         window.LibraryApi.getBooks(),
         window.LibraryApi.getLoans(),
-        window.LibraryApi.getProfile()
+        window.LibraryApi.getProfile(),
+        window.LibraryApi.getNotifications()
       ]);
       state.catalogBooks = results[0];
       state.activeLoans = results[1].loans;
       state.loanHistory = results[1].history;
       state.user.monthlyBorrowed = results[1].monthlyBorrowed;
 
-      // identitas akun yang sedang login (menggantikan data contoh "Maya Putri")
       const p = results[2];
       state.user.fullName = p.name;
       state.user.npm = p.npm;
       state.user.memberId = p.code;
       state.user.email = p.email;
       state.user.phone = p.phone || "Belum ditambahkan";
-      state.user.prodi = "Belum diisi";      // belum ada kolom program studi di database
+      state.user.prodi = "Belum diisi";
       state.user.status = "Anggota";
       state.user.visitsThisMonth = p.visits_this_month;
+
+      state.notifications = results[3];
     } catch (error) {
       if (error.status === 401) {
-        window.location.href = "/index";
+        window.location.href = "/Pages/index";
         return;
       }
       console.warn("Gagal mengambil data dari server:", error);
