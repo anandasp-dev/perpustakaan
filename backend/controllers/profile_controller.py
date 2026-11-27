@@ -33,6 +33,7 @@ def _profile_data(row):
         "npm": row["npm"],
         "email": row["email"],
         "phone": row["phone"],
+        "program_study": row.get("program_study"),
         "role": row["role"],
         "program_study" : row["program_study"],
         "status": row.get("status") or "active",
@@ -57,9 +58,13 @@ def get_profile(request):
 
 
 def update_profile(request):
-    profile, problem = _check_profile(request.json())
+    body = request.json()
+    profile, problem = _check_profile(body)
     if problem:
         return error(problem, 400)
+
+    if profile[3] and len(profile[3]) > 100:
+        return error("Program studi maksimal 100 karakter", 400)
 
     try:
         Member.update_own(request.user["id"], *profile)

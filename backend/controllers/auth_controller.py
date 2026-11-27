@@ -60,6 +60,7 @@ def register(request):
     email = _text(body.get("email")).lower()
     phone = _text(body.get("phone"))
     password = body.get("password")
+    program_study = " ".join(_text(body.get("program_study") or body.get("prodi")).split()) or None
 
     if not NAME_RE.fullmatch(full_name):
         return error("Nama lengkap 3-100 karakter: huruf, spasi, titik, apostrof, atau tanda hubung", 400)
@@ -69,6 +70,8 @@ def register(request):
         return error("Format email tidak valid", 400)
     if not PHONE_RE.fullmatch(phone):
         return error("Nomor HP harus diawali 08, hanya angka, 10-13 digit", 400)
+    if program_study and len(program_study) > 120:
+        return error("Program studi maksimal 120 karakter", 400)
     if not isinstance(password, str) or not (MIN_PASSWORD <= len(password) <= MAX_PASSWORD):
         return error(f"Password harus {MIN_PASSWORD}-{MAX_PASSWORD} karakter", 400)
 
@@ -79,6 +82,7 @@ def register(request):
             npm=npm,
             full_name=full_name,
             phone=phone,
+            program_study=program_study,
         )
     except DuplicateUserError as e:
         return error(str(e), 409)
@@ -110,9 +114,9 @@ def login(request):
         if cur.fetchone() is not None:
             cur.execute("SELECT status FROM `user` WHERE id = %s", (user["id"],))
             st = cur.fetchone()
-            if st and st.get("status") == "suspended":
-                return error("Akun Anda sedang ditangguhkan. Hubungi petugas perpustakaan.", 403)
-
+            if st and st.get("status") not in (None, "active"):
+                return error("Akun Anda sedang dinonaktifkan atau ditangguhkan. Hubungi administrator.", 403)
+            
     _record_daily_login_visit(user)
 
     session.destroy(request.cookies.get(session.COOKIE_NAME))  # buang sesi lama

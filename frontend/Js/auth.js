@@ -124,6 +124,8 @@
     const button = e.target.querySelector("button[type='submit']");
     const fullName = document.getElementById("reg-name").value.trim();
     const npm = document.getElementById("reg-npm").value.trim();
+    const programStudyEl = document.getElementById("reg-prodi");
+    const programStudy = programStudyEl ? programStudyEl.value.trim() : "";
     const email = document.getElementById("reg-email").value.trim();
     const phone = document.getElementById("reg-phone").value.trim();
     const pass = document.getElementById("reg-password").value;
@@ -147,6 +149,7 @@
       const { ok, body } = await postJSON("/api/auth/register", {
         npm: npm,
         full_name: fullName,
+        program_study: programStudy,
         email: email,
         phone: phone,
         password: pass

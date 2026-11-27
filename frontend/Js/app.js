@@ -449,6 +449,7 @@
               <div class="modal-notif-item">
                 <div class="modal-notif-title">${loan.title}</div>
                 <div class="modal-notif-sub">Menunggu konfirmasi · batas ${loan.confirmDeadline}</div>
+                
               </div>
             `;
           }
@@ -1229,7 +1230,7 @@
       state.notifications = results[3];
     } catch (error) {
       if (error.status === 401) {
-        window.location.href = "/Pages/index";
+        window.location.href = "/index";
         return;
       }
       console.warn("Gagal mengambil data dari server:", error);
