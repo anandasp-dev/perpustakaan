@@ -6,15 +6,15 @@
   const BRAND = "Keyto Perpustakaan";
   const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
-  // nilai ?page= -> file isi + judul. Halaman baru = tambah satu baris di sini.
   const PAGES = {
-    home:        { file: "/Pages/home",        title: "Home",       scripts: ["/Js/kalender.js", "/Js/script.js", "/Js/admin-dashboard.js"] },
-    anggota:     { file: "/Pages/anggota",     title: "Anggota",    scripts: ["/Js/anggota.js", "/Js/script.js"] },
-    bukustorage: { file: "/Pages/bukustorage", title: "Buku",       scripts: ["/Js/buku.js", "/Js/script.js"] },
-    peminjaman:  { file: "/Pages/peminjaman",  title: "Peminjaman", scripts: ["/Js/peminjaman.js", "/Js/script.js"] },
-    pengunjung:  { file: "/Pages/pengunjung",  title: "Pengunjung", scripts: ["/Js/pengunjung.js", "/Js/script.js"] },
-    laporan:     { file: "/Pages/laporan",     title: "Laporan",    scripts: ["/Js/laporan.js", "/Js/script.js"] },
-    pengaturan:  { file: "/Pages/pengaturan",  title: "Pengaturan", scripts: ["/Js/pengaturan.js", "/Js/script.js"] }
+    home:        { file: "/Pages/home",        title: "Home",         scripts: ["/Js/kalender.js", "/Js/script.js", "/Js/admin-dashboard.js"] },
+    anggota:     { file: "/Pages/anggota",     title: "Anggota",      scripts: ["/Js/anggota.js", "/Js/script.js"] },
+    KAdmin:      { file: "/Pages/KAdmin",      title: "Administrasi", scripts: ["/Js/KAdmin.js", "/Js/script.js"] },
+    bukustorage: { file: "/Pages/bukustorage", title: "Buku",         scripts: ["/Js/buku.js", "/Js/script.js"] },
+    peminjaman:  { file: "/Pages/peminjaman",  title: "Peminjaman",   scripts: ["/Js/peminjaman.js", "/Js/script.js"] },
+    pengunjung:  { file: "/Pages/pengunjung",  title: "Pengunjung",   scripts: ["/Js/pengunjung.js", "/Js/script.js"] },
+    laporan:     { file: "/Pages/laporan",     title: "Laporan",      scripts: ["/Js/laporan.js", "/Js/script.js"] },
+    pengaturan:  { file: "/Pages/pengaturan",  title: "Pengaturan",   scripts: ["/Js/pengaturan.js", "/Js/script.js"] }
   };
 
   const view = document.getElementById("pageView");
@@ -87,31 +87,42 @@
     return null;
   }
 
-  // ---------------- Modal Profil Admin ----------------
+// ---------------- Modal Profil Admin ----------------
   const profileBtn = document.getElementById("openAdminProfile");
   const profileModal = document.getElementById("adminProfileModal");
   const profileForm = document.getElementById("adminProfileForm");
+
+  function toggleSandiModal(tampil) {
+    ["sandiLama", "sandiBaru", "sandiKonfirmasi"].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) el.type = tampil ? "text" : "password";
+    });
+  }
 
   function openProfileModal() {
     if (!profileModal) return;
     const p = currentProfile;
     if (p) {
-      document.getElementById("profCode").value = p.code || "-";
-      document.getElementById("profRole").value = p.role === "admin" ? "Administrator" : "Anggota";
-      document.getElementById("profNpm").value = p.npm || "-";
-      document.getElementById("profCreated").value = formatTanggal(p.created_at);
-      document.getElementById("profName").value = p.name || "";
-      document.getElementById("profEmail").value = p.email || "";
-      document.getElementById("profPhone").value = p.phone || "";
-      document.getElementById("adminProfileSub").textContent = (p.code || "") + " \u2022 " + (p.name || "");
+      const setVal = function (id, val) {
+        const el = document.getElementById(id);
+        if (el) el.value = val || "";
+      };
+      setVal("nama", p.name);
+      setVal("npm", p.npm);
+      setVal("email", p.email);
+      setVal("telepon", p.phone);
+      if (p.program_study) setVal("prodi", p.program_study); // <-- Ubah baris ini (sebelumnya p.prodi)
     }
-    ["profCurrentPw", "profNewPw", "profConfirmPw"].forEach(function (id) {
+
+    ["sandiLama", "sandiBaru", "sandiKonfirmasi"].forEach(function (id) {
       const el = document.getElementById(id);
-      if (el) {
-        el.value = "";
-        el.type = "password";
-      }
+      if (el) el.value = "";
     });
+
+    const showPwCheck = document.getElementById("showPassword");
+    if (showPwCheck) showPwCheck.checked = false;
+    toggleSandiModal(false);
+
     profileModal.classList.add("show");
   }
 
@@ -146,31 +157,28 @@
     });
   }
 
-  // Hanya angka di kolom Nomor HP profil
-  const profPhoneInput = document.getElementById("profPhone");
-  if (profPhoneInput) {
-    profPhoneInput.addEventListener("input", function (e) {
+  // Hanya angka di kolom Nomor Telepon
+  const teleponInput = document.getElementById("telepon");
+  if (teleponInput) {
+    teleponInput.addEventListener("input", function (e) {
       e.target.value = e.target.value.replace(/\D/g, "");
     });
   }
 
-  // Tombol tampil/sembunyikan kata sandi di modal profil
-  document.querySelectorAll(".toggle-prof-pw").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      const input = btn.closest(".pw").querySelector("input");
-      const show = input.type === "password";
-      input.type = show ? "text" : "password";
-      btn.innerHTML = '<i data-lucide="' + (show ? "eye" : "eye-off") + '"></i>';
-      if (window.lucide) window.lucide.createIcons();
+  // Checkbox tampilkan/sembunyikan kata sandi
+  const showPasswordCheck = document.getElementById("showPassword");
+  if (showPasswordCheck) {
+    showPasswordCheck.addEventListener("change", function () {
+      toggleSandiModal(showPasswordCheck.checked);
     });
-  });
+  }
 
   if (profileForm) {
     profileForm.addEventListener("submit", async function (e) {
       e.preventDefault();
-      const curPw = document.getElementById("profCurrentPw").value;
-      const newPw = document.getElementById("profNewPw").value;
-      const confPw = document.getElementById("profConfirmPw").value;
+      const curPw = document.getElementById("sandiLama").value;
+      const newPw = document.getElementById("sandiBaru").value;
+      const confPw = document.getElementById("sandiKonfirmasi").value;
       const inginUbahPw = Boolean(curPw || newPw || confPw);
 
       if (inginUbahPw) {
@@ -197,9 +205,11 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: document.getElementById("profName").value,
-            email: document.getElementById("profEmail").value,
-            phone: document.getElementById("profPhone").value
+          name: document.getElementById("nama").value,
+          npm: document.getElementById("npm").value,
+          email: document.getElementById("email").value,
+          phone: document.getElementById("telepon").value,
+          program_study: document.getElementById("prodi").value
           })
         });
         const dataProf = await resProf.json().catch(function () { return {}; });
@@ -270,7 +280,9 @@
     showNotice("Memuat...");
 
     try {
-      const response = await fetch(page.file);
+      const response = await fetch(page.file, {
+        credentials: 'same-origin'
+      });
       if (myLoad !== currentLoad) return;
       if (response.redirected) { window.location.href = "/Pages/index"; return; }
       if (response.status === 404) return showNotice("Halaman ini belum tersedia.");

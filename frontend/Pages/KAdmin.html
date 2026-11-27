@@ -1,0 +1,312 @@
+<main class="content">
+    <div class="page-head">
+        <div>
+            <h1>Data Admin</h1>
+            <p>Bukan sekadar menjaga buku, kami mengelola akses menuju jendela dunia.</p>
+        </div>
+        <button type="button" class="btn-primary" id="openAddAdmin">
+            <i data-lucide="user-plus"></i>
+            Tambah Admin
+        </button>
+    </div>
+
+    <section class="stats stats-3">
+
+        <div class="card stat">
+            <div class="stat-top"><span>Admin terdaftar</span></div>
+            <div class="stat-number" id="statAdminTotal">-</div>
+            <div class="stat-note note-dark">Semua akun administrator</div>
+        </div>
+
+        <div class="card stat">
+            <div class="stat-top"><span>Akun aktif</span></div>
+            <div class="stat-number" id="statAdminActive">-</div>
+            <div class="stat-note note-dark">Dapat mengakses admin workspace</div>
+        </div>
+
+        <div class="card stat">
+            <div class="stat-top"><span>Akun tidak aktif</span></div>
+            <div class="stat-number" id="statAdminInactive">-</div>
+            <div class="stat-note note-dark">Akses dinonaktifkan hingga diaktifkan kembali</div>
+        </div>
+
+    </section>
+
+    <div class="search">
+        <i data-lucide="search"></i>
+        <input type="text" id="cariAdmin" name="q" placeholder="Cari nama atau email">
+    </div>
+
+    <div class="section-row">
+        <h2 class="section-title">Daftar admin</h2>
+        <span class="muted">Semua akun administrator terdaftar</span>
+    </div>
+
+    <div class="card table-wrap">
+        <table class="member-table admin-table">
+            <thead>
+                <tr>
+                    <th>NAMA ADMIN</th>
+                    <th>ALAMAT EMAIL</th>
+                    <th>STATUS</th>
+                    <th>TANGGAL DIBUAT</th>
+                    <th>TANGGAL DIBEKUKAN</th>
+                    <th>UBAH</th>
+                </tr>
+            </thead>
+            <tbody id="adminBody">
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:24px;" class="muted">Memuat data admin...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="table-note" id="adminTableNote">Memuat daftar admin...</p>
+    </div>
+
+    <div class="access-note">
+        <p>Hanya staf ter-percaya yang boleh memiliki akses administrator. Menonaktifkan akun memblokir akses tanpa
+            menghapus datanya. Anda tidak dapat menghapus akun sendiri.</p>
+    </div>
+</main>
+
+<!-- Modal Tambah Admin -->
+<div class="modal-overlay" id="adminModal">
+    <div class="modal modal-md" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+        <form method="POST" action="#" id="adminForm" novalidate>
+
+            <div class="modal-head">
+                <div class="modal-icon"><i data-lucide="book-plus"></i></div>
+                <div class="modal-title">
+                    <h2 id="adminTitle">Tambah Admin</h2>
+                    <p>Menambahkan akun staf untuk menjadi admin workspace.</p>
+                </div>
+                <button type="button" class="modal-close" data-close aria-label="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="aNama">Nama lengkap *</label>
+                        <input type="text" id="aNama" name="nama" placeholder="Masukkan nama lengkap" required>
+                    </div>
+                    <div class="field">
+                        <label for="aNpm">NPM *</label>
+                        <input type="text" id="aNpm" name="npm" placeholder="12 digit angka" maxlength="12"
+                            inputmode="numeric" required>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="aEmail">Alamat email *</label>
+                        <input type="email" id="aEmail" name="email" placeholder="nama@unindra.ac.id" required>
+                    </div>
+                    <div class="field">
+                        <label for="aTelepon">Nomor telepon *</label>
+                        <input type="tel" id="aTelepon" name="telepon" placeholder="08xxxxxxxxxx" maxlength="13"
+                            inputmode="numeric" required>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="aPassword">Kata sandi *</label>
+                        <input type="password" id="aPassword" name="password" placeholder="Minimal 8 karakter" minlength="8" required>
+                    </div>
+                    <div class="field">
+                        <label for="aPasswordConfirm">Konfirmasi kata sandi *</label>
+                        <input type="password" id="aPasswordConfirm" name="password_confirmation" placeholder="Ulangi kata sandi" minlength="8" required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="aProdi">Program studi *</label>
+                    <select id="aProdi" name="program_study" required>
+                        <option value="" disabled selected>Pilih program studi</option>
+                        <option value="Bimbingan dan Konseling (S1)">Bimbingan dan Konseling (S1)</option>
+                        <option value="Pendidikan Ekonomi (S1)">Pendidikan Ekonomi (S1)</option>
+                        <option value="Pendidikan Sejarah (S1)">Pendidikan Sejarah (S1)</option>
+                        <option value="Bisnis Digital (S1)">Bisnis Digital (S1)</option>
+                        <option value="Manajemen Ritel (S1)">Manajemen Ritel (S1)</option>
+                        <option value="Pendidikan Matematika (S1)">Pendidikan Matematika (S1)</option>
+                        <option value="Biologi (S1)">Biologi (S1)</option>
+                        <option value="Fisika (S1)">Fisika (S1)</option>
+                        <option value="Teknik Informatika (S1)">Teknik Informatika (S1)</option>
+                        <option value="Sistem Informasi (S1)">Sistem Informasi (S1)</option>
+                        <option value="Teknik Industri (S1)">Teknik Industri (S1)</option>
+                        <option value="Arsitektur (S1)">Arsitektur (S1)</option>
+                        <option value="Pendidikan Bahasa Indonesia (S1)">Pendidikan Bahasa Indonesia (S1)</option>
+                        <option value="Pendidikan Bahasa Inggris (S1)">Pendidikan Bahasa Inggris (S1)</option>
+                        <option value="Desain Komunikasi Visual (S1)">Desain Komunikasi Visual (S1)</option>
+                        <option value="Program Magister (S2)">Program Magister (S2)</option>
+                        <option value="Program Doktor (S3)">Program Doktor (S3)</option>
+                    </select>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="aPeran">Peran</label>
+                        <input type="text" id="aPeran" value="Admin" readonly class="readonly">
+                        <input type="hidden" name="peran" value="admin">
+                    </div>
+                    <div class="field">
+                        <label for="aStatusDisplay">Status akun</label>
+                        <input type="text" id="aStatusDisplay" value="Aktif" readonly class="readonly">
+                        <input type="hidden" id="aStatus" name="status" value="active">
+                    </div>
+                </div>
+
+                <div class="info-strip">Tautan aktivasi aman akan dikirim lewat email ke admin baru.</div>
+
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn-outline" data-close>Batal</button>
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="plus"></i>
+                    Tambah Admin
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Modal Ubah Admin -->
+<div class="modal-overlay" id="editAdminModal">
+    <div class="modal modal-md" role="dialog" aria-modal="true" aria-labelledby="editAdminTitle">
+        <form method="POST" action="#" id="editAdminForm" novalidate>
+            <input type="hidden" name="id_admin" id="eaId">
+
+            <div class="modal-head">
+                <div class="modal-icon"><i data-lucide="pencil"></i></div>
+                <div class="modal-title">
+                    <h2 id="editAdminTitle">Ubah Admin</h2>
+                    <p id="editAdminSub">ADM-000 &bull; Nama admin</p>
+                </div>
+                <button type="button" class="modal-close" data-close aria-label="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="eaNama">Nama lengkap *</label>
+                        <input type="text" id="eaNama" name="nama" required>
+                    </div>
+                    <div class="field">
+                        <label for="eaNpm">NPM *</label>
+                        <input type="text" id="eaNpm" name="npm" placeholder="12 digit angka" maxlength="12"
+                            inputmode="numeric" required>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="eaEmail">Alamat email *</label>
+                        <input type="email" id="eaEmail" name="email" required>
+                    </div>
+                    <div class="field">
+                        <label for="eaTelepon">Nomor telepon *</label>
+                        <input type="tel" id="eaTelepon" name="telepon" placeholder="08xxxxxxxxxx" maxlength="13"
+                            inputmode="numeric" required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="eaProdi">Program studi *</label>
+                    <select id="eaProdi" name="program_study" required>
+                        <option value="" disabled selected>Pilih program studi</option>
+                        <option value="Bimbingan dan Konseling (S1)">Bimbingan dan Konseling (S1)</option>
+                        <option value="Pendidikan Ekonomi (S1)">Pendidikan Ekonomi (S1)</option>
+                        <option value="Pendidikan Sejarah (S1)">Pendidikan Sejarah (S1)</option>
+                        <option value="Bisnis Digital (S1)">Bisnis Digital (S1)</option>
+                        <option value="Manajemen Ritel (S1)">Manajemen Ritel (S1)</option>
+                        <option value="Pendidikan Matematika (S1)">Pendidikan Matematika (S1)</option>
+                        <option value="Biologi (S1)">Biologi (S1)</option>
+                        <option value="Fisika (S1)">Fisika (S1)</option>
+                        <option value="Teknik Informatika (S1)">Teknik Informatika (S1)</option>
+                        <option value="Sistem Informasi (S1)">Sistem Informasi (S1)</option>
+                        <option value="Teknik Industri (S1)">Teknik Industri (S1)</option>
+                        <option value="Arsitektur (S1)">Arsitektur (S1)</option>
+                        <option value="Pendidikan Bahasa Indonesia (S1)">Pendidikan Bahasa Indonesia (S1)</option>
+                        <option value="Pendidikan Bahasa Inggris (S1)">Pendidikan Bahasa Inggris (S1)</option>
+                        <option value="Desain Komunikasi Visual (S1)">Desain Komunikasi Visual (S1)</option>
+                        <option value="Program Magister (S2)">Program Magister (S2)</option>
+                        <option value="Program Doktor (S3)">Program Doktor (S3)</option>
+                    </select>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="eaPeran">Peran</label>
+                        <input type="text" id="eaPeran" value="Admin" readonly class="readonly">
+                        <input type="hidden" name="peran" value="admin">
+                    </div>
+                    <div class="field">
+                        <label for="eaStatus">Status akun *</label>
+                        <select id="eaStatus" name="status">
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Tidak Aktif</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p class="s-hint">Menonaktifkan akun akan mencatat tanggal pembekuan dan mencabut akses login admin.</p>
+
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn-outline" data-close>Batal</button>
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="check"></i>
+                    Simpan perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Hapus Admin -->
+<div class="modal-overlay" id="deleteAdminModal">
+    <div class="modal modal-md" role="dialog" aria-modal="true" aria-labelledby="deleteAdminTitle">
+        <form method="POST" action="#" id="deleteAdminForm">
+            <input type="hidden" name="id_admin" id="daId">
+
+            <div class="modal-head">
+                <div class="modal-title">
+                    <h2 id="deleteAdminTitle">Hapus admin?</h2>
+                    <p id="deleteAdminSub">ADM-000 &bull; Nama admin</p>
+                </div>
+                <button type="button" class="modal-close" data-close aria-label="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <h3 class="m-title" id="daQuestion">Hapus admin dari admin workspace?</h3>
+                <p class="delete-text">Tindakan ini menghapus akun admin secara permanen dan mencabut aksesnya. Tindakan
+                    ini tidak dapat dibatalkan.</p>
+
+                <div class="admin-summary">
+                    <b id="daNama">Nama admin</b>
+                    <small id="daEmail">keyto-library.my.id</small>
+                </div>
+            </div>
+
+            <div class="modal-foot">
+                <button type="button" class="btn-outline" data-close>Batal</button>
+                <button type="submit" class="btn-danger">
+                    <i data-lucide="trash-2"></i>
+                    Hapus Admin
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

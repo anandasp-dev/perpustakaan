@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../Style/calenNbook.css">
     <link rel="stylesheet" href="../Style/settingNloan.css">
     <link rel="stylesheet" href="../Style/memberNnotif.css">
+    <link rel="stylesheet" href="../Style/Kadmin.css">
     <link rel="stylesheet" href="../Style/auth.css">
     <link rel="stylesheet" href="../Style/global.css">
     <link rel="stylesheet" href="../Style/reportNvisit.css">
@@ -29,6 +30,7 @@
             <a href="admin?page=home" data-page="home" class="active"><i
                     data-lucide="layout-dashboard"></i>Dashboard</a>
             <a href="admin?page=anggota" data-page="anggota"><i data-lucide="users"></i>Anggota</a>
+            <a href="admin?page=KAdmin" data-page="KAdmin"><i data-lucide="user"></i>Administrasi</a>
             <a href="admin?page=bukustorage" data-page="bukustorage"><i data-lucide="book-open"></i>Buku</a>
             <a href="admin?page=peminjaman" data-page="peminjaman"><i data-lucide="arrow-left-right"></i>Peminjaman</a>
             <a href="admin?page=pengunjung" data-page="pengunjung"><i data-lucide="footprints"></i>Pengunjung</a>
@@ -100,10 +102,9 @@
             <form method="POST" action="#" id="adminProfileForm">
 
                 <div class="modal-head">
-                    <div class="modal-icon"><i data-lucide="user-cog"></i></div>
                     <div class="modal-title">
-                        <h2 id="adminProfileTitle">Profil Akun</h2>
-                        <p id="adminProfileSub">Kelola informasi pribadi dan keamanan akun Anda.</p>
+                        <h2 id="profileTitle">Edit Profil</h2>
+                        <p>Perbarui informasi pribadi dan keamanan akun.</p>
                     </div>
                     <button type="button" class="modal-close" data-close aria-label="Tutup">
                         <i data-lucide="x"></i>
@@ -111,81 +112,82 @@
                 </div>
 
                 <div class="modal-body">
+                    <h3 class="m-title">Informasi Pribadi</h3>
 
                     <div class="field-row">
                         <div class="field">
-                            <label for="profCode">ID Akun</label>
-                            <input type="text" id="profCode" readonly class="readonly">
+                            <label for="nama">Nama Lengkap</label>
+                            <input type="text" id="nama" name="nama" value="Emma Reed" required>
                         </div>
                         <div class="field">
-                            <label for="profRole">Peran</label>
-                            <input type="text" id="profRole" readonly class="readonly">
+                            <label for="npm">NPM</label>
+                            <input type="text" id="npm" name="npm" value="202511223330" required>
                         </div>
                     </div>
 
                     <div class="field-row">
                         <div class="field">
-                            <label for="profNpm">NPM / Identitas</label>
-                            <input type="text" id="profNpm" readonly class="readonly">
+                            <label for="email">Alamat Email</label>
+                            <input type="email" id="email" name="email" value="emma@gmail.com" required>
                         </div>
                         <div class="field">
-                            <label for="profCreated">Terdaftar Sejak</label>
-                            <input type="text" id="profCreated" readonly class="readonly">
+                            <label for="telepon">Nomor Telepon</label>
+                            <input type="tel" id="telepon" name="telepon" value="0812-3456-7890">
                         </div>
                     </div>
+                    
+                    <div class="field">
+                        <label for="prodi">Program Studi</label>
+                        <select id="prodi" name="prodi">
+                            <option value="Bimbingan dan Konseling (S1)">Bimbingan dan Konseling (S1)</option>
+                            <option value="Pendidikan Ekonomi (S1)">Pendidikan Ekonomi (S1)</option>
+                            <option value="Pendidikan Sejarah (S1)">Pendidikan Sejarah (S1)</option>
+                            <option value="Bisnis Digital (S1)">Bisnis Digital (S1)</option>
+                            <option value="Manajemen Ritel (S1)">Manajemen Ritel (S1)</option>
+                            <option value="Pendidikan Matematika (S1)">Pendidikan Matematika (S1)</option>
+                            <option value="Biologi (S1)">Biologi (S1)</option>
+                            <option value="Fisika (S1)">Fisika (S1)</option>
+                            <option value="Teknik Informatika (S1)" selected>Teknik Informatika (S1)</option>
+                            <option value="Sistem Informasi (S1)">Sistem Informasi (S1)</option>
+                            <option value="Teknik Industri (S1)">Teknik Industri (S1)</option>
+                            <option value="Arsitektur (S1)">Arsitektur (S1)</option>
+                            <option value="Pendidikan Bahasa Indonesia (S1)">Pendidikan Bahasa Indonesia (S1)</option>
+                            <option value="Pendidikan Bahasa Inggris (S1)">Pendidikan Bahasa Inggris (S1)</option>
+                            <option value="Desain Komunikasi Visual (S1)">Desain Komunikasi Visual (S1)</option>
+                            <option value="Program Magister (S2)">Program Magister (S2)</option>
+                            <option value="Program Doktor (S3)">Program Doktor (S3)</option>
+                        </select>
+                    </div>
+
+                    <div class="m-title-row">
+                        <h3 class="m-title">Ubah Kata Sandi</h3>
+                        <span class="m-optional">Opsional</span>
+                    </div>
+                    <p class="s-hint">Kosongkan semua kolom ini untuk mempertahankan kata sandi.</p>
 
                     <div class="field">
-                        <label for="profName">Nama Lengkap</label>
-                        <input type="text" id="profName" placeholder="Masukkan nama lengkap" required>
+                        <label for="sandiLama">Kata Sandi Saat Ini</label>
+                        <input type="password" id="sandiLama" name="password_lama"
+                            placeholder="Masukkan kata sandi saat ini">
                     </div>
 
                     <div class="field-row">
                         <div class="field">
-                            <label for="profEmail">Alamat Email</label>
-                            <input type="email" id="profEmail" placeholder="you@example.com" required>
+                            <label for="sandiBaru">Kata Sandi Baru</label>
+                            <input type="password" id="sandiBaru" name="password_baru"
+                                placeholder="Masukkan kata sandi baru" minlength="8">
                         </div>
                         <div class="field">
-                            <label for="profPhone">Nomor HP / WhatsApp</label>
-                            <input type="tel" id="profPhone" inputmode="numeric" maxlength="13"
-                                placeholder="08xxxxxxxxxx">
+                            <label for="sandiKonfirmasi">Konfirmasi Kata Sandi Baru</label>
+                            <input type="password" id="sandiKonfirmasi" name="password_baru_confirmation"
+                                placeholder="Ulangi kata sandi baru" minlength="8">
                         </div>
                     </div>
 
-                    <hr style="border:none;border-top:1px solid #e2e8f0;margin:8px 0 4px;">
-                    <p class="muted" style="font-size:12px;margin:0;">Ubah Kata Sandi (kosongkan jika tidak ingin
-                        mengganti kata sandi)</p>
-
-                    <div class="field">
-                        <label for="profCurrentPw">Kata Sandi Saat Ini</label>
-                        <div class="pw">
-                            <input type="password" id="profCurrentPw" placeholder="Masukkan kata sandi lama">
-                            <button type="button" class="toggle-prof-pw" aria-label="Tampilkan kata sandi">
-                                <i data-lucide="eye-off"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="field-row">
-                        <div class="field">
-                            <label for="profNewPw">Kata Sandi Baru</label>
-                            <div class="pw">
-                                <input type="password" id="profNewPw" placeholder="Minimal 8 karakter" minlength="8">
-                                <button type="button" class="toggle-prof-pw" aria-label="Tampilkan kata sandi">
-                                    <i data-lucide="eye-off"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label for="profConfirmPw">Konfirmasi Kata Sandi Baru</label>
-                            <div class="pw">
-                                <input type="password" id="profConfirmPw" placeholder="Ulangi kata sandi baru"
-                                    minlength="8">
-                                <button type="button" class="toggle-prof-pw" aria-label="Tampilkan kata sandi">
-                                    <i data-lucide="eye-off"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <label class="check" for="showPassword">
+                        <input type="checkbox" id="showPassword">
+                        <span>Tampilkan kata sandi</span>
+                    </label>
 
                 </div>
 
@@ -193,7 +195,7 @@
                     <button type="button" class="btn-outline" data-close>Batal</button>
                     <button type="submit" class="btn-primary">
                         <i data-lucide="check"></i>
-                        Simpan Profil
+                        Simpan Perubahan
                     </button>
                 </div>
 

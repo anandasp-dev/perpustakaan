@@ -33,6 +33,7 @@ def _profile_data(row):
         "npm": row["npm"],
         "email": row["email"],
         "phone": row["phone"],
+        "program_study": row.get("program_study"),
         "role": row["role"],
         "status": row.get("status") or "active",
         "created_at": row["created_at"],
@@ -56,12 +57,18 @@ def get_profile(request):
 
 
 def update_profile(request):
-    profile, problem = _check_profile(request.json())
+    body = request.json()
+    profile, problem = _check_profile(body)
     if problem:
         return error(problem, 400)
 
+    raw_prodi = body.get("program_study")
+    program_study = raw_prodi.strip() if isinstance(raw_prodi, str) and raw_prodi.strip() else None
+    if program_study and len(program_study) > 100:
+        return error("Program studi maksimal 100 karakter", 400)
+
     try:
-        Member.update_own(request.user["id"], *profile)
+        Member.update_own(request.user["id"], *profile, program_study=program_study)
     except MemberRuleError as exc:
         return error(str(exc), 409)
 

@@ -208,10 +208,10 @@ class Member:
 
     @staticmethod
     def profile(user_id):
-        """Data profil milik satu akun (untuk halaman member), plus kunjungan bulan ini."""
+        """Data profil milik satu akun, plus kunjungan bulan ini."""
         with cursor() as cur:
             cur.execute(
-                "SELECT id, npm, full_name, email, phone, role, created_at "
+                "SELECT id, npm, full_name, email, phone, program_study, role, created_at "
                 "FROM `user` WHERE id = %s",
                 (user_id,),
             )
@@ -230,8 +230,8 @@ class Member:
             return row
 
     @staticmethod
-    def update_own(user_id, name, email, phone):
-        """Anggota mengubah profilnya sendiri: nama, email, HP (NPM dan ID tetap)."""
+    def update_own(user_id, name, email, phone, program_study=None):
+        """Mengubah profil sendiri: nama, email, HP, dan program_study."""
         with cursor() as cur:
             cur.execute(
                 "SELECT id FROM `user` WHERE email = %s AND id <> %s LIMIT 1",
@@ -242,8 +242,8 @@ class Member:
 
             try:
                 cur.execute(
-                    "UPDATE `user` SET full_name = %s, email = %s, phone = %s WHERE id = %s",
-                    (name, email, phone, user_id),
+                    "UPDATE `user` SET full_name = %s, email = %s, phone = %s, program_study = %s WHERE id = %s",
+                    (name, email, phone, program_study, user_id),
                 )
             except mysql.connector.Error as exc:
                 if exc.errno == 1062:

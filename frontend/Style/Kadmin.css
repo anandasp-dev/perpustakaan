@@ -1,0 +1,228 @@
+.admin-search {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.search-col {
+    flex: 1;
+}
+
+.search-col label {
+    display: block;
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.search-col .search-full {
+    margin-top: 0;
+}
+
+.tz-note {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 10px;
+    color: var(--muted);
+    padding-bottom: 12px;
+}
+
+.section-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 24px 0 14px;
+}
+
+.section-row .section-title {
+    margin-top: 0;
+}
+
+.section-row .muted {
+    font-size: 10px;
+}
+
+.admin-table th,
+.admin-table td {
+    text-align: left;
+    padding: 14px 10px;
+}
+
+.admin-table th:first-child,
+.admin-table td:first-child {
+    padding-left: 16px;
+}
+
+.admin-name b,
+.login-time {
+    font-size: 11px;
+}
+
+.admin-name small,
+.login-time small {
+    display: block;
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+.login-time small {
+    font-weight: normal;
+}
+
+.access-note {
+    background: #eff6ff;
+    border: 1px solid var(--blue-soft);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-top: 16px;
+}
+
+.access-note b {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.access-note p {
+    font-size: 10px;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+/* notif berhasil */
+
+#adminModal .field input,
+#adminModal .field select {
+    padding: 13px 14px;
+}
+
+.field input.invalid {
+    border-color: #dc2626;
+}
+
+.alert-error b {
+    display: block;
+    font-size: 12px;
+}
+
+.alert-error p {
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.info-strip {
+    background: #eff6ff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 10px;
+    color: var(--muted);
+}
+
+.toast[hidden] {
+    display: none;
+}
+
+.toast b {
+    display: block;
+    font-size: 12px;
+}
+
+.toast p {
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+#editAdminModal .field input,
+#editAdminModal .field select {
+    padding: 13px 14px;
+}
+
+.admin-summary {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 12px;
+}
+
+.admin-summary b {
+    display: block;
+    font-size: 12px;
+}
+
+.admin-summary small {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.s-hint {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: 4px;
+}
+/*not found*/
+
+
+.empty-state {
+    text-align: center;
+    padding: 36px 0 12px;
+}
+
+.empty-state b {
+    display: block;
+    font-size: 16px;
+}
+
+.empty-state p {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: left;
+    margin-top: 40px;
+}
+
+#emptyRow td {
+    border-top: 0;
+}
+
+.admin-search {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-top: 20px;
+    max-width: 100%;
+}
+
+.search-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.clear-wrap .btn-outline {
+    padding: 12px 16px;
+    white-space: nowrap;
+}
+
+.content {
+    max-width: 100%;
+    overflow-x: hidden;
+}
