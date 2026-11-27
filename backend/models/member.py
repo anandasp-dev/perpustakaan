@@ -115,14 +115,12 @@ class Member:
         }
 
     @staticmethod
-    def admin_create(name, npm, email, phone, password, status="active"):
-        """Admin mendaftarkan anggota."""
+    def admin_create(name, npm, email, phone, program_study, password, status="active"):
         ensure_status_column()
         clean_status = status if status in ("active", "suspended") else "active"
         with cursor() as cur:
             cur.execute(
-                "SELECT email FROM `user` "
-                "WHERE npm = %s OR email = %s LIMIT 1",
+                "SELECT email FROM `user` WHERE npm = %s OR email = %s LIMIT 1",
                 (npm, email),
             )
             clash = cur.fetchone()
@@ -133,9 +131,9 @@ class Member:
 
             try:
                 cur.execute(
-                    "INSERT INTO `user` (npm, full_name, email, phone, password_hash, role, status) "
-                    "VALUES (%s, %s, %s, %s, %s, 'member', %s)",
-                    (npm, name, email, phone, hash_password(password), clean_status),
+                    "INSERT INTO `user` (npm, full_name, email, phone, program_study, password_hash, role, status) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, 'member', %s)",
+                    (npm, name, email, phone, program_study, hash_password(password), clean_status),
                 )
             except mysql.connector.Error as exc:
                 if exc.errno == 1062:
@@ -144,8 +142,7 @@ class Member:
             return Member._get(cur, cur.lastrowid)
 
     @staticmethod
-    def admin_update(member_id, name, email, phone, status=None):
-        """Ubah nama, email, HP, dan status keanggotaan. NPM tetap terkunci."""
+    def admin_update(member_id, name, email, phone, program_study, status=None):
         ensure_status_column()
         with cursor() as cur:
             cur.execute(
@@ -167,10 +164,11 @@ class Member:
                 status if status in ("active", "suspended") else existing.get("status", "active")
             )
             cur.execute(
-                "UPDATE `user` SET full_name = %s, email = %s, phone = %s, status = %s WHERE id = %s",
-                (name, email, phone, clean_status, member_id),
+                "UPDATE `user` SET full_name = %s, email = %s, phone = %s, program_study = %s, status = %s WHERE id = %s",
+                (name, email, phone, program_study, clean_status, member_id),
             )
             return Member._get(cur, member_id)
+
 
     @staticmethod
     def admin_delete(member_id):

@@ -35,6 +35,7 @@ def _profile_data(row):
         "phone": row["phone"],
         "program_study": row.get("program_study"),
         "role": row["role"],
+        "program_study" : row["program_study"],
         "status": row.get("status") or "active",
         "created_at": row["created_at"],
         "last_login": _last_login_for(row["id"], row["created_at"]),
@@ -62,13 +63,11 @@ def update_profile(request):
     if problem:
         return error(problem, 400)
 
-    raw_prodi = body.get("program_study")
-    program_study = raw_prodi.strip() if isinstance(raw_prodi, str) and raw_prodi.strip() else None
-    if program_study and len(program_study) > 100:
+    if profile[3] and len(profile[3]) > 100:
         return error("Program studi maksimal 100 karakter", 400)
 
     try:
-        Member.update_own(request.user["id"], *profile, program_study=program_study)
+        Member.update_own(request.user["id"], *profile)
     except MemberRuleError as exc:
         return error(str(exc), 409)
 

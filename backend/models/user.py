@@ -29,15 +29,15 @@ def _duplicate_field(error):
 
 class User:
     @staticmethod
-    def create(email, password_hash, role="member",
-               npm=None, full_name=None, phone=None):
+    def create(email, password_hash, role="member", 
+                 npm=None, full_name=None, phone=None, program_study=None):
         try:
             with cursor() as cur:
                 cur.execute(
                     "INSERT INTO `user` "
-                    "(npm, full_name, email, phone, password_hash, role) "
-                    "VALUES (%s, %s, %s, %s, %s, %s)",
-                    (npm, full_name, email, phone, password_hash, role),
+                    "(npm, full_name, email, phone, password_hash, role, program_study) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    (npm, full_name, email, phone, password_hash, role, program_study),
                 )
                 return cur.lastrowid
         except mysql.connector.Error as e:
@@ -53,7 +53,7 @@ class User:
     def find_by_id(user_id):
         with cursor() as cur:
             cur.execute(
-                "SELECT id, npm, full_name, email, phone, program_study, role, created_at "
+                "SELECT id, npm, full_name, email, phone, role, created_at, program_study "
                 "FROM `user` WHERE id = %s",
                 (user_id,),
             )
@@ -63,8 +63,8 @@ class User:
     def find_by_identifier(identifier):
         with cursor() as cur:
             cur.execute(
-                "SELECT id, npm, full_name, email, phone, program_study, "
-                "password_hash, role, created_at "
+                "SELECT id, npm, full_name, email, phone, "
+                "password_hash, role, created_at, program_study "
                 "FROM `user` WHERE email = %s OR npm = %s",
                 (identifier, identifier),
             )

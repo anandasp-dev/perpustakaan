@@ -57,10 +57,12 @@ def _member_row(row):
 
 
 def _check_profile(body):
-    """Periksa nama, email, HP. Hasil: ((nama, email, hp), None) atau (None, pesan)."""
+    """Periksa nama, email, HP, Program studi. Hasil: ((nama, email, hp, program_study), None) atau (None, pesan)."""
     name = " ".join(str(body.get("name") or "").split())
     email = str(body.get("email") or "").strip()
     phone = str(body.get("phone") or "").replace(" ", "").replace("-", "")
+    raw_prodi = body.get("program_study") if body.get("program_study") is not None else body.get("prodi")
+    program_study = " ".join(str(raw_prodi or "").split())or None
 
     if not NAME_RE.fullmatch(name):
         return None, "Nama 3-100 karakter: huruf, spasi, titik, apostrof, dan tanda hubung"
@@ -68,7 +70,9 @@ def _check_profile(body):
         return None, "Format email tidak valid"
     if phone and not PHONE_RE.fullmatch(phone):
         return None, "Nomor HP harus diawali 08 dan 10-13 digit angka"
-    return (name, email, phone or None), None
+    if program_study and len(program_study) > 120:
+        return None, "Program Studi maksimal 120 karakter" 
+    return (name, email, phone or None, program_study), None
 
 def _ensure_deactivated_column(cur):
     cur.execute("SHOW COLUMNS FROM `user` LIKE 'deactivated_at'")
@@ -405,7 +409,7 @@ def create_member(request):
         return error("Kata sandi 8-128 karakter", 400)
 
     try:
-        row = Member.admin_create(profile[0], npm, profile[1], profile[2], password, status="active")
+        row = Member.admin_create(profile[0], npm, profile[1], profile[2], profile[3], password, status="active")
         return Response(201, {"member": _member_row(row)})
     except MemberRuleError as exc:
         return error(str(exc), 409)
