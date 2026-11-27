@@ -252,7 +252,9 @@
   // ---------------- mengambil data dari server ----------------
   async function muat(tanggal) {
     try {
-      const respons = await fetch("/api/admin/dashboard?date=" + keIso(tanggal));
+      // Pastikan string tanggal bersih total dari suffix ekstra seperti ":1"
+      const tanggalBersih = keIso(tanggal).split(":")[0];
+      const respons = await fetch("/api/admin/dashboard?date=" + tanggalBersih);
       const data = await respons.json().catch(function () { return {}; });
 
       if (respons.status === 401) {                 // belum login
