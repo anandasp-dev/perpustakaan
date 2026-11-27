@@ -468,7 +468,7 @@
       if (state.notifications.length === 0) {
       listEl.innerHTML =
         '<div class="notif-drop-item"><div class="notif-item-body">' +
-        '<div class="notif-item-desc">Belum ada notifikasi.</div></div></div>';
+        '<div class="modal-notif-item"><div class="modal-notif-sub">Belum ada notifikasi.</div></div>';
     }
     }
     openModal("modal-member-notifications");
@@ -1133,11 +1133,15 @@
     const nameInput = document.getElementById("edit-fullname");
     const emailInput = document.getElementById("edit-email");
     const phoneInput = document.getElementById("edit-phone");
+    const prodiInput = document.getElementById("edit-prodi")
 
     if (nameInput) nameInput.value = state.user.fullName;
     if (emailInput) emailInput.value = state.user.email;
     if (phoneInput) {
       phoneInput.value = state.user.phone === "Belum ditambahkan" ? "" : state.user.phone;
+    }
+    if (prodiInput) {
+      prodiInput.value = state.user.prodi === "Belum diisi" ? "" : state.user.prodi;
     }
     openModal("modal-edit-profile");
   };
@@ -1158,11 +1162,18 @@
     const nameVal = document.getElementById("edit-fullname").value.trim();
     const emailVal = document.getElementById("edit-email").value.trim();
     const phoneVal = document.getElementById("edit-phone").value.trim();
+    const prodiVal = document.getElementById("edit-prodi").value.trim();
     const tombol = e.target.querySelector('button[type="submit"]');
     if (tombol) tombol.disabled = true;
 
     try {
-      await window.LibraryApi.updateProfile({ name: nameVal, email: emailVal, phone: phoneVal });
+      await window.LibraryApi.updateProfile({
+        name: nameVal,
+        email: emailVal,
+        phone: phoneVal,
+        prodi: prodiVal,
+        program_study: prodiVal
+      });
       await syncCatalogAndLoansFromApi();      // ambil profil terbaru dari database
       state.profileUpdatedDemo = true;
       closeModal("modal-edit-profile");
@@ -1211,7 +1222,7 @@
       state.user.memberId = p.code;
       state.user.email = p.email;
       state.user.phone = p.phone || "Belum ditambahkan";
-      state.user.prodi = "Belum diisi";
+      state.user.prodi = p.prodi || p.program_study || "Belum diisi";
       state.user.status = "Anggota";
       state.user.visitsThisMonth = p.visits_this_month;
 

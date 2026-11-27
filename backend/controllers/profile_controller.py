@@ -34,6 +34,7 @@ def _profile_data(row):
         "email": row["email"],
         "phone": row["phone"],
         "role": row["role"],
+        "program_study" : row["program_study"],
         "status": row.get("status") or "active",
         "created_at": row["created_at"],
         "last_login": _last_login_for(row["id"], row["created_at"]),
