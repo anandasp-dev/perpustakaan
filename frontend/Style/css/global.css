@@ -991,3 +991,10 @@ a {
     right: -42px;
   }
 }
+
+button,
+input,
+select {
+  font-family: inherit;
+  font-size: inherit;
+}
