@@ -41,6 +41,9 @@ def list_loans(request):
 
 
 def borrow(request):
+    if request.user.get("role") != "member":
+        return error("Hanya akun anggota (member) yang dapat meminjam buku", 403)
+
     body = request.json()
     raw_book_id = body.get("book_id")
     book_id = int(raw_book_id) if isinstance(raw_book_id, int) or (
@@ -107,6 +110,7 @@ def confirm(request):
     except LoanRuleError as exc:
         return error(str(exc), 409)
 
+
 def give_back(request):
     """Khusus admin: buku diterima kembali."""
     loan_id = _loan_id(request)
@@ -122,15 +126,16 @@ def give_back(request):
     except LoanRuleError as exc:
         return error(str(exc), 409)
 
+
 def set_due_date(request):
     """Khusus admin: ubah jatuh tempo pinjaman yang sedang dipinjam."""
     loan_id = _loan_id(request)
     if loan_id is None:
         return error("Pinjaman tidak ditemukan", 404)
 
-    raw = request.json().get("due_date")
+    raw = str(request.json().get("due_date") or "").strip()
     try:
-        new_due = date.fromisoformat(str(raw))
+        new_due = date.fromisoformat(raw)
     except ValueError:
         return error("Format jatuh tempo harus YYYY-MM-DD", 400)
 

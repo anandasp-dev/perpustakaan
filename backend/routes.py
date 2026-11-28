@@ -46,3 +46,5 @@ router.add("POST", "/api/admin/admins/{id}", admin_controller.update_admin, role
 router.add("POST", "/api/admin/admins/{id}/delete", admin_controller.delete_admin, roles=("admin",))
 router.add("GET", "/api/notifications", notification_controller.list_notifications, login=True)
 router.add("POST", "/api/notifications/read", notification_controller.mark_read, login=True)
+router.add("GET", "/api/admin/notifications", admin_controller.notifications, roles=("admin",))
+router.add("POST", "/api/admin/notifications/read", admin_controller.mark_notifications_read, roles=("admin",))

@@ -1,5 +1,5 @@
 // PENGUNJUNG — halaman admin, tersambung ke database lewat /api/admin/visitors
-lucide.createIcons();
+if (window.lucide) lucide.createIcons();
 
 (function () {
   "use strict";
@@ -15,6 +15,10 @@ lucide.createIcons();
     "Login portal anggota": "Login portal web",
     "Login portal web": "Login portal web"
   };
+
+  function loginUrl() {
+    return window.location.pathname.endsWith(".html") ? "../index.html" : "/index";
+  }
 
   function dua(n) { return String(n).padStart(2, "0"); }
   function angka(n) { return Number(n || 0).toLocaleString("id-ID"); }
@@ -48,6 +52,17 @@ lucide.createIcons();
     return LABEL_TUJUAN[raw] || raw;
   }
 
+  function pilihOpsiTujuan(selectEl, rawPurpose) {
+    if (!selectEl) return;
+    const isPortal = rawPurpose === "Login portal anggota" || rawPurpose === "Login portal web";
+    const candidates = isPortal
+      ? ["Login portal anggota", "Login portal web"]
+      : ["Meminjam buku"];
+    const opts = Array.from(selectEl.options || []).map(function (o) { return o.value; });
+    const match = candidates.find(function (val) { return opts.includes(val); });
+    if (match) selectEl.value = match;
+  }
+
   function toast(teks, galat) {
     let kotak = document.getElementById("admin-toast");
     if (!kotak) {
@@ -67,10 +82,10 @@ lucide.createIcons();
   }
 
   async function panggil(url, opsi) {
-    const respons = await fetch(url, opsi);
+    const respons = await fetch(url, Object.assign({ credentials: "same-origin" }, opsi || {}));
     const data = await respons.json().catch(function () { return {}; });
     if (respons.status === 401) {
-      window.location.href = "/index";
+      window.location.href = loginUrl();
       throw new Error("Sesi berakhir, silakan login lagi");
     }
     if (!respons.ok) {
@@ -92,14 +107,15 @@ lucide.createIcons();
   // ---------------- elemen halaman ----------------
   const badan = document.getElementById("visitorBody");
   const formFilter = document.querySelector('form[action="pengunjung.html"]') || document.querySelector("main form");
-  const inputCari = formFilter.querySelector('input[name="q"]');
+  const inputCari = formFilter ? formFilter.querySelector('input[name="q"]') : null;
   const pager = document.querySelector(".table-foot .pager");
-  const tombolSebelum = pager.querySelectorAll("button")[0];
-  const tombolBerikut = pager.querySelectorAll("button")[1];
-  const pilPager = pager.querySelector(".pill");
+  const tombolSebelum = pager ? pager.querySelectorAll("button")[0] : null;
+  const tombolBerikut = pager ? pager.querySelectorAll("button")[1] : null;
+  const pilPager = pager ? pager.querySelector(".pill") : null;
 
   const state = { q: "", page: 1 };
   let daftar = [];
+  let timerCari = null;
 
   // ---------------- sinkron URL ----------------
   function bacaUrl() {
@@ -107,7 +123,7 @@ lucide.createIcons();
     state.q = p.get("q") || "";
     const hal = Number(p.get("hal"));
     state.page = hal > 0 ? hal : 1;
-    inputCari.value = state.q;
+    if (inputCari) inputCari.value = state.q;
   }
 
   function simpanUrl() {
@@ -137,17 +153,19 @@ lucide.createIcons();
   }
 
   function nonaktifkanTombol(tombol, mati) {
+    if (!tombol) return;
     tombol.disabled = mati;
     tombol.style.opacity = mati ? "0.5" : "";
     tombol.style.cursor = mati ? "not-allowed" : "";
   }
 
   function gambarTabel(data) {
+    if (!badan) return;
     const rows = data.visitors || [];
     badan.innerHTML = rows.length === 0
       ? '<tr><td colspan="6" class="muted" style="text-align:center;padding:24px;">Tidak ada catatan kunjungan yang cocok.</td></tr>'
       : rows.map(barisHtml).join("");
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
     const awal = rows.length ? (data.page - 1) * data.per_page + 1 : 0;
     const akhir = rows.length ? awal + rows.length - 1 : 0;
@@ -207,7 +225,7 @@ lucide.createIcons();
       isiKartu(data.summary);
     } catch (galat) {
       if (galat.status === 403) {
-        window.location.href = "/Pages/dashboard";
+        window.location.href = window.location.pathname.endsWith(".html") ? "dashboard.html" : "/Pages/dashboard";
         return;
       }
       console.warn("Gagal memuat pengunjung:", galat);
@@ -216,54 +234,74 @@ lucide.createIcons();
   }
 
   // ---------------- pencarian & paginasi ----------------
-  formFilter.addEventListener("submit", function (e) {
-    e.preventDefault();
-    state.q = inputCari.value.trim();
-    state.page = 1;
-    simpanUrl();
-    muat();
-  });
-
-  tombolSebelum.addEventListener("click", function () {
-    if (state.page > 1) {
-      state.page--;
+  if (formFilter) {
+    formFilter.addEventListener("submit", function (e) {
+      e.preventDefault();
+      state.q = inputCari ? inputCari.value.trim() : "";
+      state.page = 1;
       simpanUrl();
       muat();
-    }
-  });
+    });
+  }
 
-  tombolBerikut.addEventListener("click", function () {
-    if (!tombolBerikut.disabled) {
-      state.page++;
-      simpanUrl();
-      muat();
-    }
-  });
+  if (inputCari) {
+    inputCari.addEventListener("input", function () {
+      clearTimeout(timerCari);
+      timerCari = setTimeout(function () {
+        state.q = inputCari.value.trim();
+        state.page = 1;
+        simpanUrl();
+        muat();
+      }, 300);
+    });
+  }
+
+  if (tombolSebelum) {
+    tombolSebelum.addEventListener("click", function () {
+      if (state.page > 1) {
+        state.page--;
+        simpanUrl();
+        muat();
+      }
+    });
+  }
+
+  if (tombolBerikut) {
+    tombolBerikut.addEventListener("click", function () {
+      if (!tombolBerikut.disabled) {
+        state.page++;
+        simpanUrl();
+        muat();
+      }
+    });
+  }
 
   // ---------------- autocomplete anggota dari database ----------------
   let semuaAnggotaDb = [];
-  let sedangMuatAnggota = false;
+  let janjiMuatAnggota = null;
 
-  async function muatDaftarAnggota() {
-    if (sedangMuatAnggota) return;
-    sedangMuatAnggota = true;
-    try {
-      const pertama = await panggil("/api/admin/members?page=1");
-      const gabungan = Array.isArray(pertama.members) ? pertama.members.slice() : [];
-      const totalHalaman = Number(pertama.pages || 1);
+  function muatDaftarAnggota() {
+    if (janjiMuatAnggota) return janjiMuatAnggota;
+    janjiMuatAnggota = (async function () {
+      try {
+        const pertama = await panggil("/api/admin/members?page=1");
+        const gabungan = Array.isArray(pertama.members) ? pertama.members.slice() : [];
+        const totalHalaman = Number(pertama.pages || 1);
 
-      for (let hal = 2; hal <= totalHalaman; hal++) {
-        const lanjutan = await panggil("/api/admin/members?page=" + hal);
-        if (Array.isArray(lanjutan.members)) {
-          gabungan.push.apply(gabungan, lanjutan.members);
+        for (let hal = 2; hal <= totalHalaman; hal++) {
+          const lanjutan = await panggil("/api/admin/members?page=" + hal);
+          if (Array.isArray(lanjutan.members)) {
+            gabungan.push.apply(gabungan, lanjutan.members);
+          }
         }
+        semuaAnggotaDb = gabungan;
+      } catch (galat) {
+        console.warn("Gagal memuat daftar anggota:", galat);
+      } finally {
+        janjiMuatAnggota = null;
       }
-      semuaAnggotaDb = gabungan;
-    } catch (galat) {
-      console.warn("Gagal memuat daftar anggota:", galat);
-    } finally {
-      sedangMuatAnggota = false;
-    }
+    })();
+    return janjiMuatAnggota;
   }
 
   function setupMemberPicker(inputEl, codeEl, dropdownEl, errorEl) {
@@ -281,7 +319,7 @@ lucide.createIcons();
 
     function renderList(keyword) {
       const q = String(keyword || "").trim().toLowerCase();
-      if (sedangMuatAnggota && semuaAnggotaDb.length === 0) {
+      if (janjiMuatAnggota && semuaAnggotaDb.length === 0) {
         dropdownEl.innerHTML = '<div style="padding:10px 12px;font-size:13px;color:#64748b;">Memuat daftar anggota...</div>';
         dropdownEl.style.display = "block";
         return;
@@ -340,15 +378,12 @@ lucide.createIcons();
       dropdownEl.style.display = "none";
     });
 
-    document.addEventListener("click", function (e) {
-      if (!inputEl.contains(e.target) && !dropdownEl.contains(e.target)) {
-        dropdownEl.style.display = "none";
-      }
-    });
-
     return {
       setErr: setErr,
-      validate: function () {
+      validate: async function () {
+        if (semuaAnggotaDb.length === 0) {
+          await muatDaftarAnggota();
+        }
         const teks = inputEl.value.trim();
         const kode = codeEl.value.trim();
         if (!teks) {
@@ -407,26 +442,32 @@ lucide.createIcons();
     vAnggotaCode.value = "";
     pickerTambah.setErr("");
     document.getElementById("vTanggal").value = keIso(new Date());
-    vTujuan.value = "Meminjam buku";
+    pilihOpsiTujuan(vTujuan, "Meminjam buku");
     modal.classList.add("show");
     await muatDaftarAnggota();
   });
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
-    const anggotaValid = pickerTambah.validate();
-    if (!anggotaValid) {
-      vAnggota.focus();
-      toast(vError.textContent, true);
+    const visitDate = document.getElementById("vTanggal").value;
+    if (!visitDate) {
+      toast("Tanggal kunjungan wajib diisi.", true);
       return;
     }
 
     const tombol = form.querySelector('button[type="submit"]');
     tombol.disabled = true;
     try {
+      const anggotaValid = await pickerTambah.validate();
+      if (!anggotaValid) {
+        vAnggota.focus();
+        toast(vError.textContent, true);
+        return;
+      }
+
       const res = await panggil("/api/admin/visitors", kirimJson({
         member: anggotaValid.npm || anggotaValid.code,
-        visit_date: document.getElementById("vTanggal").value,
+        visit_date: visitDate,
         purpose: vTujuan.value
       }));
       tutupTambah();
@@ -472,10 +513,8 @@ lucide.createIcons();
     document.getElementById("editVisitorSub").textContent = v.code + " \u2022 " + v.name;
     evAnggota.value = v.name + (v.npm ? " (" + v.npm + ")" : (v.member_code ? " (" + v.member_code + ")" : ""));
     evAnggotaCode.value = v.member_code || "";
-    document.getElementById("evTanggal").value = v.visit_date || "";
-    evTujuan.value = (v.purpose === "Login portal anggota" || v.purpose === "Login portal web")
-      ? "Login portal anggota"
-      : "Meminjam buku";
+    document.getElementById("evTanggal").value = v.visit_date ? String(v.visit_date).slice(0, 10) : "";
+    pilihOpsiTujuan(evTujuan, v.purpose);
 
     editModal.classList.add("show");
     if (semuaAnggotaDb.length === 0) await muatDaftarAnggota();
@@ -483,19 +522,25 @@ lucide.createIcons();
 
   editForm.addEventListener("submit", async function (e) {
     e.preventDefault();
-    const anggotaValid = pickerUbah.validate();
-    if (!anggotaValid) {
-      evAnggota.focus();
-      toast(evError.textContent, true);
+    const visitDate = document.getElementById("evTanggal").value;
+    if (!visitDate) {
+      toast("Tanggal kunjungan wajib diisi.", true);
       return;
     }
 
     const tombol = editForm.querySelector('button[type="submit"]');
     tombol.disabled = true;
     try {
+      const anggotaValid = await pickerUbah.validate();
+      if (!anggotaValid) {
+        evAnggota.focus();
+        toast(evError.textContent, true);
+        return;
+      }
+
       await panggil("/api/admin/visitors/" + idDiubah, kirimJson({
         member: anggotaValid.npm || anggotaValid.code,
-        visit_date: document.getElementById("evTanggal").value,
+        visit_date: visitDate,
         purpose: evTujuan.value
       }));
       tutupUbah();
@@ -508,7 +553,7 @@ lucide.createIcons();
     }
   });
 
-  // ---------------- penutup modal ----------------
+  // ---------------- penutup modal & dropdown ----------------
   modal.querySelectorAll("[data-close]").forEach(function (t) {
     t.addEventListener("click", tutupTambah);
   });
@@ -522,6 +567,19 @@ lucide.createIcons();
   editModal.addEventListener("click", function (e) {
     if (e.target === editModal) tutupUbah();
   });
+
+  if (window._pengunjungClickKey) {
+    document.removeEventListener("click", window._pengunjungClickKey);
+  }
+  window._pengunjungClickKey = function (e) {
+    if (vAnggota && vDropdown && !vAnggota.contains(e.target) && !vDropdown.contains(e.target)) {
+      vDropdown.style.display = "none";
+    }
+    if (evAnggota && evDropdown && !evAnggota.contains(e.target) && !evDropdown.contains(e.target)) {
+      evDropdown.style.display = "none";
+    }
+  };
+  document.addEventListener("click", window._pengunjungClickKey);
 
   if (window._pengunjungEscKey) {
     document.removeEventListener("keydown", window._pengunjungEscKey);

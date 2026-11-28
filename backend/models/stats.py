@@ -10,7 +10,7 @@ RECENT_LOANS = 5      # jumlah baris "Peminjaman terbaru"
 class Stats:
     @staticmethod
     def dashboard(ref):
-        """Semua angka dashboard admin. `ref` = tanggal acuan (objek date), biasanya hari ini."""
+        """Semua angka dashboard admin. `ref` = tanggal acuan (objek date WIB), biasanya hari ini."""
         week_ago = ref - timedelta(days=7)
 
         with cursor() as cur:
@@ -26,8 +26,9 @@ class Stats:
             cur.execute(
                 "SELECT COALESCE(SUM(status = 'borrowed'), 0) AS borrowed, "
                 "COALESCE(SUM(status = 'pending'), 0) AS pending, "
-                "COALESCE(SUM(status = 'borrowed' AND due_date < CURRENT_DATE()), 0) AS overdue "
-                "FROM peminjaman"
+                "COALESCE(SUM(status = 'borrowed' AND due_date < %s), 0) AS overdue "
+                "FROM peminjaman",
+                (ref,),
             )
             loans = cur.fetchone()
 
@@ -51,7 +52,7 @@ class Stats:
             )
             per_day = {row["day"]: row["total"] for row in cur.fetchall()}
 
-            # jumlah pengunjung per hari (tanpa kolom status)
+            # jumlah pengunjung per hari
             cur.execute(
                 "SELECT DATE(visit_date) AS day, COUNT(*) AS total FROM kunjungan "
                 "WHERE DATE(visit_date) BETWEEN %s AND %s "
@@ -81,7 +82,7 @@ class Stats:
             )
             top_rows = cur.fetchall()
 
-            # pengunjung paling aktif pada bulan tanggal acuan (tanpa kolom status)
+            # pengunjung paling aktif pada bulan tanggal acuan
             cur.execute(
                 "SELECT u.id, u.full_name, u.program_study, COUNT(*) AS total "
                 "FROM kunjungan k JOIN `user` u ON u.id = k.user_id "
@@ -207,7 +208,7 @@ class Stats:
             )
             prev_loans = int(cur.fetchone()["total"])
 
-            # 2. Kunjungan per hari dalam periode (tanpa kolom status)
+            # 2. Kunjungan per hari dalam periode
             cur.execute(
                 "SELECT DATE(visit_date) AS day, COUNT(*) AS total "
                 "FROM kunjungan "
@@ -274,6 +275,8 @@ class Stats:
             # 5. Keanggotaan yang sudah terdaftar sampai `end_date`
             cur.execute(
                 "SELECT COUNT(*) AS total, "
+                "COALESCE(SUM(status = 'active'), 0) AS active_total, "
+                "COALESCE(SUM(status <> 'active'), 0) AS suspended_total, "
                 "COALESCE(SUM(DATE(created_at) BETWEEN %s AND %s), 0) AS new_period "
                 "FROM `user` WHERE role = 'member' AND DATE(created_at) <= %s",
                 (start_date, end_date, end_date),
@@ -303,8 +306,8 @@ class Stats:
         in_end = int(loan_book_row["in_on_end"])
 
         total_members = int(member_row["total"])
-        active_members = total_members
-        suspended_members = 0
+        active_members = int(member_row["active_total"])
+        suspended_members = int(member_row["suspended_total"])
 
         return {
             "start_date": str(start_date),

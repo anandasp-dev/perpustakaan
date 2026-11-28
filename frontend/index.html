@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login &amp; Register — Keyto Library</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="Style/global.css" />
   <link rel="stylesheet" href="Style/auth.css" />
 </head>
+
 <body data-page="auth">
 
   <div class="auth-split-layout">
@@ -19,7 +23,8 @@
       <div class="auth-left-inner">
         <div class="auth-brand">
           <div class="auth-brand-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
             </svg>
@@ -47,8 +52,9 @@
     <!-- Panel Kanan: Formulir Login & Register -->
     <section class="auth-right-panel">
       <header class="auth-topbar">
-        <span class="auth-welcome-tag">WELCOME TO Keyto LIBRARY</span>
-        <a href="#help" class="auth-help-btn" onclick="showToast('Hubungi petugas meja layanan perpustakaan untuk bantuan akun.'); return false;">Help ↗</a>
+        <span class="auth-welcome-tag">WELCOME TO KEYTO LIBRARY</span>
+        <a href="#help" class="auth-help-btn"
+          onclick="showToast('Hubungi petugas meja layanan perpustakaan untuk bantuan akun.'); return false;">Help ↗</a>
       </header>
 
       <main class="auth-main-center">
@@ -67,8 +73,10 @@
 
           <!-- Tab Switcher -->
           <div class="auth-tab-bar">
-            <button type="button" class="auth-tab-btn active" id="tab-login" onclick="switchAuthTab('login')">Login</button>
-            <button type="button" class="auth-tab-btn" id="tab-register" onclick="switchAuthTab('register')">Register</button>
+            <button type="button" class="auth-tab-btn active" id="tab-login"
+              onclick="switchAuthTab('login')">Login</button>
+            <button type="button" class="auth-tab-btn" id="tab-register"
+              onclick="switchAuthTab('register')">Register</button>
           </div>
 
           <!-- FORM LOGIN -->
@@ -82,7 +90,8 @@
               <label for="login-password">Password</label>
               <div class="password-input-box">
                 <input type="password" id="login-password" placeholder="••••••••••••" required />
-                <button type="button" class="eye-toggle-btn" aria-label="Tampilkan password" onclick="togglePassword('login-password', this)">
+                <button type="button" class="eye-toggle-btn" aria-label="Tampilkan password"
+                  onclick="togglePassword('login-password', this)">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path>
                     <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
@@ -97,35 +106,55 @@
                 <input type="checkbox" id="remember-me" />
                 <span>Remember me</span>
               </label>
-              <button type="button" class="text-link strong" onclick="window.location.href='/Pages/forgot'">Forgot Password?</button>
+              <button type="button" class="text-link strong" onclick="window.location.href='/Pages/forgot'">Forgot
+                Password?</button>
             </div>
 
             <button type="submit" class="btn btn-primary btn-block">Login</button>
 
             <div class="auth-switch-text">
-              Belum menjadi Member? <button type="button" class="text-link strong" onclick="switchAuthTab('register')">Register →</button>
+              Belum menjadi Member? <button type="button" class="text-link strong"
+                onclick="switchAuthTab('register')">Register →</button>
             </div>
-
           </form>
 
           <!-- FORM REGISTER -->
           <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
             <div class="field-group">
               <label for="reg-name">Full Name</label>
-                <input type="text" id="reg-name" placeholder="Your full name" maxlength="100" required />
-                <span class="field-help-text">Huruf, spasi, titik, apostrof, atau tanda hubung (3-100 karakter).</span>
+              <input type="text" id="reg-name" placeholder="Your full name" maxlength="100" required />
+              <span class="field-help-text">Huruf, spasi, titik, apostrof, atau tanda hubung (3-100 karakter).</span>
             </div>
-            
+
             <div class="field-group">
               <label for="reg-npm">NPM</label>
-                <input type="text" id="reg-npm" placeholder="Masukkan NPM Anda" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" title="NPM terdiri dari 12 digit angka" required />
-                <span class="field-help-text">NPM terdiri dari 12 digit angka, tanpa spasi atau tanda baca.</span>
+              <input type="text" id="reg-npm" placeholder="Masukkan NPM Anda" inputmode="numeric" maxlength="12"
+                pattern="[0-9]{12}" title="NPM terdiri dari 12 digit angka" required />
+              <span class="field-help-text">NPM terdiri dari 12 digit angka, tanpa spasi atau tanda baca.</span>
             </div>
 
             <div class="field-group">
               <label for="reg-prodi">Program Studi</label>
-                <input type="text" id="reg-prodi" placeholder="Masukkan nama Program Studi Anda" maxlength="25" required />
-                
+              <select id="reg-prodi" name="program_study" class="custom-select" required>
+                <option value="" disabled selected>Pilih program studi</option>
+                <option value="Bimbingan dan Konseling (S1)">Bimbingan dan Konseling (S1)</option>
+                <option value="Pendidikan Ekonomi (S1)">Pendidikan Ekonomi (S1)</option>
+                <option value="Pendidikan Sejarah (S1)">Pendidikan Sejarah (S1)</option>
+                <option value="Bisnis Digital (S1)">Bisnis Digital (S1)</option>
+                <option value="Manajemen Ritel (S1)">Manajemen Ritel (S1)</option>
+                <option value="Pendidikan Matematika (S1)">Pendidikan Matematika (S1)</option>
+                <option value="Biologi (S1)">Biologi (S1)</option>
+                <option value="Fisika (S1)">Fisika (S1)</option>
+                <option value="Teknik Informatika (S1)">Teknik Informatika (S1)</option>
+                <option value="Sistem Informasi (S1)">Sistem Informasi (S1)</option>
+                <option value="Teknik Industri (S1)">Teknik Industri (S1)</option>
+                <option value="Arsitektur (S1)">Arsitektur (S1)</option>
+                <option value="Pendidikan Bahasa Indonesia (S1)">Pendidikan Bahasa Indonesia (S1)</option>
+                <option value="Pendidikan Bahasa Inggris (S1)">Pendidikan Bahasa Inggris (S1)</option>
+                <option value="Desain Komunikasi Visual (S1)">Desain Komunikasi Visual (S1)</option>
+                <option value="Program Magister (S2)">Program Magister (S2)</option>
+                <option value="Program Doktor (S3)">Program Doktor (S3)</option>
+              </select>
             </div>
 
             <div class="field-group">
@@ -135,15 +164,17 @@
 
             <div class="field-group">
               <label for="reg-phone">Phone Number</label>
-                <input type="tel" id="reg-phone" placeholder="08xxxxxxxxxx" inputmode="numeric" maxlength="13" pattern="08[0-9]{8,11}" title="Diawali 08, hanya angka, 10-13 digit" required />
-                <span class="field-help-text">Diawali 08, hanya angka, 10-13 digit. Contoh: 081234567890</span>
+              <input type="tel" id="reg-phone" placeholder="08xxxxxxxxxx" inputmode="numeric" maxlength="13"
+                pattern="08[0-9]{8,11}" title="Diawali 08, hanya angka, 10-13 digit" required />
+              <span class="field-help-text">Diawali 08, hanya angka, 10-13 digit. Contoh: 081234567890</span>
             </div>
 
             <div class="field-group">
               <label for="reg-password">Password</label>
               <div class="password-input-box">
                 <input type="password" id="reg-password" placeholder="Create a password" minlength="8" required />
-                <button type="button" class="eye-toggle-btn" aria-label="Tampilkan password" onclick="togglePassword('reg-password', this)">
+                <button type="button" class="eye-toggle-btn" aria-label="Tampilkan password"
+                  onclick="togglePassword('reg-password', this)">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path>
                     <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
@@ -157,8 +188,9 @@
             <div class="field-group">
               <label for="reg-confirm">Confirm Password</label>
               <div class="password-input-box">
-                <input type="password" id="reg-confirm" placeholder="Re-enter your password" required />
-                <button type="button" class="eye-toggle-btn" aria-label="Tampilkan password" onclick="togglePassword('reg-confirm', this)">
+                <input type="password" id="reg-confirm" placeholder="Re-enter your password" minlength="8" required />
+                <button type="button" class="eye-toggle-btn" aria-label="Tampilkan password"
+                  onclick="togglePassword('reg-confirm', this)">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path>
                     <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
@@ -176,7 +208,8 @@
             <button type="submit" class="btn btn-primary btn-block">Register</button>
 
             <div class="auth-switch-text">
-              Already a member? <button type="button" class="text-link strong" onclick="switchAuthTab('login')">Login →</button>
+              Already a member? <button type="button" class="text-link strong" onclick="switchAuthTab('login')">Login
+                →</button>
             </div>
 
             <div class="admin-restriction-box">
@@ -185,7 +218,6 @@
               </svg>
               <span>Khusus Member. Akun Admin dibuat oleh perpustakaan.</span>
             </div>
-
           </form>
         </div>
       </main>
@@ -197,61 +229,7 @@
     </section>
   </div>
 
-  <!-- MODAL: LUPA PASSWORD -->
-  <div id="modal-forgot" class="modal-backdrop hidden">
-    <div class="modal-card">
-      <h3 class="modal-title">Lupa password?</h3>
-      <p class="modal-desc">
-        Masukkan email akun untuk menerima tautan pengaturan ulang password.
-      </p>
-      <form onsubmit="handleForgotSubmit(event)" class="auth-form">
-        <div class="field-group">
-          <label for="forgot-email">Email</label>
-          <input type="email" id="forgot-email" value="Maya@gmail.com" required />
-        </div>
-        <div class="modal-actions-stack">
-          <button type="submit" class="btn btn-primary btn-block">Kirim tautan reset</button>
-          <button type="button" class="btn btn-outline btn-block" onclick="closeModal('modal-forgot')">
-            Kembali ke Login
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: PERIKSA EMAIL ANDA -->
-  <div id="modal-reset-sent" class="modal-backdrop hidden">
-    <div class="modal-card">
-      <h3 class="modal-title">Periksa email Anda</h3>
-      <p class="modal-desc">
-        Jika email terdaftar, tautan pengaturan ulang password akan dikirim. Ini adalah konfirmasi contoh prototype.
-      </p>
-      <div class="modal-actions-stack">
-        <button type="button" class="btn btn-primary btn-block" onclick="closeModal('modal-reset-sent')">
-          Kembali ke Login
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: NOTIFIKASI LOGIN ADMIN SEMENTARA -->
-  <div id="modal-admin-notice" class="modal-backdrop hidden">
-    <div class="modal-card">
-      <h3 class="modal-title">Login Admin Berhasil</h3>
-      <p class="modal-desc">
-        Anda masuk menggunakan akun <strong>admin@Keyto.ac.id</strong>. Halaman Dashboard Admin belum diaktifkan pada tahap ini. Silakan lanjutkan dengan akun demo Member untuk meninjau seluruh fitur Member.
-      </p>
-      <div class="modal-actions-stack">
-        <button type="button" class="btn btn-primary btn-block" onclick="closeModal('modal-admin-notice'); selectDemoAccount('member');">
-          Gunakan Akun Demo Member
-        </button>
-        <button type="button" class="btn btn-outline btn-block" onclick="closeModal('modal-admin-notice')">
-          Tutup
-        </button>
-      </div>
-    </div>
-  </div>
-
   <script src="Js/auth.js"></script>
 </body>
+
 </html>

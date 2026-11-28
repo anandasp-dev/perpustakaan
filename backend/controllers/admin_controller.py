@@ -20,12 +20,12 @@ from utils.files import CoverError, delete_cover_file, save_cover
 from utils.text import initials
 
 WIB = ZoneInfo("Asia/Jakarta")
-PER_PAGE = 8   
+PER_PAGE = 8
 BOOKS_PER_PAGE = 8
 MEMBERS_PER_PAGE = 8
 
-# huruf (termasuk beraksen), spasi, titik, apostrof, tanda hubung; 3-100 karakter
-NAME_RE = re.compile(r"(?:[^\W\d_]|[ .'\-]){3,100}")
+# huruf (termasuk beraksen), spasi, titik, apostrof, tanda hubung; 3-100 karakter dan wajib memuat minimal 1 huruf
+NAME_RE = re.compile(r"(?=(?:[^\W\d_]|[ .'\-]){3,100}$)[ .'\-]*[^\W\d_](?:[^\W\d_]|[ .'\-])*")
 NPM_RE = re.compile(r"[0-9]{12}")
 PHONE_RE = re.compile(r"08[0-9]{8,11}")
 EMAIL_RE = re.compile(r"[^@\s]{1,64}@[^@\s]+\.[^@\s]+")
@@ -47,6 +47,7 @@ def _member_row(row):
         "name": name,
         "initials": initials(name),
         "npm": row["npm"],
+        "program_study": row.get("program_study"),
         "email": row["email"],
         "phone": row["phone"],
         "loans_total": row["loans_total"],
@@ -62,7 +63,7 @@ def _check_profile(body):
     email = str(body.get("email") or "").strip()
     phone = str(body.get("phone") or "").replace(" ", "").replace("-", "")
     raw_prodi = body.get("program_study") if body.get("program_study") is not None else body.get("prodi")
-    program_study = " ".join(str(raw_prodi or "").split())or None
+    program_study = " ".join(str(raw_prodi or "").split()) or None
 
     if not NAME_RE.fullmatch(name):
         return None, "Nama 3-100 karakter: huruf, spasi, titik, apostrof, dan tanda hubung"
@@ -71,8 +72,9 @@ def _check_profile(body):
     if phone and not PHONE_RE.fullmatch(phone):
         return None, "Nomor HP harus diawali 08 dan 10-13 digit angka"
     if program_study and len(program_study) > 120:
-        return None, "Program Studi maksimal 120 karakter" 
+        return None, "Program Studi maksimal 120 karakter"
     return (name, email, phone or None, program_study), None
+
 
 def _ensure_deactivated_column(cur):
     cur.execute("SHOW COLUMNS FROM `user` LIKE 'deactivated_at'")
@@ -81,67 +83,6 @@ def _ensure_deactivated_column(cur):
             "ALTER TABLE `user` "
             "ADD COLUMN deactivated_at DATETIME NULL DEFAULT NULL AFTER status"
         )
-
-
-def _admin_account_row(row, current_user_id):
-    return {
-        "id": row["id"],
-        "code": f"ADM-{row['id']:03d}",
-        "name": row["full_name"] or "Admin",
-        "email": row["email"],
-        "role": row["role"],
-        "status": row.get("status") or "active",
-        "created_at": row["created_at"],
-        "deactivated_at": row.get("deactivated_at"),
-        "is_self": row["id"] == current_user_id,
-    }
-
-
-def admins(request):
-    from database.db import cursor
-    from models.member import ensure_status_column
-
-    ensure_status_column()
-    q = str(request.query.get("q") or "").strip()
-
-    with cursor() as cur:
-        _ensure_deactivated_column(cur)
-        where = ["u.role = 'admin'"]
-        params = []
-        if q:
-            like = f"%{q}%"
-            where.append(
-                "(u.full_name LIKE %s OR u.email LIKE %s "
-                "OR CONCAT('ADM-', LPAD(u.id, 3, '0')) LIKE %s)"
-            )
-            params.extend([like, like, like])
-
-        cur.execute(
-            "SELECT u.id, u.full_name, u.email, u.role, u.status, u.created_at, u.deactivated_at "
-            "FROM `user` u "
-            f"WHERE {' AND '.join(where)} "
-            "ORDER BY u.id ASC",
-            tuple(params),
-        )
-        rows = cur.fetchall()
-
-        cur.execute(
-            "SELECT COUNT(*) AS total, "
-            "COALESCE(SUM(status = 'active'), 0) AS active_total, "
-            "COALESCE(SUM(status <> 'active'), 0) AS inactive_total "
-            "FROM `user` WHERE role = 'admin'"
-        )
-        srow = cur.fetchone()
-
-    uid = request.user["id"]
-    return Response(200, {
-        "admins": [_admin_account_row(r, uid) for r in rows],
-        "summary": {
-            "total": int(srow["total"]),
-            "active": int(srow["active_total"]),
-            "inactive": int(srow["inactive_total"]),
-        },
-    })
 
 
 ALLOWED_PRODI = {
@@ -165,58 +106,6 @@ ALLOWED_PRODI = {
 }
 
 
-def create_admin(request):
-    from database.db import cursor
-    from models.member import ensure_status_column
-
-    ensure_status_column()
-    body = request.json()
-    profile, problem = _check_profile(body)
-    if problem:
-        return error(problem, 400)
-
-    name, email, phone = profile
-    email = email.lower()
-
-    npm = str(body.get("npm") or "").strip()
-    if not NPM_RE.fullmatch(npm):
-        return error("NPM harus 12 digit angka", 400)
-    if not phone:
-        return error("Nomor telepon wajib diisi", 400)
-
-    program_study = str(body.get("program_study") or "").strip()
-    if program_study not in ALLOWED_PRODI:
-        return error("Pilih program studi yang tersedia pada daftar", 400)
-
-    password = body.get("password")
-    if not isinstance(password, str) or not (8 <= len(password) <= 128):
-        return error("Kata sandi harus 8-128 karakter", 400)
-
-    with cursor() as cur:
-        _ensure_deactivated_column(cur)
-        cur.execute(
-            "SELECT npm, email FROM `user` WHERE npm = %s OR email = %s LIMIT 1",
-            (npm, email),
-        )
-        clash = cur.fetchone()
-        if clash is not None:
-            if clash["email"] and clash["email"].lower() == email:
-                return error("Email sudah terdaftar pada akun lain", 409)
-            return error("NPM sudah terdaftar pada akun lain", 409)
-
-        cur.execute(
-            "INSERT INTO `user` (npm, full_name, program_study, email, phone, password_hash, role, status, deactivated_at) "
-            "VALUES (%s, %s, %s, %s, %s, %s, 'admin', 'active', NULL)",
-            (npm, name, program_study, email, phone, hash_password(password)),
-        )
-        new_id = cur.lastrowid
-
-    return Response(201, {
-        "id": new_id,
-        "code": f"ADM-{new_id:03d}",
-        "message": "Admin baru berhasil ditambahkan.",
-    })
-
 def _admin_account_row(row, current_user_id):
     return {
         "id": row["id"],
@@ -232,6 +121,7 @@ def _admin_account_row(row, current_user_id):
         "deactivated_at": row.get("deactivated_at"),
         "is_self": row["id"] == current_user_id,
     }
+
 
 def admins(request):
     from database.db import cursor
@@ -281,6 +171,57 @@ def admins(request):
     })
 
 
+def create_admin(request):
+    from database.db import cursor
+    from models.member import ensure_status_column
+
+    ensure_status_column()
+    body = request.json()
+    profile, problem = _check_profile(body)
+    if problem:
+        return error(problem, 400)
+
+    name, email, phone, program_study = profile
+    email = email.lower()
+
+    npm = str(body.get("npm") or "").strip()
+    if not NPM_RE.fullmatch(npm):
+        return error("NPM harus 12 digit angka", 400)
+    if not phone:
+        return error("Nomor telepon wajib diisi", 400)
+    if (program_study or "") not in ALLOWED_PRODI:
+        return error("Pilih program studi yang tersedia pada daftar", 400)
+
+    password = body.get("password")
+    if not isinstance(password, str) or not (8 <= len(password) <= 128):
+        return error("Kata sandi harus 8-128 karakter", 400)
+
+    with cursor() as cur:
+        _ensure_deactivated_column(cur)
+        cur.execute(
+            "SELECT npm, email FROM `user` WHERE npm = %s OR email = %s LIMIT 1",
+            (npm, email),
+        )
+        clash = cur.fetchone()
+        if clash is not None:
+            if clash["email"] and clash["email"].lower() == email:
+                return error("Email sudah terdaftar pada akun lain", 409)
+            return error("NPM sudah terdaftar pada akun lain", 409)
+
+        cur.execute(
+            "INSERT INTO `user` (npm, full_name, program_study, email, phone, password_hash, role, status, deactivated_at) "
+            "VALUES (%s, %s, %s, %s, %s, %s, 'admin', 'active', NULL)",
+            (npm, name, program_study, email, phone, hash_password(password)),
+        )
+        new_id = cur.lastrowid
+
+    return Response(201, {
+        "id": new_id,
+        "code": f"ADM-{new_id:03d}",
+        "message": "Admin baru berhasil ditambahkan.",
+    })
+
+
 def update_admin(request):
     from database.db import cursor
     from models.member import ensure_status_column
@@ -302,7 +243,7 @@ def update_admin(request):
     if admin_id == request.user["id"] and status != "active":
         return error("Anda tidak dapat menonaktifkan akun sendiri", 400)
 
-    name, email, phone = profile
+    name, email, phone, program_study = profile
     email = email.lower()
 
     npm = str(body.get("npm") or "").strip()
@@ -310,9 +251,7 @@ def update_admin(request):
         return error("NPM harus 12 digit angka", 400)
     if not phone:
         return error("Nomor telepon wajib diisi", 400)
-
-    program_study = str(body.get("program_study") or "").strip()
-    if program_study not in ALLOWED_PRODI:
+    if (program_study or "") not in ALLOWED_PRODI:
         return error("Pilih program studi yang tersedia pada daftar", 400)
 
     with cursor() as cur:
@@ -344,6 +283,7 @@ def update_admin(request):
 
     return Response(200, {"message": "Data admin berhasil diperbarui"})
 
+
 def delete_admin(request):
     from database.db import cursor
 
@@ -367,6 +307,7 @@ def delete_admin(request):
 
     session.destroy_user(admin_id)
     return Response(200, {"message": "Akun admin berhasil dihapus"})
+
 
 def _check_member_status(raw):
     val = str(raw or "active").strip().lower()
@@ -402,11 +343,12 @@ def create_member(request):
         return error(problem, 400)
 
     npm = str(body.get("npm") or "").strip()
-    password = str(body.get("password") or "")
     if not NPM_RE.fullmatch(npm):
         return error("NPM harus 12 digit angka", 400)
-    if not 8 <= len(password) <= 128:
-        return error("Kata sandi 8-128 karakter", 400)
+
+    password = body.get("password")
+    if not isinstance(password, str) or not (8 <= len(password) <= 128):
+        return error("Kata sandi harus 8-128 karakter", 400)
 
     try:
         row = Member.admin_create(profile[0], npm, profile[1], profile[2], profile[3], password, status="active")
@@ -692,18 +634,18 @@ def create_loan(request):
     if not member_text or not book_text:
         return error("Peminjam dan judul buku wajib diisi", 400)
 
-    members = User.find_for_admin(member_text)
-    if not members:
+    matched_members = User.find_for_admin(member_text)
+    if not matched_members:
         return error(
             "Anggota tidak ditemukan. Gunakan NPM, ID anggota (MB-0008), atau nama lengkap", 404
         )
-    if len(members) > 1:
+    if len(matched_members) > 1:
         return error("Ada lebih dari satu anggota yang cocok, gunakan NPM atau ID anggota", 409)
 
-    books = Book.find_for_admin(book_text)
-    if not books:
+    matched_books = Book.find_for_admin(book_text)
+    if not matched_books:
         return error("Buku tidak ditemukan. Gunakan judul persis atau kode BK-007", 404)
-    if len(books) > 1:
+    if len(matched_books) > 1:
         return error("Ada lebih dari satu buku yang cocok, gunakan kode BK-007", 409)
 
     due = None
@@ -720,7 +662,7 @@ def create_loan(request):
 
     Loan.expire_stale()
     try:
-        loan = Loan.create(members[0]["id"], book_id=books[0]["id"], confirmed=True, due_date=due)
+        loan = Loan.create(matched_members[0]["id"], book_id=matched_books[0]["id"], confirmed=True, due_date=due)
         return Response(201, {"loan": loan_data(loan)})
     except LoanNotFoundError as exc:
         return error(str(exc), 404)
@@ -754,22 +696,40 @@ def _relative_time(dt):
     return f"{days} hari lalu"
 
 
+def _ensure_admin_notif_read_table(cur):
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS admin_notifikasi_dibaca ("
+        "  user_id INT NOT NULL,"
+        "  notif_key VARCHAR(120) NOT NULL,"
+        "  read_at DATETIME NOT NULL,"
+        "  PRIMARY KEY (user_id, notif_key)"
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+    )
+
+
 def notifications(request):
-    """Gabungkan aktivitas terbaru (peminjaman, keterlambatan, anggota baru, kunjungan)."""
+    """Gabungkan aktivitas terbaru dan cek status baca dari user.notif_seen_at."""
     from database.db import cursor
     Loan.expire_stale()
+    today = _today_wib()
     items = []
 
     with cursor() as cur:
+        cur.execute("SELECT notif_seen_at FROM `user` WHERE id = %s", (request.user["id"],))
+        user_row = cur.fetchone()
+        seen_at = user_row["notif_seen_at"] if user_row else None
+
         cur.execute(
             "SELECT p.id, p.due_date, u.full_name, b.title "
             "FROM peminjaman p "
             "JOIN `user` u ON u.id = p.user_id "
             "JOIN buku b ON b.id = p.book_id "
-            "WHERE p.status = 'borrowed' AND p.due_date < CURRENT_DATE() "
-            "ORDER BY p.due_date ASC LIMIT 4"
+            "WHERE p.status = 'borrowed' AND p.due_date < %s "
+            "ORDER BY p.due_date ASC LIMIT 4",
+            (today,),
         )
         for r in cur.fetchall():
+            overdue_dt = datetime.combine(r["due_date"] + timedelta(days=1), datetime.min.time())
             items.append({
                 "key": f"overdue-{r['id']}-{r['due_date']}",
                 "icon": "circle-alert",
@@ -777,7 +737,7 @@ def notifications(request):
                 "title": "Buku terlambat",
                 "detail": f"Terlambat \u2022 {r['title']} ({r['full_name']}) perlu diingatkan.",
                 "time": _relative_time(r["due_date"]),
-                "sort_ts": str(r["due_date"]) + " 23:59:59",
+                "event_dt": overdue_dt,
                 "page": "peminjaman",
             })
 
@@ -797,7 +757,7 @@ def notifications(request):
                 "title": "Menunggu konfirmasi pinjam",
                 "detail": f"Booking \u2022 {r['full_name']} ingin meminjam {r['title']}.",
                 "time": _relative_time(r["borrowed_at"]),
-                "sort_ts": str(r["borrowed_at"]),
+                "event_dt": r["borrowed_at"],
                 "page": "peminjaman",
             })
 
@@ -817,7 +777,7 @@ def notifications(request):
                 "title": "Buku dikembalikan",
                 "detail": f"Pengembalian \u2022 {r['title']} oleh {r['full_name']} kembali ke rak.",
                 "time": _relative_time(r["returned_at"]),
-                "sort_ts": str(r["returned_at"]),
+                "event_dt": r["returned_at"],
                 "page": "peminjaman",
             })
 
@@ -833,7 +793,7 @@ def notifications(request):
                 "title": "Anggota baru terdaftar",
                 "detail": f"Anggota \u2022 {r['full_name']} bergabung di perpustakaan.",
                 "time": _relative_time(r["created_at"]),
-                "sort_ts": str(r["created_at"]),
+                "event_dt": r["created_at"],
                 "page": "anggota",
             })
 
@@ -851,18 +811,51 @@ def notifications(request):
                     "title": "Aktivitas kunjungan anggota" if r.get("purpose") == "Login portal anggota" else "Pengunjung check-in",
                     "detail": f"Pengunjung \u2022 {r['name']} ({r.get('purpose') or 'Kunjungan perpustakaan'}).",
                     "time": _relative_time(r["created_at"]),
-                    "sort_ts": str(r["created_at"]),
+                    "event_dt": r["created_at"],
                     "page": "pengunjung",
                 })
         except Exception:
             pass
 
-    items.sort(key=lambda x: x["sort_ts"], reverse=True)
-    for it in items:
-        it.pop("sort_ts", None)
+    items.sort(key=lambda x: x["event_dt"], reverse=True)
+    result_items = items[:10]
 
-    return Response(200, {"notifications": items[:10]})
+    for it in result_items:
+        event_dt = it.pop("event_dt")
+        it["unread"] = seen_at is None or event_dt > seen_at
 
+    unread_count = sum(1 for it in result_items if it["unread"])
+    return Response(200, {"notifications": result_items, "unread": unread_count})
+
+def mark_notifications_read(request):
+    """Simpan key notifikasi yang sudah dibaca admin ke database."""
+    from database.db import cursor
+    body = request.json()
+    raw_keys = body.get("keys") if isinstance(body, dict) else None
+    if not isinstance(raw_keys, list):
+        return error("Daftar notifikasi tidak valid", 400)
+
+    keys = []
+    for k in raw_keys:
+        if isinstance(k, str):
+            clean = k.strip()
+            if clean and len(clean) <= 120:
+                keys.append(clean)
+
+    if not keys:
+        return Response(200, {"message": "Tidak ada notifikasi yang diperbarui"})
+
+    now = _now_wib()
+    user_id = request.user["id"]
+    with cursor() as cur:
+        _ensure_admin_notif_read_table(cur)
+        cur.executemany(
+            "INSERT IGNORE INTO admin_notifikasi_dibaca (user_id, notif_key, read_at) "
+            "VALUES (%s, %s, %s)",
+            [(user_id, k, now) for k in keys],
+        )
+
+    return Response(200, {"message": "Status notifikasi berhasil disimpan"})
 
 VISITORS_PER_PAGE = 8
 ALLOWED_VISITOR_PURPOSES = {
@@ -913,8 +906,11 @@ def _parse_visitor_payload(body):
     if raw_purpose not in ALLOWED_VISITOR_PURPOSES:
         return None, "Tujuan kunjungan hanya boleh 'Meminjam buku' atau 'Login portal web'"
 
+    visitor_name = (member.get("full_name") or member.get("name") or "Anggota").strip()[:100]
+
     return {
         "user_id": member["id"],
+        "visitor_name": visitor_name,
         "visit_date": vdate,
         "purpose": ALLOWED_VISITOR_PURPOSES[raw_purpose],
     }, None
@@ -936,7 +932,7 @@ def visitors(request):
         if q:
             like = f"%{q}%"
             where.append(
-                "(u.full_name LIKE %s OR u.npm LIKE %s "
+                "(COALESCE(u.full_name, k.visitor_name) LIKE %s OR u.npm LIKE %s "
                 "OR CONCAT('VS-', LPAD(k.id, 4, '0')) LIKE %s "
                 "OR CONCAT('MB-', LPAD(k.user_id, 4, '0')) LIKE %s "
                 "OR k.purpose LIKE %s)"
@@ -998,9 +994,13 @@ def create_visitor(request):
         return error(problem, 400)
 
     with cursor() as cur:
+        cur.execute("SELECT full_name FROM `user` WHERE id = %s", (data["user_id"],))
+        urow = cur.fetchone()
+        vname = ((urow["full_name"] if urow and urow.get("full_name") else data["visitor_name"]) or "Anggota").strip()[:100]
+
         cur.execute(
-            "INSERT INTO kunjungan (user_id, visit_date, purpose) VALUES (%s, %s, %s)",
-            (data["user_id"], data["visit_date"], data["purpose"]),
+            "INSERT INTO kunjungan (user_id, visitor_name, visit_date, purpose) VALUES (%s, %s, %s, %s)",
+            (data["user_id"], vname, data["visit_date"], data["purpose"]),
         )
         new_id = cur.lastrowid
 
@@ -1023,9 +1023,13 @@ def update_visitor(request):
         if not cur.fetchone():
             return error("Data pengunjung tidak ditemukan", 404)
 
+        cur.execute("SELECT full_name FROM `user` WHERE id = %s", (data["user_id"],))
+        urow = cur.fetchone()
+        vname = ((urow["full_name"] if urow and urow.get("full_name") else data["visitor_name"]) or "Anggota").strip()[:100]
+
         cur.execute(
-            "UPDATE kunjungan SET user_id = %s, visit_date = %s, purpose = %s WHERE id = %s",
-            (data["user_id"], data["visit_date"], data["purpose"], visitor_id),
+            "UPDATE kunjungan SET user_id = %s, visitor_name = %s, visit_date = %s, purpose = %s WHERE id = %s",
+            (data["user_id"], vname, data["visit_date"], data["purpose"], visitor_id),
         )
 
     return Response(200, {"id": visitor_id, "code": f"VS-{visitor_id:04d}", "message": "Data pengunjung diperbarui"})

@@ -968,3 +968,76 @@ a {
     right: -42px;
   }
 }
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 14px;
+  }
+
+  .main-content {
+    padding: 20px 0 36px;
+  }
+
+  .nav-menu {
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-item {
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+
+  .notif-dropdown {
+    position: fixed;
+    top: 64px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .loan-card {
+    padding: 16px;
+  }
+
+  .loan-card-top {
+    gap: 12px;
+  }
+
+  .loan-cover-art,
+  .loan-cover-img {
+    width: 68px;
+    height: 96px;
+  }
+
+  .loan-dates-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .loan-card-bottom {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-renew {
+    justify-content: center;
+  }
+
+  .modal-card {
+    padding: 20px 18px;
+  }
+
+  .site-footer-inner {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .toast-container {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+  }
+}

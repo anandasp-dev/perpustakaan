@@ -1,6 +1,8 @@
+from datetime import datetime
 import re
 import time
 import traceback
+from zoneinfo import ZoneInfo
 
 from config import PRODUCTION, APP_BASE_URL
 from core import session, reset_store
@@ -11,10 +13,12 @@ from utils import mailer
 from utils.security import hash_password, verify_password, fake_verify
 from views import auth_view
 
+WIB = ZoneInfo("Asia/Jakarta")
+
 # Pakai [0-9], bukan \d, karena \d ikut menerima angka dari aksara lain
 NPM_RE = re.compile(r"[0-9]{12}")
 PHONE_RE = re.compile(r"08[0-9]{8,11}")  # 08 + 8..11 angka = 10..13 digit
-NAME_RE = re.compile(r"[A-Za-z][A-Za-z .'-]{2,99}")  # 3-100 karakter
+NAME_RE = re.compile(r"(?=(?:[^\W\d_]|[ .'\-]){3,100}$)[ .'\-]*[^\W\d_](?:[^\W\d_]|[ .'\-])*")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 MIN_PASSWORD = 8
 MAX_PASSWORD = 128
@@ -25,29 +29,42 @@ FORGOT_COOLDOWN = 60  # detik
 _last_forgot = {}  # {user_id: waktu permintaan terakhir}
 
 
+def _now_wib():
+    return datetime.now(WIB).replace(tzinfo=None)
+
+
+def _today_wib():
+    return datetime.now(WIB).date()
+
+
 def _text(value):
     """Ambil teks yang sudah dirapikan, selain string dianggap kosong."""
     return value.strip() if isinstance(value, str) else ""
 
 
 def _record_daily_login_visit(user):
-    """Catat kunjungan daring anggota maksimal 1 kali per hari saat login."""
+    """Catat kunjungan daring anggota maksimal 1 kali per hari (WIB) saat login."""
     if user.get("role") != "member":
         return
+    now = _now_wib()
+    today = now.date()
+    time_in = now.strftime("%H:%M:%S")
+    visitor_name = (user.get("full_name") or "Anggota").strip()[:100]
+
     try:
         with cursor() as cur:
             cur.execute(
                 "SELECT id FROM kunjungan "
-                "WHERE user_id = %s AND visit_date = CURRENT_DATE() "
+                "WHERE user_id = %s AND visit_date = %s "
                 "LIMIT 1",
-                (user["id"],),
+                (user["id"], today),
             )
             if cur.fetchone() is None:
                 cur.execute(
                     "INSERT INTO kunjungan "
-                    "(user_id, visitor_name, visitor_type, visit_date, time_in, purpose) "
-                    "VALUES (%s, %s, 'member', CURRENT_DATE(), CURRENT_TIME(), 'Login portal anggota')",
-                    (user["id"], user["full_name"]),
+                    "(user_id, visitor_name, visit_date, time_in, purpose) "
+                    "VALUES (%s, %s, %s, %s, 'Login portal anggota')",
+                    (user["id"], visitor_name, today, time_in),
                 )
     except Exception:
         traceback.print_exc()
@@ -116,7 +133,7 @@ def login(request):
             st = cur.fetchone()
             if st and st.get("status") not in (None, "active"):
                 return error("Akun Anda sedang dinonaktifkan atau ditangguhkan. Hubungi administrator.", 403)
-            
+
     _record_daily_login_visit(user)
 
     session.destroy(request.cookies.get(session.COOKIE_NAME))  # buang sesi lama
@@ -147,7 +164,7 @@ def forgot(request):
 
     user = User.find_by_email(email)
     now = time.time()
-    if user and now - _last_forgot.get(user["id"], 0) >= FORGOT_COOLDOWN:
+    if user and user.get("status") in (None, "active") and now - _last_forgot.get(user["id"], 0) >= FORGOT_COOLDOWN:
         _last_forgot[user["id"]] = now
         token = reset_store.create(user["id"])
         link = f"{APP_BASE_URL}/Pages/reset?token={token}"

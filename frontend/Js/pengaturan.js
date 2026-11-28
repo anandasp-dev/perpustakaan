@@ -30,7 +30,7 @@ if (window.lucide) lucide.createIcons();
     isi("dispEmail", p.email || "-");
     isi("dispPhone", p.phone || "-");
     isi("dispRole", p.role === "admin" ? "Admin" : "Anggota");
-    isi("dispProdi", p.program_study || "-");
+    isi("dispProdi", p.program_study || p.prodi || "-");
 
     const aktif = String(p.status || "active").toLowerCase() === "active";
     isi("dispStatus", aktif ? "Aktif" : "Ditangguhkan");
@@ -65,12 +65,23 @@ if (window.lucide) lucide.createIcons();
     });
   }
 
-  // Segarkan tampilan halaman pengaturan setelah form di admin.html disubmit
-  const adminForm = document.getElementById("adminProfileForm");
-  if (adminForm && !adminForm.dataset.pengaturanBound) {
-    adminForm.dataset.pengaturanBound = "1";
-    adminForm.addEventListener("submit", function () {
-      setTimeout(muatProfil, 600);
+  // Segarkan tampilan halaman pengaturan setiap kali modal profil di admin.html ditutup
+  const profileModal = document.getElementById("adminProfileModal");
+  if (profileModal) {
+    if (window._pengaturanModalObserver) {
+      window._pengaturanModalObserver.disconnect();
+    }
+    let sebelumnyaTerbuka = profileModal.classList.contains("show");
+    window._pengaturanModalObserver = new MutationObserver(function () {
+      const terbukaSekarang = profileModal.classList.contains("show");
+      if (sebelumnyaTerbuka && !terbukaSekarang) {
+        muatProfil();
+      }
+      sebelumnyaTerbuka = terbukaSekarang;
+    });
+    window._pengaturanModalObserver.observe(profileModal, {
+      attributes: true,
+      attributeFilter: ["class"]
     });
   }
 

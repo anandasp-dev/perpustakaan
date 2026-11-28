@@ -56,10 +56,16 @@ class Router:
     def _run(self, route, request):
         try:
             if route.login:
-                user_id = session.get_user_id(request.cookies.get(session.COOKIE_NAME))
+                token = request.cookies.get(session.COOKIE_NAME)
+                user_id = session.get_user_id(token)
                 user = User.find_by_id(user_id) if user_id else None
                 if user is None:
                     return error("Silakan login terlebih dahulu", 401)
+                if user.get("status") not in (None, "active"):
+                    session.destroy(token)
+                    resp = error("Akun Anda dinonaktifkan. Silakan hubungi administrator.", 401)
+                    resp.clear_cookie(session.COOKIE_NAME)
+                    return resp
                 request.user = user
                 if route.roles and user["role"] not in route.roles:
                     return error("Anda tidak punya akses", 403)

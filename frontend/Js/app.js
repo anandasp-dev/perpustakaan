@@ -1,90 +1,31 @@
 /* =========================================================
-   UNINDRA LIBRARY — UNIFIED APPLICATION SCRIPT (MULTI-PAGE)
+   KEYTO LIBRARY — UNIFIED APPLICATION SCRIPT (MULTI-PAGE)
    ========================================================= */
 (function () {
   "use strict";
 
   const STORAGE_KEY = "unindra_library_state_v1";
+  const MEMBER_READ_NOTIFS_PREFIX = "keyto_member_read_notifs_";
 
-  // Data awal sesuai desain Figma
   const DEFAULT_STATE = {
     isLoggedIn: false,
     role: "member",
     user: {
-      fullName: "Maya Putri",
-      npm: "202511223344",
-      memberId: "MB-0108",
-      prodi: "Teknik Informatika (S1)",
-      email: "Maya@gmail.com",
+      fullName: "",
+      npm: "-",
+      memberId: "-",
+      prodi: "Belum diisi",
+      email: "-",
       phone: "Belum ditambahkan",
-      status: "Mahasiswa",
-      visits: 12,
-      monthlyBorrowed: 6
+      status: "Anggota",
+      visits: 0,
+      visitsThisMonth: 0,
+      monthlyBorrowed: 0
     },
     eventSaved: false,
     profileUpdatedDemo: false,
-    catalogBooks: [
-      {
-        id: "braiding-sweetgrass",
-        title: "Braiding Sweetgrass",
-        author: "Robin Wall Kimmerer",
-        category: "Nature",
-        copies: 6,
-        cover: "assets/Book cover.png",
-        synopsis:
-          "Kumpulan esai yang mempertemukan pengetahuan tumbuhan, sains, dan hubungan manusia dengan alam."
-      },
-      {
-        id: "sapiens",
-        title: "Sapiens",
-        author: "Yuval Noah Harari",
-        category: "History",
-        copies: 7,
-        cover: "assets/Book cover2.png",
-        synopsis:
-          "Perjalanan sejarah manusia dari masyarakat awal hingga dunia modern."
-      },
-      {
-        id: "the-little-prince",
-        title: "The Little Prince",
-        author: "Antoine de Saint-Exupéry",
-        category: "Fiction",
-        copies: 9,
-        cover: "assets/Book cover3.png",
-        synopsis:
-          "Kisah seorang pangeran kecil tentang persahabatan, perjalanan, dan hal-hal yang berharga."
-      }
-    ],
-    activeLoans: [
-      {
-        id: "the-creative-act",
-        title: "The Creative Act",
-        subtitle: "The Creative Act",
-        author: "Rick Rubin",
-        category: "Arts",
-        borrowDate: "28 Sep 2026",
-        dueDate: "12 Oct 2026",
-        extendedDueDate: "19 Oct 2026",
-        daysLeftText: "7 hari tersisa",
-        renewed: false,
-        coverTheme: "theme-ochre",
-        coverImage: ""
-      },
-      {
-        id: "the-midnight-library",
-        title: "The Midnight Library",
-        subtitle: "The Midnight Library",
-        author: "Matt Haig",
-        category: "Fiction",
-        borrowDate: "01 Oct 2026",
-        dueDate: "15 Oct 2026",
-        extendedDueDate: "22 Oct 2026",
-        daysLeftText: "10 hari tersisa",
-        renewed: false,
-        coverTheme: "theme-forest",
-        coverImage: ""
-      }
-    ],
+    catalogBooks: [],
+    activeLoans: [],
     loanHistory: [],
     notifications: []
   };
@@ -99,7 +40,11 @@
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return JSON.parse(JSON.stringify(DEFAULT_STATE));
-      return Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), JSON.parse(saved));
+      const parsed = JSON.parse(saved);
+      return Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), {
+        eventSaved: !!parsed.eventSaved,
+        profileUpdatedDemo: !!parsed.profileUpdatedDemo
+      });
     } catch (e) {
       return JSON.parse(JSON.stringify(DEFAULT_STATE));
     }
@@ -107,7 +52,13 @@
 
   function saveState() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          eventSaved: state.eventSaved,
+          profileUpdatedDemo: state.profileUpdatedDemo
+        })
+      );
     } catch (e) {
       console.warn("Gagal menyimpan ke localStorage:", e);
     }
@@ -116,6 +67,23 @@
   // =========================================================
   // HELPERS & UI UTILITIES
   // =========================================================
+  function esc(teks) {
+    return String(teks ?? "").replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function buildPageUrl(pageName, queryString) {
+    const useHtml = window.location.pathname.endsWith(".html");
+    let base;
+    if (pageName === "index") {
+      base = useHtml ? "../index.html" : "/index";
+    } else {
+      base = useHtml ? `${pageName}.html` : `/Pages/${pageName}`;
+    }
+    return queryString ? `${base}?${queryString}` : base;
+  }
+
   function getInitials(name) {
     if (!name) return "?";
     const parts = name.trim().split(/\s+/);
@@ -133,7 +101,6 @@
   const BULAN_EN = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY",
                     "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 
-  // gaya tanggal di banner Home: "MONDAY, 23 NOVEMBER 2026"
   function formatHeroDate(d) {
     return HARI_EN[d.getDay()] + ", " + padTwo(d.getDate()) + " " + BULAN_EN[d.getMonth()] + " " + d.getFullYear();
   }
@@ -145,7 +112,6 @@
     });
   }
 
-  // nama bulan di kartu statistik + angka kunjungan bulan ini (dari database)
   function renderMonthlyStatCards() {
     const bulan = BULAN_PENUH[new Date().getMonth()];
 
@@ -193,7 +159,6 @@
     if (el) el.classList.add("hidden");
   };
 
-  // Tutup modal jika klik di area backdrop
   document.addEventListener("click", function (e) {
     if (e.target.classList && e.target.classList.contains("modal-backdrop")) {
       e.target.classList.add("hidden");
@@ -211,150 +176,51 @@
     }
   });
 
-  // =========================================================
-  // AUTHENTICATION PAGE (index.html)
-  // =========================================================
-  window.switchAuthTab = function (tab) {
-    const loginForm = document.getElementById("login-form");
-    const registerForm = document.getElementById("register-form");
-    const headerLogin = document.getElementById("auth-header-login");
-    const headerRegister = document.getElementById("auth-header-register");
-    const tabLogin = document.getElementById("tab-login");
-    const tabRegister = document.getElementById("tab-register");
-
-    if (!loginForm || !registerForm) return;
-
-    if (tab === "register") {
-      loginForm.classList.add("hidden");
-      registerForm.classList.remove("hidden");
-      headerLogin.classList.add("hidden");
-      headerRegister.classList.remove("hidden");
-      tabLogin.classList.remove("active");
-      tabRegister.classList.add("active", "register-mode");
-    } else {
-      registerForm.classList.add("hidden");
-      loginForm.classList.remove("hidden");
-      headerRegister.classList.add("hidden");
-      headerLogin.classList.remove("hidden");
-      tabRegister.classList.remove("active", "register-mode");
-      tabLogin.classList.add("active");
-    }
-  };
-
-  window.togglePassword = function (inputId, btn) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    const isPassword = input.type === "password";
-    input.type = isPassword ? "text" : "password";
-    btn.style.color = isPassword ? "#16325c" : "";
-  };
-
-  window.selectDemoAccount = function (role) {
-    const idInput = document.getElementById("login-identifier");
-    const passInput = document.getElementById("login-password");
-    switchAuthTab("login");
-    if (role === "admin") {
-      if (idInput) idInput.value = "admin@unindra.ac.id";
-      if (passInput) passInput.value = "admin12345";
-      showToast("Akun demo Admin dipilih. Klik Login untuk melanjutkan.");
-    } else {
-      if (idInput) idInput.value = "202511223344";
-      if (passInput) passInput.value = "member12345";
-      showToast("Akun demo Member dipilih. Klik Login untuk melanjutkan.");
-    }
-    closeModal("modal-demo");
-  };
-
-  window.fillSampleRegister = function () {
-    const nameEl = document.getElementById("reg-name");
-    const npmEl = document.getElementById("reg-npm");
-    const emailEl = document.getElementById("reg-email");
-    const phoneEl = document.getElementById("reg-phone");
-    const passEl = document.getElementById("reg-password");
-    const confirmEl = document.getElementById("reg-confirm");
-    const termsEl = document.getElementById("reg-terms");
-
-    if (nameEl) nameEl.value = "Maya Putri";
-    if (npmEl) npmEl.value = "202511223344";
-    if (emailEl) emailEl.value = "maya.putri@example.com";
-    if (phoneEl) phoneEl.value = "081234567890";
-    if (passEl) passEl.value = "Unindra2026";
-    if (confirmEl) confirmEl.value = "Unindra2026";
-    if (termsEl) termsEl.checked = true;
-    showToast("Data contoh Member berhasil diisi.");
-  };
-
-  window.handleLogin = function (e) {
-    e.preventDefault();
-    const identifier = (document.getElementById("login-identifier").value || "").trim();
-    if (!identifier) return;
-
-    if (identifier.toLowerCase() === "admin@unindra.ac.id" || identifier.toLowerCase().includes("admin")) {
-      state.isLoggedIn = true;
-      state.role = "admin";
-      saveState();
-      openModal("modal-admin-notice");
-      return;
-    }
-
-    // Login sebagai Member
-    state.isLoggedIn = true;
-    state.role = "member";
-    if (identifier !== "202511223344" && !identifier.includes("@")) {
-      state.user.npm = identifier;
-    }
-    saveState();
-    window.location.href = "dashboard.html";
-  };
-
-  window.handleRegister = function (e) {
-    e.preventDefault();
-    const fullName = document.getElementById("reg-name").value.trim();
-    const npm = document.getElementById("reg-npm").value.trim();
-    const email = document.getElementById("reg-email").value.trim();
-    const phone = document.getElementById("reg-phone").value.trim();
-    const pass = document.getElementById("reg-password").value;
-    const confirm = document.getElementById("reg-confirm").value;
-
-    if (pass !== confirm) {
-      showToast("Konfirmasi password tidak cocok.");
-      return;
-    }
-
-    state.isLoggedIn = true;
-    state.role = "member";
-    state.user.fullName = fullName || "Maya Putri";
-    state.user.npm = npm || "202511223344";
-    state.user.email = email || "Maya@gmail.com";
-    state.user.phone = phone || "Belum ditambahkan";
-    saveState();
-    window.location.href = "dashboard.html";
-  };
-
-  window.handleForgotSubmit = function (e) {
-    e.preventDefault();
-    closeModal("modal-forgot");
-    openModal("modal-reset-sent");
-  };
-
-  window.handleLogout = function () {
-    state.isLoggedIn = false;
-    saveState();
-    window.location.href = "index.html";
-  };
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    document.querySelectorAll(".modal-backdrop:not(.hidden)").forEach(function (el) {
+      el.classList.add("hidden");
+    });
+    const dropdown = document.getElementById("notif-dropdown");
+    if (dropdown) dropdown.classList.add("hidden");
+  });
 
   // =========================================================
   // SHARED NAVBAR, NOTIFICATIONS & RENEWAL MODALS
   // =========================================================
+  function getReadNotifSet() {
+    try {
+      const key = MEMBER_READ_NOTIFS_PREFIX + (state.user.memberId || "guest");
+      const arr = JSON.parse(localStorage.getItem(key) || "[]");
+      return new Set(Array.isArray(arr) ? arr : []);
+    } catch (e) {
+      return new Set();
+    }
+  }
+
+  function saveReadNotifSet(set) {
+    try {
+      const key = MEMBER_READ_NOTIFS_PREFIX + (state.user.memberId || "guest");
+      const arr = Array.from(set).slice(-100);
+      localStorage.setItem(key, JSON.stringify(arr));
+    } catch (e) {}
+  }
+
+  function applyLocalReadStatus(items) {
+    const readSet = getReadNotifSet();
+    return (items || []).map(function (item) {
+      return Object.assign({}, item, {
+        unread: Boolean(item.unread) && !readSet.has(String(item.id))
+      });
+    });
+  }
+
   function initSharedShell(pageName) {
-    // Proteksi sederhana agar halaman member selalu punya state valid
     if (!state.isLoggedIn) {
       state.isLoggedIn = true;
       state.role = "member";
-      saveState();
     }
 
-    // Highlight menu aktif
     document.querySelectorAll(".nav-item[data-nav]").forEach((el) => {
       if (el.getAttribute("data-nav") === pageName) {
         el.classList.add("active");
@@ -363,11 +229,17 @@
       }
     });
 
-    // Inisial avatar navbar
     const avatarChip = document.getElementById("navbar-avatar");
     if (avatarChip) {
       avatarChip.textContent = getInitials(state.user.fullName);
     }
+
+    const dropTitle = document.querySelector("#notif-dropdown .notif-drop-title");
+    const markReadBtn = document.querySelector("#notif-dropdown .btn-mark-read");
+    const dropFootBtn = document.querySelector("#notif-dropdown .notif-drop-foot");
+    if (dropTitle) dropTitle.textContent = "Notifikasi";
+    if (markReadBtn) markReadBtn.textContent = "Tandai Semua Dibaca";
+    if (dropFootBtn) dropFootBtn.textContent = "Lihat Semua Notifikasi →";
 
     renderNotificationDropdown();
     startCountdown();
@@ -382,13 +254,46 @@
 
   window.markAllNotificationsRead = async function () {
     try {
-      await window.LibraryApi.markNotificationsRead();   // tersimpan di database
-      state.notifications.forEach((n) => (n.unread = false));
+      await window.LibraryApi.markNotificationsRead();
+      const readSet = getReadNotifSet();
+      state.notifications.forEach((n) => {
+        n.unread = false;
+        if (n.id !== undefined && n.id !== null) readSet.add(String(n.id));
+      });
+      saveReadNotifSet(readSet);
       renderNotificationDropdown();
       showToast("Semua notifikasi ditandai sudah dibaca.");
     } catch (error) {
       showToast(error.message);
     }
+  };
+
+  window.openMemberNotificationItem = function (notifId) {
+    const idStr = String(notifId || "");
+    const readSet = getReadNotifSet();
+    let changed = false;
+
+    state.notifications.forEach(function (n) {
+      if (String(n.id) === idStr && n.unread) {
+        n.unread = false;
+        changed = true;
+      }
+    });
+
+    if (idStr && !readSet.has(idStr)) {
+      readSet.add(idStr);
+      saveReadNotifSet(readSet);
+    }
+
+    if (changed) {
+      renderNotificationDropdown();
+      const remainingUnread = state.notifications.filter(function (n) { return n.unread; }).length;
+      if (remainingUnread === 0) {
+        window.LibraryApi.markNotificationsRead().catch(function () {});
+      }
+    }
+
+    openMemberNotificationsModal();
   };
 
   function getNotifSvg(icon) {
@@ -414,20 +319,27 @@
     if (!listEl) return;
 
     const unreadCount = state.notifications.filter((n) => n.unread).length;
-    if (countEl) countEl.textContent = `${unreadCount} unread`;
+    if (countEl) countEl.textContent = `${unreadCount} belum dibaca`;
     if (dotEl) dotEl.classList.toggle("hidden", unreadCount === 0);
+
+    if (state.notifications.length === 0) {
+      listEl.innerHTML =
+        '<div class="notif-drop-item"><div class="notif-item-body">' +
+        '<div class="notif-item-desc">Belum ada notifikasi.</div></div></div>';
+      return;
+    }
 
     listEl.innerHTML = state.notifications
       .map(
         (item) => `
-      <div class="notif-drop-item" onclick="openMemberNotificationsModal()">
-        <div class="notif-item-icon ${item.type}">${getNotifSvg(item.icon)}</div>
+      <div class="notif-drop-item${item.unread ? " unread" : ""}" onclick="openMemberNotificationItem('${esc(item.id)}')">
+        <div class="notif-item-icon ${esc(item.type)}">${getNotifSvg(item.icon)}</div>
         <div class="notif-item-body">
-          <div class="notif-item-title">${item.title}</div>
-          <div class="notif-item-desc">${item.desc}</div>
+          <div class="notif-item-title">${esc(item.title)}</div>
+          <div class="notif-item-desc">${esc(item.desc)}</div>
         </div>
         <div class="notif-item-meta">
-          <span class="notif-item-time">${item.time}</span>
+          <span class="notif-item-time">${esc(item.time)}</span>
           ${item.unread ? '<span class="notif-unread-dot"></span>' : ""}
         </div>
       </div>
@@ -442,35 +354,34 @@
 
     const container = document.getElementById("modal-notif-loans-list");
     if (container) {
-      container.innerHTML = state.activeLoans
-        .map((loan) => {
-          if (loan.pending) {
+      if (state.activeLoans.length === 0) {
+        container.innerHTML =
+          '<div class="modal-notif-item"><div class="modal-notif-sub">Belum ada pinjaman aktif saat ini.</div></div>';
+      } else {
+        container.innerHTML = state.activeLoans
+          .map((loan) => {
+            if (loan.pending) {
+              return `
+                <div class="modal-notif-item">
+                  <div class="modal-notif-title">${esc(loan.title)}</div>
+                  <div class="modal-notif-sub">Menunggu konfirmasi · batas ${esc(loan.confirmDeadline)}</div>
+                </div>
+              `;
+            }
+
+            const activeDue = loan.renewed ? loan.extendedDueDate : loan.dueDate;
+            const statusNote = loan.renewed
+              ? "Diperpanjang 1 kali"
+              : loan.daysLeftText.replace("tersisa", "lagi");
             return `
               <div class="modal-notif-item">
-                <div class="modal-notif-title">${loan.title}</div>
-                <div class="modal-notif-sub">Menunggu konfirmasi · batas ${loan.confirmDeadline}</div>
-                
+                <div class="modal-notif-title">${esc(loan.title)}</div>
+                <div class="modal-notif-sub">Jatuh tempo ${esc(activeDue)} · ${esc(statusNote)}</div>
               </div>
             `;
-          }
-
-          const activeDue = loan.renewed ? loan.extendedDueDate : loan.dueDate;
-          const statusNote = loan.renewed
-            ? "Diperpanjang 1 kali"
-            : loan.daysLeftText.replace("tersisa", "lagi");
-          return `
-            <div class="modal-notif-item">
-              <div class="modal-notif-title">${loan.title}</div>
-              <div class="modal-notif-sub">Jatuh tempo ${activeDue} · ${statusNote}</div>
-            </div>
-          `;
-        })
-        .join("");
-      if (state.notifications.length === 0) {
-      listEl.innerHTML =
-        '<div class="notif-drop-item"><div class="notif-item-body">' +
-        '<div class="modal-notif-item"><div class="modal-notif-sub">Belum ada notifikasi.</div></div>';
-    }
+          })
+          .join("");
+      }
     }
     openModal("modal-member-notifications");
   };
@@ -478,15 +389,15 @@
   // =========================================================
   // RENDER CARD HELPERS (ACTIVE LOANS & CATALOG BOOKS)
   // =========================================================
-    function createLoanCardHTML(loan) {
+  function createLoanCardHTML(loan) {
     const pending = !!loan.pending;
     const activeDue = loan.renewed ? loan.extendedDueDate : loan.dueDate;
     const remainingText = loan.renewed ? "Diperpanjang 1 kali" : loan.daysLeftText;
     const coverMarkup = loan.coverImage
-      ? `<img src="${loan.coverImage}" alt="${loan.title}" class="loan-cover-img" />`
-      : `<div class="loan-cover-art ${loan.coverTheme || "theme-ochre"}">
-           <div class="loan-cover-art-title">${loan.title}</div>
-           <div class="loan-cover-art-author">${loan.author}</div>
+      ? `<img src="${esc(loan.coverImage)}" alt="${esc(loan.title)}" class="loan-cover-img" />`
+      : `<div class="loan-cover-art ${esc(loan.coverTheme || "theme-ochre")}">
+           <div class="loan-cover-art-title">${esc(loan.title)}</div>
+           <div class="loan-cover-art-author">${esc(loan.author)}</div>
          </div>`;
 
     const badgeClass = pending ? "pending" : loan.renewed ? "renewed" : "";
@@ -495,38 +406,38 @@
     const datesMarkup = pending
       ? `<div>
            <div class="loan-date-label">No. pinjaman</div>
-           <div class="loan-date-value">${loan.loanNumber}</div>
+           <div class="loan-date-value">${esc(loan.loanNumber)}</div>
          </div>
          <div>
            <div class="loan-date-label">Konfirmasi paling lambat</div>
-           <div class="loan-date-value">${loan.confirmDeadline}</div>
+           <div class="loan-date-value">${esc(loan.confirmDeadline)}</div>
          </div>`
       : `<div>
            <div class="loan-date-label">Tanggal pinjam</div>
-           <div class="loan-date-value">${loan.borrowDate}</div>
+           <div class="loan-date-value">${esc(loan.borrowDate)}</div>
          </div>
          <div>
            <div class="loan-date-label">Batas pengembalian</div>
-           <div class="loan-date-value">${activeDue}</div>
+           <div class="loan-date-value">${esc(activeDue)}</div>
          </div>`;
 
     const bottomMarkup = pending
       ? `<span class="loan-remaining">Sisa waktu
-           <strong class="loan-countdown" data-expires="${loan.expiresAt}">${formatCountdown(loan.expiresAt - Date.now())}</strong>
+           <strong class="loan-countdown" data-expires="${Number(loan.expiresAt) || 0}">${formatCountdown(loan.expiresAt - Date.now())}</strong>
          </span>
-         <button type="button" class="btn-renew btn-cancel" onclick="openCancelModal('${loan.id}')">
+         <button type="button" class="btn-renew btn-cancel" onclick="openCancelModal('${esc(loan.id)}')">
            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
              <line x1="18" y1="6" x2="6" y2="18"></line>
              <line x1="6" y1="6" x2="18" y2="18"></line>
            </svg>
            <span>Batalkan peminjaman</span>
          </button>`
-      : `<span class="loan-remaining">${remainingText}</span>
+      : `<span class="loan-remaining">${esc(remainingText)}</span>
          <button
            type="button"
            class="btn-renew"
            ${loan.renewed ? "disabled" : ""}
-           onclick="openRenewModal('${loan.id}')"
+           onclick="openRenewModal('${esc(loan.id)}')"
          >
            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
              <polyline points="23 4 23 10 17 10"></polyline>
@@ -541,10 +452,10 @@
           ${coverMarkup}
           <div class="loan-info">
             <span class="badge-status ${badgeClass}">${badgeText}</span>
-            <h3 class="loan-title">${loan.title}</h3>
-            <div class="loan-subtitle">${loan.subtitle || loan.title}</div>
-            <div class="loan-author">${loan.author}</div>
-            <div class="loan-borrower">Peminjam: ${state.user.fullName}</div>
+            <h3 class="loan-title">${esc(loan.title)}</h3>
+            <div class="loan-subtitle">${esc(loan.subtitle || loan.title)}</div>
+            <div class="loan-author">${esc(loan.author)}</div>
+            <div class="loan-borrower">Peminjam: ${esc(state.user.fullName)}</div>
           </div>
         </div>
         <div class="loan-dates-row">
@@ -557,12 +468,12 @@
     `;
   }
 
-    function createHistoryCardHTML(item) {
+  function createHistoryCardHTML(item) {
     const coverMarkup = item.coverImage
-      ? `<img src="${item.coverImage}" alt="${item.title}" class="loan-cover-img" />`
-      : `<div class="loan-cover-art ${item.coverTheme || "theme-ochre"}">
-           <div class="loan-cover-art-title">${item.title}</div>
-           <div class="loan-cover-art-author">${item.author}</div>
+      ? `<img src="${esc(item.coverImage)}" alt="${esc(item.title)}" class="loan-cover-img" />`
+      : `<div class="loan-cover-art ${esc(item.coverTheme || "theme-ochre")}">
+           <div class="loan-cover-art-title">${esc(item.title)}</div>
+           <div class="loan-cover-art-author">${esc(item.author)}</div>
          </div>`;
 
     return `
@@ -571,43 +482,44 @@
           ${coverMarkup}
           <div class="loan-info">
             <span class="badge-status renewed">Dikembalikan</span>
-            <h3 class="loan-title">${item.title}</h3>
-            <div class="loan-subtitle">${item.title}</div>
-            <div class="loan-author">${item.author}</div>
+            <h3 class="loan-title">${esc(item.title)}</h3>
+            <div class="loan-subtitle">${esc(item.title)}</div>
+            <div class="loan-author">${esc(item.author)}</div>
           </div>
         </div>
         <div class="loan-dates-row">
           <div>
             <div class="loan-date-label">Tanggal pinjam</div>
-            <div class="loan-date-value">${item.borrowDate}</div>
+            <div class="loan-date-value">${esc(item.borrowDate)}</div>
           </div>
           <div>
             <div class="loan-date-label">Tanggal kembali</div>
-            <div class="loan-date-value">${item.returnedDate}</div>
+            <div class="loan-date-value">${esc(item.returnedDate)}</div>
           </div>
         </div>
         <div class="loan-card-bottom">
-          <span class="loan-remaining">${item.note}</span>
+          <span class="loan-remaining">${esc(item.note)}</span>
         </div>
       </article>
     `;
   }
 
   function createBookCardHTML(book, includeActionButton) {
+    const detailUrl = esc(buildPageUrl("buku", `id=${encodeURIComponent(book.id)}`));
     return `
       <div class="book-item-wrapper">
         <article class="book-card">
-          <img src="${book.cover}" alt="${book.title}" class="book-thumb" />
+          <img src="${esc(book.cover)}" alt="${esc(book.title)}" class="book-thumb" />
           <div class="book-card-body">
-            <h3 class="book-card-title">${book.title}</h3>
-            <div class="book-card-author">${book.author}</div>
-            <div class="book-card-meta">${book.copies} copies available · ${book.category}</div>
-            <a href="buku.html?id=${book.id}" class="book-card-link">Lihat buku →</a>
+            <h3 class="book-card-title">${esc(book.title)}</h3>
+            <div class="book-card-author">${esc(book.author)}</div>
+            <div class="book-card-meta">${Number(book.copies || 0)} copies available · ${esc(book.category)}</div>
+            <a href="${detailUrl}" class="book-card-link">Lihat buku →</a>
           </div>
         </article>
         ${
           includeActionButton
-            ? `<a href="buku.html?id=${book.id}" class="btn btn-primary btn-block">Lihat detail &amp; pinjam</a>`
+            ? `<a href="${detailUrl}" class="btn btn-primary btn-block">Lihat detail &amp; pinjam</a>`
             : ""
         }
       </div>
@@ -633,19 +545,19 @@
 
   window.confirmRenewLoan = async function () {
     if (!pendingRenewLoanId) return;
-      const loan = state.activeLoans.find((l) => l.id === pendingRenewLoanId);
-      pendingRenewLoanId = null;
+    const loan = state.activeLoans.find((l) => l.id === pendingRenewLoanId);
+    pendingRenewLoanId = null;
     if (!loan) return;
 
     try {
-      await window.LibraryApi.renewLoan(loan.loanId);   // minta server memperpanjang
-      await syncCatalogAndLoansFromApi();               // ambil data terbaru
+      await window.LibraryApi.renewLoan(loan.loanId);
+      await syncCatalogAndLoansFromApi();
       closeModal("modal-renew-confirm");
       openModal("modal-renew-complete");
       refreshCurrentPage();
     } catch (error) {
       closeModal("modal-renew-confirm");
-      showToast(error.message);                         // mis. "Pinjaman ini sudah diperpanjang 1 kali"
+      showToast(error.message);
     }
   };
 
@@ -656,21 +568,22 @@
   let countdownRefreshing = false;
   let pendingCancelLoanId = null;
   let notifTimer = null;
-    // cek notifikasi baru tiap 60 detik (mis. setelah admin mengonfirmasi bukumu)
-  
+
   function startNotificationPolling() {
     if (notifTimer) return;
     notifTimer = setInterval(async function () {
       try {
-        state.notifications = await window.LibraryApi.getNotifications();
+        const fresh = await window.LibraryApi.getNotifications();
+        state.notifications = applyLocalReadStatus(fresh);
         renderNotificationDropdown();
       } catch (error) {
-        /* abaikan, coba lagi 60 detik berikutnya */
+        if (error && error.status === 401) {
+          window.location.href = buildPageUrl("index");
+        }
       }
     }, 60000);
   }
 
-  // milidetik -> "23:41:12"
   function formatCountdown(ms) {
     const total = Math.max(0, Math.floor(ms / 1000));
     const h = Math.floor(total / 3600);
@@ -679,8 +592,6 @@
     return padTwo(h) + ":" + padTwo(m) + ":" + padTwo(s);
   }
 
-  // Satu "jam weker" untuk semua kartu pending: tiap detik angkanya diperbarui.
-  // Kalau ada yang sudah habis, ambil data terbaru dari server (booking hangus hilang dari daftar).
   function startCountdown() {
     if (countdownTimer) return;
     countdownTimer = setInterval(function () {
@@ -700,8 +611,6 @@
     }, 1000);
   }
 
-  // Jendela konfirmasi dibuat lewat JS dengan class yang sama seperti jendela Perpanjang,
-  // jadi tidak perlu mengubah HTML di tiga halaman.
   function ensureCancelModal() {
     if (document.getElementById("modal-cancel-confirm")) return;
     const wrap = document.createElement("div");
@@ -741,9 +650,9 @@
       showToast(`Peminjaman "${loan.title}" dibatalkan. Stok buku sudah dikembalikan.`);
     } catch (error) {
       closeModal("modal-cancel-confirm");
-      showToast(error.message);   // mis. booking ternyata sudah hangus atau sudah dikonfirmasi
+      showToast(error.message);
     }
-    await syncCatalogAndLoansFromApi();   // apa pun hasilnya, tampilkan data terbaru
+    await syncCatalogAndLoansFromApi();
     refreshCurrentPage();
   };
 
@@ -751,7 +660,7 @@
   // PAGE: HOME (dashboard.html)
   // =========================================================
   function initHomePage() {
-    const firstName = (state.user.fullName || "Maya").split(" ")[0];
+    const firstName = (state.user.fullName || "Anggota").split(" ")[0];
     const greetingEl = document.getElementById("home-greeting");
     const metaEl = document.getElementById("home-member-meta");
     const activeStatEl = document.getElementById("stat-active-loans");
@@ -762,13 +671,16 @@
 
     if (greetingEl) greetingEl.textContent = `A new chapter, ${firstName}.`;
     if (metaEl) {
-      metaEl.textContent = `${state.user.fullName} · NPM ${state.user.npm} · ${state.user.memberId} · Active member`;
+      metaEl.textContent = `${state.user.fullName || "Anggota"} · NPM ${state.user.npm} · ${state.user.memberId} · Active member`;
     }
     if (activeStatEl) activeStatEl.textContent = padTwo(state.activeLoans.length);
     if (monthlyStatEl) monthlyStatEl.textContent = padTwo(state.user.monthlyBorrowed);
 
     if (loansContainer) {
-      loansContainer.innerHTML = state.activeLoans.map(createLoanCardHTML).join("");
+      loansContainer.innerHTML =
+        state.activeLoans.length > 0
+          ? state.activeLoans.map(createLoanCardHTML).join("")
+          : `<p class="section-meta">Belum ada pinjaman aktif saat ini.</p>`;
     }
 
     if (eventBtn) {
@@ -791,7 +703,10 @@
     });
 
     if (filtered.length === 0) {
-      grid.innerHTML = `<p class="section-meta">Buku kategori ${currentHomeCategory} sedang dipinjam atau belum tersedia di rak rekomendasi.</p>`;
+      grid.innerHTML =
+        currentHomeCategory === "All"
+          ? `<p class="section-meta">Belum ada koleksi buku yang ditampilkan.</p>`
+          : `<p class="section-meta">Buku kategori ${esc(currentHomeCategory)} sedang dipinjam atau belum tersedia di rak rekomendasi.</p>`;
       return;
     }
 
@@ -809,11 +724,7 @@
     e.preventDefault();
     const input = document.getElementById("home-search-input");
     const query = input ? input.value.trim() : "";
-    if (!query) {
-      window.location.href = "buku.html";
-      return;
-    }
-    window.location.href = `buku.html?q=${encodeURIComponent(query)}`;
+    window.location.href = buildPageUrl("buku", query ? `q=${encodeURIComponent(query)}` : "");
   };
 
   window.toggleEventSeat = function () {
@@ -869,7 +780,6 @@
 
     const q = currentBooksQuery.trim().toLowerCase();
 
-    // Mode Pencarian
     if (q) {
       if (catalogSection) catalogSection.classList.remove("hidden");
       if (loansSection) loansSection.classList.add("hidden");
@@ -887,17 +797,19 @@
         catalogGrid.innerHTML =
           matches.length > 0
             ? matches.map((b) => createBookCardHTML(b, true)).join("")
-            : `<p class="section-meta">Tidak ditemukan buku yang cocok dengan "${currentBooksQuery.trim()}".</p>`;
+            : `<p class="section-meta">Tidak ditemukan buku yang cocok dengan "${esc(currentBooksQuery.trim())}".</p>`;
       }
       return;
     }
 
-    // Mode Semua Buku
     if (currentBooksCategory === "All") {
       if (catalogSection) catalogSection.classList.remove("hidden");
       if (catalogHeading) catalogHeading.textContent = "Direkomendasikan untuk Anda";
       if (catalogGrid) {
-        catalogGrid.innerHTML = state.catalogBooks.map((b) => createBookCardHTML(b, true)).join("");
+        catalogGrid.innerHTML =
+          state.catalogBooks.length > 0
+            ? state.catalogBooks.map((b) => createBookCardHTML(b, true)).join("")
+            : `<p class="section-meta">Belum ada buku tersedia di katalog.</p>`;
       }
 
       if (loansCategoryBanner) loansCategoryBanner.classList.add("hidden");
@@ -910,7 +822,6 @@
       return;
     }
 
-    // Mode Filter Kategori Spesifik (Fiction, Arts, History, Nature)
     const catCatalog = state.catalogBooks.filter(
       (b) => b.category.toLowerCase() === currentBooksCategory.toLowerCase()
     );
@@ -975,8 +886,13 @@
   };
 
   function renderBookDetail(bookId) {
-    const book = state.catalogBooks.find((b) => b.id === bookId) || state.catalogBooks[0];
-    if (!book) return;
+    const book = state.catalogBooks.find(
+      (b) => String(b.id) === String(bookId) || String(b.databaseId) === String(bookId)
+    );
+    if (!book) {
+      window.location.href = buildPageUrl("buku");
+      return;
+    }
 
     const coverEl = document.getElementById("detail-book-cover");
     const catEl = document.getElementById("detail-book-category");
@@ -993,15 +909,22 @@
     if (catEl) catEl.textContent = book.category;
     if (titleEl) titleEl.textContent = book.title;
     if (authorEl) authorEl.textContent = book.author;
-    if (copiesEl) copiesEl.textContent = `Tersedia · ${book.copies} eksemplar`;
+    if (copiesEl) {
+      copiesEl.textContent = Number(book.copies) > 0
+        ? `Tersedia · ${book.copies} eksemplar`
+        : "Stok habis · 0 eksemplar";
+    }
     if (synopsisEl) synopsisEl.textContent = book.synopsis;
 
-    const alreadyBorrowed = state.activeLoans.some((l) => l.id === book.id);
+    const existingLoan = state.activeLoans.find((l) => l.id === book.id);
     if (borrowBtn) {
-      if (alreadyBorrowed) {
-        borrowBtn.textContent = state.activeLoans.find((l) => l.id === book.id).pending
+      if (existingLoan) {
+        borrowBtn.textContent = existingLoan.pending
           ? "Menunggu konfirmasi admin"
           : "Sudah ada di Pinjaman Saya";
+        borrowBtn.disabled = true;
+      } else if (Number(book.copies) <= 0) {
+        borrowBtn.textContent = "Stok buku habis";
         borrowBtn.disabled = true;
       } else if (state.activeLoans.length >= 5) {
         borrowBtn.textContent = "Batas maksimal 5 buku tercapai";
@@ -1020,6 +943,10 @@
     const book = state.catalogBooks.find((b) => b.id === bookId);
     if (!book) return;
     if (state.activeLoans.some((l) => l.id === book.id)) return;
+    if (Number(book.copies) <= 0) {
+      showToast("Stok buku ini sedang habis.");
+      return;
+    }
     if (state.activeLoans.length >= 5) {
       showToast("Maksimal peminjaman 5 buku aktif.");
       return;
@@ -1034,18 +961,19 @@
     try {
       const response = await fetch("/api/loans", {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           book_id: book.databaseId || null,
           title: book.title
         })
       });
+      if (response.status === 401) {
+        window.location.href = buildPageUrl("index");
+        return;
+      }
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
-      state.user.monthlyBorrowed = Math.max(
-        state.user.monthlyBorrowed,
-        state.activeLoans.length
-      );
         throw new Error(body.message || "Peminjaman gagal disimpan");
       }
 
@@ -1118,14 +1046,17 @@
       bannerEl.textContent = "Profil berhasil diperbarui";
       bannerEl.classList.toggle("hidden", !state.profileUpdatedDemo);
     }
-    state.profileUpdatedDemo = false;   // banner hanya tampil sekali, tepat setelah menyimpan
-    if (headerNameEl) headerNameEl.textContent = state.user.fullName;
+    if (state.profileUpdatedDemo) {
+      state.profileUpdatedDemo = false;
+      saveState();
+    }
+    if (headerNameEl) headerNameEl.textContent = state.user.fullName || "-";
     if (headerRoleEl) headerRoleEl.textContent = state.user.status;
 
     if (npmEl) npmEl.textContent = state.user.npm;
     if (prodiEl) prodiEl.textContent = state.user.prodi;
     if (phoneEl) phoneEl.textContent = state.user.phone;
-    if (fullNameEl) fullNameEl.textContent = state.user.fullName;
+    if (fullNameEl) fullNameEl.textContent = state.user.fullName || "-";
     if (emailEl) emailEl.textContent = state.user.email;
     if (memberIdEl) memberIdEl.textContent = state.user.memberId;
   }
@@ -1134,10 +1065,10 @@
     const nameInput = document.getElementById("edit-fullname");
     const emailInput = document.getElementById("edit-email");
     const phoneInput = document.getElementById("edit-phone");
-    const prodiInput = document.getElementById("edit-prodi")
+    const prodiInput = document.getElementById("edit-prodi");
 
     if (nameInput) nameInput.value = state.user.fullName;
-    if (emailInput) emailInput.value = state.user.email;
+    if (emailInput) emailInput.value = state.user.email === "-" ? "" : state.user.email;
     if (phoneInput) {
       phoneInput.value = state.user.phone === "Belum ditambahkan" ? "" : state.user.phone;
     }
@@ -1147,23 +1078,22 @@
     openModal("modal-edit-profile");
   };
 
-  window.fillSampleProfileEdit = function () {
-    const nameInput = document.getElementById("edit-fullname");
-    const emailInput = document.getElementById("edit-email");
-    const phoneInput = document.getElementById("edit-phone");
-
-    if (nameInput) nameInput.value = "Maya Putri S.";
-    if (emailInput) emailInput.value = "maya.putri@example.com";
-    if (phoneInput) phoneInput.value = "0812 3456 7890";
-    showToast("Contoh perubahan profil diisi.");
-  };
-
   window.handleSaveProfile = async function (e) {
     e.preventDefault();
     const nameVal = document.getElementById("edit-fullname").value.trim();
     const emailVal = document.getElementById("edit-email").value.trim();
     const phoneVal = document.getElementById("edit-phone").value.trim();
     const prodiVal = document.getElementById("edit-prodi").value.trim();
+
+    if (nameVal.length < 3) {
+      showToast("Nama lengkap minimal 3 karakter.");
+      return;
+    }
+    if (phoneVal && !/^08[0-9]{8,11}$/.test(phoneVal)) {
+      showToast("Nomor HP harus diawali 08 dan terdiri dari 10-13 digit angka.");
+      return;
+    }
+
     const tombol = e.target.querySelector('button[type="submit"]');
     if (tombol) tombol.disabled = true;
 
@@ -1175,7 +1105,7 @@
         prodi: prodiVal,
         program_study: prodiVal
       });
-      await syncCatalogAndLoansFromApi();      // ambil profil terbaru dari database
+      await syncCatalogAndLoansFromApi();
       state.profileUpdatedDemo = true;
       closeModal("modal-edit-profile");
       initSharedShell("profile");
@@ -1183,7 +1113,11 @@
       saveState();
       showToast("Profil berhasil diperbarui.");
     } catch (error) {
-      showToast(error.message);                 // mis. "Email sudah dipakai akun lain"
+      if (error && error.status === 401) {
+        window.location.href = buildPageUrl("index");
+        return;
+      }
+      showToast(error.message);
     } finally {
       if (tombol) tombol.disabled = false;
     }
@@ -1191,17 +1125,16 @@
 
   window.handleLogout = async function () {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });   // akhiri sesi di server juga
+      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
     } catch (e) {
       /* abaikan: tetap lanjut ke halaman login */
     }
     state.isLoggedIn = false;
     saveState();
-    window.location.href = "/index";
+    window.location.href = buildPageUrl("index");
   };
 
-
-    // =========================================================
+  // =========================================================
   // SINKRON DATA DARI SERVER (buku dari database)
   // =========================================================
   async function syncCatalogAndLoansFromApi() {
@@ -1227,16 +1160,17 @@
       state.user.status = "Anggota";
       state.user.visitsThisMonth = p.visits_this_month;
 
-      state.notifications = results[3];
+      state.notifications = applyLocalReadStatus(results[3]);
     } catch (error) {
       if (error.status === 401) {
-        window.location.href = "/index";
+        window.location.href = buildPageUrl("index");
         return;
       }
       console.warn("Gagal mengambil data dari server:", error);
       showToast("Gagal memuat data dari server.");
     }
   }
+
   // =========================================================
   // BOOTSTRAP PAGE ON LOAD
   // =========================================================
@@ -1251,6 +1185,13 @@
   document.addEventListener("DOMContentLoaded", function () {
     const page = document.body.getAttribute("data-page");
     if (!page || page === "auth") return;
+
+    const editPhone = document.getElementById("edit-phone");
+    if (editPhone) {
+      editPhone.addEventListener("input", function (e) {
+        e.target.value = e.target.value.replace(/\D/g, "");
+      });
+    }
 
     syncCatalogAndLoansFromApi().finally(function () {
       initSharedShell(page);

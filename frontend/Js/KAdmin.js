@@ -4,6 +4,9 @@ if (window.lucide) lucide.createIcons();
   "use strict";
 
   const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  const NPM_RE = /^[0-9]{12}$/;
+  const PHONE_RE = /^08[0-9]{8,11}$/;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const modal = document.getElementById("adminModal");
   const form = document.getElementById("adminForm");
@@ -19,6 +22,10 @@ if (window.lucide) lucide.createIcons();
   let daftarAdmin = [];
   let timerCari = null;
 
+  function loginUrl() {
+    return window.location.pathname.endsWith(".html") ? "../index.html" : "/index";
+  }
+
   function byIds() {
     for (let i = 0; i < arguments.length; i++) {
       const el = document.getElementById(arguments[i]);
@@ -28,18 +35,17 @@ if (window.lucide) lucide.createIcons();
   }
 
   function escapeHtml(teks) {
-    return String(teks || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+    return String(teks ?? "").replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
 
   function formatTanggalWib(teks) {
     if (!teks) return "-";
     const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(String(teks));
     if (!m) return escapeHtml(teks);
-    const tgl = m[3] + " " + BULAN[Number(m[2]) - 1] + " " + m[1];
+    const namaBulan = BULAN[Number(m[2]) - 1] || m[2];
+    const tgl = m[3] + " " + namaBulan + " " + m[1];
     const jam = m[4] && m[5] ? "<small>" + m[4] + ":" + m[5] + " WIB</small>" : "";
     return '<div class="login-time">' + tgl + jam + "</div>";
   }
@@ -62,15 +68,44 @@ if (window.lucide) lucide.createIcons();
     kotak._timer = setTimeout(function () { kotak.style.opacity = "0"; }, 3500);
   }
 
+  function validasiAdminFields(data, isCreate) {
+    if (!data.name || data.name.length < 3) {
+      return "Nama minimal 3 karakter.";
+    }
+    if (!NPM_RE.test(data.npm)) {
+      return "NPM harus 12 digit angka.";
+    }
+    if (!EMAIL_RE.test(data.email)) {
+      return "Format email tidak valid.";
+    }
+    if (!PHONE_RE.test(data.phone)) {
+      return "Nomor telepon harus diawali 08 dan 10-13 digit angka.";
+    }
+    if (!data.program_study) {
+      return "Pilih program studi yang tersedia pada daftar.";
+    }
+    if (isCreate) {
+      if (data.password.length < 8) {
+        return "Kata sandi minimal 8 karakter.";
+      }
+      if (data.password !== data.confirm) {
+        return "Konfirmasi kata sandi tidak cocok.";
+      }
+    }
+    return null;
+  }
+
   async function requestApi(url, opsi) {
     const res = await fetch(url, Object.assign({ credentials: "same-origin" }, opsi || {}));
     const data = await res.json().catch(function () { return {}; });
     if (res.status === 401) {
-      window.location.href = "/index";
+      window.location.href = loginUrl();
       throw new Error("Sesi berakhir");
     }
     if (!res.ok) {
-      throw new Error(data.message || "Terjadi kesalahan pada server");
+      const err = new Error(data.message || "Terjadi kesalahan pada server");
+      err.status = res.status;
+      throw err;
     }
     return data;
   }
@@ -98,12 +133,11 @@ if (window.lucide) lucide.createIcons();
       const tglDibekukan = !aktif && adm.deactivated_at
         ? formatTanggalWib(adm.deactivated_at)
         : '<span class="muted">-</span>';
-      
-      // Tambahkan baris ini untuk menonaktifkan tombol ubah jika akun sendiri
+
       const disableEdit = adm.is_self
         ? ' disabled style="opacity: 0.4; cursor: not-allowed;" title="Anda tidak dapat mengubah akun sendiri"'
         : "";
-      
+
       const disableHapus = adm.is_self
         ? ' disabled title="Anda tidak dapat menghapus akun sendiri"'
         : "";
@@ -144,9 +178,13 @@ if (window.lucide) lucide.createIcons();
       const note = document.getElementById("adminTableNote");
       if (note) {
         note.textContent = "Menampilkan " + (data.admins ? data.admins.length : 0) +
-          " akun admin \u2022 Cari berdasarkan nama atau email untuk mempersempit hasil.";
+          " akun admin \u2022 Cari berdasarkan nama, email, NPM, atau kode admin untuk mempersempit hasil.";
       }
     } catch (err) {
+      if (err.status === 403) {
+        window.location.href = "/Pages/dashboard";
+        return;
+      }
       tbody.innerHTML =
         '<tr><td colspan="' + colSpan + '" style="text-align:center;padding:24px;color:#dc2626;">' +
         escapeHtml(err.message) + "</td></tr>";
@@ -178,15 +216,20 @@ if (window.lucide) lucide.createIcons();
   if (form) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
-      const password = (byIds("aPassword") || {}).value || "";
-      const confirm = (byIds("aPasswordConfirm") || {}).value || "";
+      const payload = {
+        name: ((byIds("aNama") || {}).value || "").trim(),
+        npm: ((byIds("aNpm") || {}).value || "").trim(),
+        email: ((byIds("aEmail") || {}).value || "").trim(),
+        phone: ((byIds("aTelepon", "aphone") || {}).value || "").trim(),
+        program_study: ((byIds("aProdi", "aprogram_study") || {}).value || "").trim(),
+        password: (byIds("aPassword") || {}).value || "",
+        confirm: (byIds("aPasswordConfirm") || {}).value || "",
+        status: "active"
+      };
 
-      if (password.length < 8) {
-        tampilToast("Kata sandi minimal 8 karakter.", true);
-        return;
-      }
-      if (password !== confirm) {
-        tampilToast("Konfirmasi kata sandi tidak cocok.", true);
+      const errMsg = validasiAdminFields(payload, true);
+      if (errMsg) {
+        tampilToast(errMsg, true);
         return;
       }
 
@@ -197,12 +240,12 @@ if (window.lucide) lucide.createIcons();
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: (byIds("aNama") || {}).value || "",
-            npm: (byIds("aNpm") || {}).value || "",
-            email: (byIds("aEmail") || {}).value || "",
-            phone: (byIds("aTelepon", "aphone") || {}).value || "",
-            program_study: (byIds("aProdi", "aprogram_study") || {}).value || "",
-            password: password,
+            name: payload.name,
+            npm: payload.npm,
+            email: payload.email,
+            phone: payload.phone,
+            program_study: payload.program_study,
+            password: payload.password,
             status: "active"
           })
         });
@@ -268,20 +311,29 @@ if (window.lucide) lucide.createIcons();
       e.preventDefault();
       const idEl = byIds("eaId");
       if (!idEl || !idEl.value) return;
+
+      const payload = {
+        name: ((byIds("eaNama") || {}).value || "").trim(),
+        npm: ((byIds("eaNpm") || {}).value || "").trim(),
+        email: ((byIds("eaEmail") || {}).value || "").trim(),
+        phone: ((byIds("eaTelepon", "eaphone") || {}).value || "").trim(),
+        program_study: ((byIds("eaProdi", "eaprogram_study") || {}).value || "").trim(),
+        status: (byIds("eaStatus") || {}).value || "active"
+      };
+
+      const errMsg = validasiAdminFields(payload, false);
+      if (errMsg) {
+        tampilToast(errMsg, true);
+        return;
+      }
+
       const tombol = editForm.querySelector('button[type="submit"]');
       if (tombol) tombol.disabled = true;
       try {
         const res = await requestApi("/api/admin/admins/" + idEl.value, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: (byIds("eaNama") || {}).value || "",
-            npm: (byIds("eaNpm") || {}).value || "",
-            email: (byIds("eaEmail") || {}).value || "",
-            phone: (byIds("eaTelepon", "eaphone") || {}).value || "",
-            program_study: (byIds("eaProdi", "eaprogram_study") || {}).value || "",
-            status: (byIds("eaStatus") || {}).value || "active"
-          })
+          body: JSON.stringify(payload)
         });
         tutupSemua();
         tampilToast(res.message || "Data admin berhasil diperbarui.");

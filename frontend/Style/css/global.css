@@ -67,7 +67,8 @@ img {
 }
 
 button,
-input {
+input,
+select {
   font-family: inherit;
   font-size: inherit;
 }
@@ -132,6 +133,7 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .brand-nav-text {
@@ -219,6 +221,7 @@ a {
   justify-content: center;
   border: 1px solid #d5e3fb;
   transition: transform 0.15s ease;
+  overflow: hidden;
 }
 
 .avatar-circle:hover {
@@ -246,6 +249,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -270,6 +274,7 @@ a {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   transition: background-color 0.15s ease;
+  white-space: nowrap;
 }
 
 .btn-mark-read:hover {
@@ -622,7 +627,6 @@ a {
   color: var(--navy-800);
 }
 
-/* Pinjaman menunggu konfirmasi admin */
 .badge-status.pending {
   background-color: var(--surface-muted);
   color: var(--navy-800);
@@ -630,19 +634,9 @@ a {
 }
 
 .loan-countdown {
-  font-variant-numeric: tabular-nums;  /* lebar angka sama, supaya tidak "goyang" tiap detik */
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--navy-800);
-}
-
-.btn-renew.btn-cancel {
-  color: #b42318;
-  border-color: #fecdca;
-}
-
-.btn-renew.btn-cancel:hover:not(:disabled) {
-  background-color: #fef3f2;
-  border-color: #b42318;
 }
 
 .loan-title {
@@ -725,19 +719,6 @@ a {
   color: var(--text-muted);
   border-color: var(--border-color);
   cursor: not-allowed;
-}
-
-/* Pinjaman menunggu konfirmasi admin */
-.badge-status.pending {
-  background-color: var(--surface-muted);
-  color: var(--navy-800);
-  border: 1px solid var(--border-strong);
-}
-
-.loan-countdown {
-  font-variant-numeric: tabular-nums;  /* lebar angka sama, supaya tidak "goyang" tiap detik */
-  font-weight: 700;
-  color: var(--navy-800);
 }
 
 .btn-renew.btn-cancel {
@@ -845,6 +826,8 @@ a {
 .modal-card {
   width: 100%;
   max-width: 440px;
+  max-height: 92vh;
+  overflow-y: auto;
   background-color: var(--surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -953,7 +936,7 @@ a {
 }
 
 /* =========================================================
-   RESPONSIVE
+   RESPONSIVE GLOBAL MEMBER
    ========================================================= */
 @media (max-width: 960px) {
   .loans-grid {
@@ -992,9 +975,79 @@ a {
   }
 }
 
-button,
-input,
-select {
-  font-family: inherit;
-  font-size: inherit;
+@media (max-width: 480px) {
+  .container {
+    padding: 0 14px;
+  }
+
+  .main-content {
+    padding: 20px 0 36px;
+  }
+
+  .nav-menu {
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-item {
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+
+  .notif-dropdown {
+    position: fixed;
+    top: 64px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .section-header {
+    flex-wrap: wrap;
+  }
+
+  .loan-card {
+    padding: 16px;
+  }
+
+  .loan-card-top {
+    gap: 12px;
+  }
+
+  .loan-cover-art,
+  .loan-cover-img {
+    width: 68px;
+    height: 96px;
+  }
+
+  .loan-dates-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .loan-card-bottom {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-renew {
+    justify-content: center;
+  }
+
+  .modal-card {
+    padding: 20px 18px;
+  }
+
+  .site-footer-inner {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .toast-container {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+  }
 }

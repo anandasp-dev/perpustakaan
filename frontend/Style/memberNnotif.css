@@ -96,7 +96,8 @@
 
 .table-wrap {
     padding: 0;
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .member-table th {
@@ -348,7 +349,6 @@
     color: var(--muted);
     cursor: not-allowed;
 }
-
 
 .field-row {
     display: grid;
@@ -615,4 +615,69 @@
 .notif-foot svg {
     width: 14px;
     height: 14px;
+}
+
+/* =========================================================
+   RESPONSIVE ANGGOTA, TOOLBAR, MODAL & NOTIFIKASI ADMIN
+   ========================================================= */
+@media (max-width: 960px) {
+    .stats-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .stats-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar .select,
+    .toolbar .btn-outline,
+    .toolbar .btn-primary {
+        min-height: 40px;
+        justify-content: center;
+    }
+
+    .member-table {
+        min-width: 680px;
+    }
+
+    .table-foot {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .field-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .modal-head,
+    .modal-body,
+    .modal-foot {
+        padding: 16px;
+    }
+
+    .modal-foot {
+        flex-direction: column-reverse;
+    }
+
+    .modal-foot button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .notif-panel {
+        position: fixed;
+        top: 62px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+    }
 }

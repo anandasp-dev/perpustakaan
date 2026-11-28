@@ -222,14 +222,14 @@
     color: #dc2626;
 }
 
-.status-pending { 
-    background: #ede9fe; 
-    color: #5b21b6; 
+.status-pending {
+    background: #ede9fe;
+    color: #5b21b6;
 }
 
-.status-cancelled, .status-expired { 
-    background: #f1f5f9; 
-    color: #64748b; 
+.status-cancelled, .status-expired {
+    background: #f1f5f9;
+    color: #64748b;
 }
 
 .icon-edit {
@@ -253,4 +253,44 @@
 #editLoanModal .field input,
 #editLoanModal .field select {
     padding: 13px 14px;
+}
+
+/* =========================================================
+   RESPONSIVE PENGATURAN & PEMINJAMAN ADMIN
+   ========================================================= */
+@media (max-width: 640px) {
+    .settings-card {
+        padding: 18px 16px;
+    }
+
+    .settings-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .btn-soft {
+        align-self: flex-start;
+    }
+
+    .s-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .profile-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .section-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .loan-table {
+        min-width: 720px;
+    }
 }
