@@ -113,10 +113,6 @@
     color: #4338ca;
 }
 
-.is-hidden {
-    display: none;
-}
-
 .prop-row {
     margin-top: 10px;
 }
@@ -172,6 +168,7 @@
     width: 20px;
     height: 20px;
     margin-top: 8px;
+    flex-shrink: 0;
 }
 
 .title-icon h1 {
@@ -209,99 +206,8 @@
     padding: 12px 14px;
 }
 
-.visitor-table th,
-.visitor-table td {
-    padding: 14px 10px;
-    text-align: left;
-}
-
-.visitor-table th:first-child,
-.visitor-table td:first-child {
-    padding-left: 16px;
-}
-
-.dash {
-    color: #94a3b8;
-}
-
-.table-note {
-    font-size: 10px;
-    color: var(--muted);
-    padding: 14px 16px;
-    border-top: 1px solid #f1f5f9;
-}
-
-#visitorModal .field input,
-#visitorModal .field select {
-    padding: 13px 14px;
-}
-
 .visitor-table {
     min-width: 1000px;
-}
-
-.table-wrap {
-    overflow-x: auto;
-}
-
-#editVisitorModal .field input,
-#editVisitorModal .field select {
-    padding: 13px 14px;
-}
-
-.status-unrecorded {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-/*pengunjung*/
-
-.title-icon {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    color: var(--blue);
-}
-
-.title-icon svg {
-    width: 20px;
-    height: 20px;
-    margin-top: 8px;
-}
-
-.title-icon h1 {
-    color: #0f172a;
-}
-
-.title-icon p {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 4px;
-}
-
-.teal {
-    color: #0f766e;
-}
-
-.search-full {
-    margin-top: 16px;
-    padding: 0 14px;
-}
-
-.filter-type {
-    margin-top: 14px;
-}
-
-.filter-type label {
-    display: block;
-    font-size: 11px;
-    font-weight: bold;
-    margin-bottom: 6px;
-}
-
-.filter-type .select {
-    width: 100%;
-    padding: 12px 14px;
 }
 
 .visitor-table th,
@@ -319,6 +225,11 @@
     color: #94a3b8;
 }
 
+.table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .table-note {
     font-size: 10px;
     color: var(--muted);
@@ -327,18 +238,7 @@
 }
 
 #visitorModal .field input,
-#visitorModal .field select {
-    padding: 13px 14px;
-}
-
-.visitor-table {
-    min-width: 1000px;
-}
-
-.table-wrap {
-    overflow-x: auto;
-}
-
+#visitorModal .field select,
 #editVisitorModal .field input,
 #editVisitorModal .field select {
     padding: 13px 14px;
@@ -347,4 +247,46 @@
 .status-unrecorded {
     background: #fef3c7;
     color: #b45309;
+}
+
+/* =========================================================
+   RESPONSIVE LAPORAN & PENGUNJUNG
+   ========================================================= */
+@media (max-width: 960px) {
+    .filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .return-card {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .filter-note {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+
+    .tab {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .summary-table {
+        min-width: 560px;
+    }
 }

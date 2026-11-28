@@ -211,3 +211,30 @@
     align-items: flex-start;
   }
 }
+
+@media (max-width: 480px) {
+  .hero-banner {
+    padding: 20px 18px;
+    border-radius: 14px;
+  }
+
+  .hero-title {
+    font-size: 22px;
+  }
+
+  .hero-subtitle {
+    font-size: 12.5px;
+  }
+
+  .hero-media {
+    height: 145px;
+  }
+
+  .stat-card {
+    padding: 15px 16px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+}

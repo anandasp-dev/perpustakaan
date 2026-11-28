@@ -4,7 +4,6 @@
 
   const DEFAULT_PAGE = "home";
   const BRAND = "Keyto Perpustakaan";
-  const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
   const PAGES = {
     home:        { file: "/Pages/home",        title: "Home",         scripts: ["/Js/kalender.js", "/Js/script.js", "/Js/admin-dashboard.js"] },
@@ -19,10 +18,35 @@
 
   const view = document.getElementById("pageView");
   const crumb = document.querySelector(".crumb");
+  const sidebar = document.getElementById("adminSidebar");
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebarClose = document.getElementById("sidebarClose");
+  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
   let currentLoad = 0;
   let currentProfile = null;
 
   const hasPage = (key) => Object.prototype.hasOwnProperty.call(PAGES, key);
+
+  function closeSidebar() {
+    if (sidebar) sidebar.classList.remove("open");
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove("show");
+    if (sidebarToggle) sidebarToggle.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleSidebar() {
+    if (!sidebar) return;
+    const willOpen = !sidebar.classList.contains("open");
+    sidebar.classList.toggle("open", willOpen);
+    if (sidebarBackdrop) sidebarBackdrop.classList.toggle("show", willOpen);
+    if (sidebarToggle) sidebarToggle.setAttribute("aria-expanded", String(willOpen));
+  }
+
+  if (sidebarToggle) sidebarToggle.addEventListener("click", toggleSidebar);
+  if (sidebarClose) sidebarClose.addEventListener("click", closeSidebar);
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener("click", closeSidebar);
+  window.addEventListener("resize", function () {
+    if (window.innerWidth > 960) closeSidebar();
+  });
 
   function keyFromUrl() {
     const key = new URLSearchParams(window.location.search).get("page");
@@ -53,11 +77,6 @@
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
-  function formatTanggal(teks) {
-    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(teks || ""));
-    return m ? m[3] + " " + BULAN[Number(m[2]) - 1] + " " + m[1] : "-";
-  }
-
   function renderTopbarProfile(profile) {
     if (!profile) return;
     currentProfile = profile;
@@ -71,7 +90,7 @@
 
   async function syncProfile() {
     try {
-      const res = await fetch("/api/profile");
+      const res = await fetch("/api/profile", { credentials: "same-origin" });
       if (res.status === 401) {
         window.location.href = "/index";
         return null;
@@ -87,7 +106,7 @@
     return null;
   }
 
-// ---------------- Modal Profil Admin ----------------
+  // ---------------- Modal Profil Admin ----------------
   const profileBtn = document.getElementById("openAdminProfile");
   const profileModal = document.getElementById("adminProfileModal");
   const profileForm = document.getElementById("adminProfileForm");
@@ -111,7 +130,7 @@
       setVal("npm", p.npm);
       setVal("email", p.email);
       setVal("telepon", p.phone);
-      if (p.program_study) setVal("prodi", p.program_study); // <-- Ubah baris ini (sebelumnya p.prodi)
+      setVal("prodi", p.program_study || p.prodi || "");
     }
 
     ["sandiLama", "sandiBaru", "sandiKonfirmasi"].forEach(function (id) {
@@ -150,18 +169,29 @@
     profileModal.addEventListener("click", function (e) {
       if (e.target === profileModal) closeProfileModal();
     });
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && profileModal.classList.contains("show")) {
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeSidebar();
+      if (profileModal && profileModal.classList.contains("show")) {
         closeProfileModal();
       }
+    }
+  });
+
+  // Hanya angka di kolom NPM & Nomor Telepon
+  const npmInput = document.getElementById("npm");
+  if (npmInput) {
+    npmInput.addEventListener("input", function (e) {
+      e.target.value = e.target.value.replace(/\D/g, "").slice(0, 12);
     });
   }
 
-  // Hanya angka di kolom Nomor Telepon
   const teleponInput = document.getElementById("telepon");
   if (teleponInput) {
     teleponInput.addEventListener("input", function (e) {
-      e.target.value = e.target.value.replace(/\D/g, "");
+      e.target.value = e.target.value.replace(/\D/g, "").slice(0, 13);
     });
   }
 
@@ -176,6 +206,25 @@
   if (profileForm) {
     profileForm.addEventListener("submit", async function (e) {
       e.preventDefault();
+      const nama = document.getElementById("nama").value.trim();
+      const npm = document.getElementById("npm").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("telepon").value.trim();
+      const prodi = document.getElementById("prodi").value.trim();
+
+      if (nama.length < 3) {
+        toastShell("Nama lengkap minimal 3 karakter.", true);
+        return;
+      }
+      if (!/^[0-9]{12}$/.test(npm)) {
+        toastShell("NPM harus 12 digit angka.", true);
+        return;
+      }
+      if (phone && !/^08[0-9]{8,11}$/.test(phone)) {
+        toastShell("Nomor HP harus diawali 08 dan terdiri dari 10-13 digit angka.", true);
+        return;
+      }
+
       const curPw = document.getElementById("sandiLama").value;
       const newPw = document.getElementById("sandiBaru").value;
       const confPw = document.getElementById("sandiKonfirmasi").value;
@@ -203,15 +252,20 @@
         // 1. Simpan perubahan data profil umum
         const resProf = await fetch("/api/profile", {
           method: "POST",
+          credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-          name: document.getElementById("nama").value,
-          npm: document.getElementById("npm").value,
-          email: document.getElementById("email").value,
-          phone: document.getElementById("telepon").value,
-          program_study: document.getElementById("prodi").value
+            name: nama,
+            npm: npm,
+            email: email,
+            phone: phone,
+            program_study: prodi
           })
         });
+        if (resProf.status === 401) {
+          window.location.href = "/index";
+          return;
+        }
         const dataProf = await resProf.json().catch(function () { return {}; });
         if (!resProf.ok) {
           toastShell(dataProf.message || "Gagal memperbarui profil.", true);
@@ -225,12 +279,17 @@
         if (inginUbahPw) {
           const resPw = await fetch("/api/profile/password", {
             method: "POST",
+            credentials: "same-origin",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               current_password: curPw,
               new_password: newPw
             })
           });
+          if (resPw.status === 401) {
+            window.location.href = "/index";
+            return;
+          }
           const dataPw = await resPw.json().catch(function () { return {}; });
           if (!resPw.ok) {
             toastShell(dataPw.message || "Profil disimpan, tetapi kata sandi gagal diubah.", true);
@@ -281,10 +340,10 @@
 
     try {
       const response = await fetch(page.file, {
-        credentials: 'same-origin'
+        credentials: "same-origin"
       });
       if (myLoad !== currentLoad) return;
-      if (response.redirected) { window.location.href = "/Pages/index"; return; }
+      if (response.redirected) { window.location.href = "/index"; return; }
       if (response.status === 404) return showNotice("Halaman ini belum tersedia.");
       if (response.status === 403) return showNotice("Anda tidak punya akses ke halaman ini.");
       if (!response.ok) return showNotice("Tidak bisa memuat halaman.");
@@ -316,19 +375,26 @@
     const key = link.dataset.page;
     if (!hasPage(key)) return;
     e.preventDefault();
+    closeSidebar();
     if (key !== keyFromUrl()) {
       history.pushState({}, "", "?page=" + key);
       loadPage(key);
     }
   });
 
-  window.addEventListener("popstate", function () { loadPage(keyFromUrl()); });
+  window.addEventListener("popstate", function () {
+    closeSidebar();
+    loadPage(keyFromUrl());
+  });
 
   const logout = document.getElementById("btnLogout");
   if (logout) {
     logout.addEventListener("click", async function (e) {
       e.preventDefault();
-      try { await fetch("/api/auth/logout", { method: "POST" }); } catch (error) {}
+      closeSidebar();
+      try {
+        await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+      } catch (error) {}
       window.location.href = "/index";
     });
   }

@@ -1,5 +1,5 @@
 // LAPORAN — halaman admin, tersambung ke database lewat /api/admin/reports
-lucide.createIcons();
+if (window.lucide) lucide.createIcons();
 
 (function () {
   "use strict";
@@ -78,7 +78,7 @@ lucide.createIcons();
   }
 
   async function panggil(url) {
-    const respons = await fetch(url);
+    const respons = await fetch(url, { credentials: "same-origin" });
     const data = await respons.json().catch(function () { return {}; });
     if (respons.status === 401) {
       window.location.href = "/index";
@@ -142,7 +142,7 @@ lucide.createIcons();
 
     document.querySelectorAll(".stats, .charts").forEach(function (baris) {
       const semuaHilang = Array.from(baris.children).every(function (c) {
-        return c.classList.contains('is-hidden');
+        return c.classList.contains("is-hidden");
       });
       baris.classList.toggle("is-hidden", semuaHilang);
     });
@@ -227,14 +227,22 @@ lucide.createIcons();
     plugins: { legend: { display: false } }
   };
 
-  const chartPinjam = new Chart(document.getElementById("trenPinjam"), {
+  function buatChart(id, config) {
+    const el = document.getElementById(id);
+    if (!el || !window.Chart) return null;
+    const lama = Chart.getChart(id);
+    if (lama) lama.destroy();
+    return new Chart(el, config);
+  }
+
+  const chartPinjam = buatChart("trenPinjam", {
     type: "bar",
     data: { labels: [], datasets: [{ data: [], backgroundColor: "#2563eb", borderRadius: 3 }] },
     options: { ...opsiDasar, scales: { x: sumbuX, y: buatSumbuY(10, 2, true) } },
     plugins: [angkaBatang]
   });
 
-  const chartKunjungan = new Chart(document.getElementById("trenKunjungan"), {
+  const chartKunjungan = buatChart("trenKunjungan", {
     type: "line",
     data: {
       labels: [],
@@ -250,14 +258,14 @@ lucide.createIcons();
     options: { ...opsiDasar, scales: { x: sumbuX, y: buatSumbuY(10, 2, true) } }
   });
 
-  const chartKembali = new Chart(document.getElementById("trenKembali"), {
+  const chartKembali = buatChart("trenKembali", {
     type: "bar",
     data: { labels: [], datasets: [{ data: [], backgroundColor: "#93c5fd", borderRadius: 3 }] },
     options: { ...opsiDasar, scales: { x: sumbuX, y: buatSumbuY(10, 2, false) } },
     plugins: [angkaBatang]
   });
 
-  const chartDonut = new Chart(document.getElementById("donutKoleksi"), {
+  const chartDonut = buatChart("donutKoleksi", {
     type: "doughnut",
     data: {
       labels: ["Tersedia", "Dipinjam", "Perawatan"],
@@ -277,7 +285,7 @@ lucide.createIcons();
   function renderLaporan(data) {
     const dStart = parseTanggal(data.start_date) || new Date();
     const dEnd = parseTanggal(data.end_date) || new Date();
-    const rentangTeks = tglPendek(dStart) + " – " + tglPendek(dEnd);
+    const rentangTeks = tglPendek(dStart) + " \u2013 " + tglPendek(dEnd);
     const hariCount = Number(data.days_count || 1);
 
     inputMulai.value = data.start_date;
@@ -345,17 +353,21 @@ lucide.createIcons();
       isi(cardKunjungan.querySelector(".chart-foot"), "Total kunjungan anggota tercatat pada periode terpilih.");
     }
 
-    const skalaPinjam = hitungSkalaY(seriesPinjam);
-    chartPinjam.data.labels = labels;
-    chartPinjam.data.datasets[0].data = seriesPinjam;
-    chartPinjam.options.scales.y = buatSumbuY(skalaPinjam.max, skalaPinjam.step, true);
-    chartPinjam.update();
+    if (chartPinjam) {
+      const skalaPinjam = hitungSkalaY(seriesPinjam);
+      chartPinjam.data.labels = labels;
+      chartPinjam.data.datasets[0].data = seriesPinjam;
+      chartPinjam.options.scales.y = buatSumbuY(skalaPinjam.max, skalaPinjam.step, true);
+      chartPinjam.update();
+    }
 
-    const skalaKunjungan = hitungSkalaY(seriesKunjungan);
-    chartKunjungan.data.labels = labels;
-    chartKunjungan.data.datasets[0].data = seriesKunjungan;
-    chartKunjungan.options.scales.y = buatSumbuY(skalaKunjungan.max, skalaKunjungan.step, true);
-    chartKunjungan.update();
+    if (chartKunjungan) {
+      const skalaKunjungan = hitungSkalaY(seriesKunjungan);
+      chartKunjungan.data.labels = labels;
+      chartKunjungan.data.datasets[0].data = seriesKunjungan;
+      chartKunjungan.options.scales.y = buatSumbuY(skalaKunjungan.max, skalaKunjungan.step, true);
+      chartKunjungan.update();
+    }
 
     // 3. Grafik Tren Pengembalian
     const returnCard = document.querySelector(".return-card");
@@ -369,11 +381,13 @@ lucide.createIcons();
       isi(returnCard.querySelector(".chart-foot"), "Rekap harian buku yang dikembalikan anggota ke perpustakaan.");
     }
 
-    const skalaKembali = hitungSkalaY(seriesKembali);
-    chartKembali.data.labels = labels;
-    chartKembali.data.datasets[0].data = seriesKembali;
-    chartKembali.options.scales.y = buatSumbuY(skalaKembali.max, skalaKembali.step, false);
-    chartKembali.update();
+    if (chartKembali) {
+      const skalaKembali = hitungSkalaY(seriesKembali);
+      chartKembali.data.labels = labels;
+      chartKembali.data.datasets[0].data = seriesKembali;
+      chartKembali.options.scales.y = buatSumbuY(skalaKembali.max, skalaKembali.step, false);
+      chartKembali.update();
+    }
 
     // 4. Status Koleksi Buku & Laporan Keanggotaan
     const bottomCharts = document.querySelectorAll("section.charts")[1];
@@ -392,8 +406,10 @@ lucide.createIcons();
       isi(miniNums[1], angka(col.out_today));
       isi(miniNums[2], (col.net_today >= 0 ? "+" : "") + angka(col.net_today));
 
-      chartDonut.data.datasets[0].data = [col.available, col.borrowed, col.maintenance];
-      chartDonut.update();
+      if (chartDonut) {
+        chartDonut.data.datasets[0].data = [col.available, col.borrowed, col.maintenance];
+        chartDonut.update();
+      }
 
       const cardAnggota = bottomCharts.children[1];
       isi(cardAnggota.querySelector(".meta"), "Posisi keanggotaan per " + tglPenuh(dEnd));

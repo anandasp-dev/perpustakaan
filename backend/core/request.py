@@ -34,6 +34,8 @@ class Request:
                 length = int(self.headers.get("Content-Length", 0))
             except ValueError:
                 raise BadRequestError("Content-Length tidak valid")
+            if length < 0:
+                raise BadRequestError("Content-Length tidak valid")
             if length > MAX_BODY:
                 raise BadRequestError("Data terlalu besar")
             raw = self._handler.rfile.read(length) if length > 0 else b""

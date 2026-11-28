@@ -1,17 +1,40 @@
 //ANGGOTA — halaman admin, tersambung ke database lewat /api/admin/members
-lucide.createIcons();
+if (window.lucide) lucide.createIcons();
 
 (function () {
   "use strict";
 
   const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
   const URUTAN = { recent: "aktivitas terbaru", name: "nama A-Z", borrowed: "paling banyak pinjam" };
+  const NPM_RE = /^[0-9]{12}$/;
+  const PHONE_RE = /^08[0-9]{8,11}$/;
+
+  const DAFTAR_PRODI = [
+    "Bimbingan dan Konseling (S1)",
+    "Pendidikan Ekonomi (S1)",
+    "Pendidikan Sejarah (S1)",
+    "Bisnis Digital (S1)",
+    "Manajemen Ritel (S1)",
+    "Pendidikan Matematika (S1)",
+    "Biologi (S1)",
+    "Fisika (S1)",
+    "Teknik Informatika (S1)",
+    "Sistem Informasi (S1)",
+    "Teknik Industri (S1)",
+    "Arsitektur (S1)",
+    "Pendidikan Bahasa Indonesia (S1)",
+    "Pendidikan Bahasa Inggris (S1)",
+    "Desain Komunikasi Visual (S1)",
+    "Program Magister (S2)",
+    "Program Doktor (S3)"
+  ];
+
   // ---------------- alat bantu kecil ----------------
-  function angka(n) { return Number(n).toLocaleString("en-US"); }
+  function angka(n) { return Number(n || 0).toLocaleString("id-ID"); }
   function isi(el, teks) { if (el) el.textContent = teks; }
 
   function esc(teks) {
-    return String(teks).replace(/[&<>"']/g, function (c) {
+    return String(teks ?? "").replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
@@ -59,7 +82,7 @@ lucide.createIcons();
   }
 
   async function panggil(url, opsi) {
-    const respons = await fetch(url, opsi);
+    const respons = await fetch(url, Object.assign({ credentials: "same-origin" }, opsi || {}));
     const data = await respons.json().catch(function () { return {}; });
     if (respons.status === 401) {
       window.location.href = "/index";
@@ -93,6 +116,7 @@ lucide.createIcons();
   const state = { q: "", status: "all", sort: "recent", page: 1 };
   let daftar = [];
   let daftarTerlambat = [];
+  let timerCari = null;
 
   // ---------------- alamat (?q=...&status=...&sort=...&hal=...) ----------------
   function setKontrol() {
@@ -175,9 +199,9 @@ lucide.createIcons();
   function gambarTabel(data) {
     const rows = data.members;
     badan.innerHTML = rows.length === 0
-      ? '<tr><td colspan="8" class="muted">Tidak ada anggota yang cocok.</td></tr>'
+      ? '<tr><td colspan="8" class="muted" style="text-align:center;padding:24px;">Tidak ada anggota yang cocok.</td></tr>'
       : rows.map(barisHtml).join("");
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
     const awal = rows.length ? (data.page - 1) * data.per_page + 1 : 0;
     const akhir = rows.length ? awal + rows.length - 1 : 0;
@@ -239,6 +263,10 @@ lucide.createIcons();
     muat();
   }
   formCari.addEventListener("submit", function (e) { e.preventDefault(); terapkanFilter(); });
+  inputCari.addEventListener("input", function () {
+    clearTimeout(timerCari);
+    timerCari = setTimeout(terapkanFilter, 300);
+  });
   pilihStatus.addEventListener("change", terapkanFilter);
   pilihUrut.addEventListener("change", terapkanFilter);
 
@@ -278,7 +306,7 @@ lucide.createIcons();
       '</div>' +
       '</div>';
     document.body.appendChild(modalWa);
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
   }
 
   function buka(modal) { modal.classList.add("show"); }
@@ -331,7 +359,7 @@ lucide.createIcons();
             tombolWa +
             '</div>';
         }).join("");
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
       }
       buka(modalWa);
     });
@@ -344,11 +372,11 @@ lucide.createIcons();
       const tampil = input.type === "password";
       input.type = tampil ? "text" : "password";
       tombol.innerHTML = '<i data-lucide="' + (tampil ? "eye" : "eye-off") + '"></i>';
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     });
   });
 
-  // kolom NPM dan Nomor HP ditambahkan lewat JS
+  // kolom NPM, Nomor HP, dan Program Studi ditambahkan lewat JS
   function buatBarisNpmHp(kunci, npmHanyaBaca) {
     const baris = document.createElement("div");
     baris.className = "field-row";
@@ -360,8 +388,34 @@ lucide.createIcons();
       '<input type="tel" id="' + kunci + 'Hp" inputmode="numeric" maxlength="13" placeholder="08xxxxxxxxxx"></div>';
     return baris;
   }
-  document.getElementById("password").closest(".field-row").before(buatBarisNpmHp("n", false));
-  document.getElementById("editEmail").closest(".field").after(buatBarisNpmHp("e", true));
+
+  function buatFieldProdi(kunci, wajib) {
+    const wrap = document.createElement("div");
+    wrap.className = "field";
+    const opsi = ['<option value="" disabled selected>Pilih program studi</option>']
+      .concat(DAFTAR_PRODI.map(function (p) {
+        return '<option value="' + esc(p) + '">' + esc(p) + "</option>";
+      }))
+      .join("");
+    wrap.innerHTML =
+      '<label for="' + kunci + 'Prodi">Program studi' + (wajib ? " *" : "") + "</label>" +
+      '<select id="' + kunci + 'Prodi" name="program_study"' + (wajib ? " required" : "") + ">" +
+      opsi +
+      "</select>";
+    return wrap;
+  }
+
+  const barisTambahNpmHp = buatBarisNpmHp("n", false);
+  document.getElementById("password").closest(".field-row").before(barisTambahNpmHp);
+  if (!document.getElementById("nProdi")) {
+    barisTambahNpmHp.after(buatFieldProdi("n", true));
+  }
+
+  const barisUbahNpmHp = buatBarisNpmHp("e", true);
+  document.getElementById("editEmail").closest(".field").after(barisUbahNpmHp);
+  if (!document.getElementById("eProdi")) {
+    barisUbahNpmHp.after(buatFieldProdi("e", false));
+  }
 
   ["nNpm", "nHp", "eHp"].forEach(function (id) {
     document.getElementById(id).addEventListener("input", function (e) {
@@ -383,21 +437,50 @@ lucide.createIcons();
 
   formTambah.addEventListener("submit", async function (e) {
     e.preventDefault();
-    if (document.getElementById("password").value !== document.getElementById("password2").value) {
+    const nama = document.getElementById("nama").value.trim();
+    const npm = document.getElementById("nNpm").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("nHp").value.trim();
+    const prodi = (document.getElementById("nProdi") || {}).value || "";
+    const password = document.getElementById("password").value;
+    const password2 = document.getElementById("password2").value;
+
+    if (nama.length < 3) {
+      toast("Nama lengkap minimal 3 karakter.", true);
+      return;
+    }
+    if (!NPM_RE.test(npm)) {
+      toast("NPM harus 12 digit angka.", true);
+      return;
+    }
+    if (phone && !PHONE_RE.test(phone)) {
+      toast("Nomor HP harus diawali 08 dan 10-13 digit angka.", true);
+      return;
+    }
+    if (!prodi) {
+      toast("Pilih program studi anggota.", true);
+      return;
+    }
+    if (password.length < 8) {
+      toast("Kata sandi minimal 8 karakter.", true);
+      return;
+    }
+    if (password !== password2) {
       toast("Konfirmasi kata sandi tidak cocok.", true);
       return;
     }
+
     const tombol = formTambah.querySelector('button[type="submit"]');
     tombol.disabled = true;
     try {
-      const npm = document.getElementById("nNpm").value;
       const data = await panggil("/api/admin/members", kirimJson({
-        name: document.getElementById("nama").value,
+        name: nama,
         npm: npm,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("nHp").value,
+        email: email,
+        phone: phone,
+        program_study: prodi,
         status: document.getElementById("statusAnggota").value,
-        password: document.getElementById("password").value
+        password: password
       }));
       tutup(modalTambah);
       toast(data.member.name + " ditambahkan sebagai " + data.member.code + ".");
@@ -431,6 +514,19 @@ lucide.createIcons();
       document.getElementById("editEmail").value = m.email;
       document.getElementById("eNpm").value = m.npm || "";
       document.getElementById("eHp").value = m.phone || "";
+
+      const elProdi = document.getElementById("eProdi");
+      if (elProdi) {
+        const nilaiProdi = m.program_study || "";
+        if (nilaiProdi && !Array.from(elProdi.options).some(function (o) { return o.value === nilaiProdi; })) {
+          const opt = document.createElement("option");
+          opt.value = nilaiProdi;
+          opt.textContent = nilaiProdi;
+          elProdi.appendChild(opt);
+        }
+        elProdi.value = nilaiProdi;
+      }
+
       const status = document.getElementById("editStatus");
       status.value = m.status === "suspended" ? "suspended" : "active";
       status.disabled = false;
@@ -453,13 +549,29 @@ lucide.createIcons();
   formUbah.addEventListener("submit", async function (e) {
     e.preventDefault();
     if (!idDiubah) return;
+
+    const nama = document.getElementById("editNama").value.trim();
+    const email = document.getElementById("editEmail").value.trim();
+    const phone = document.getElementById("eHp").value.trim();
+    const prodi = (document.getElementById("eProdi") || {}).value || "";
+
+    if (nama.length < 3) {
+      toast("Nama lengkap minimal 3 karakter.", true);
+      return;
+    }
+    if (phone && !PHONE_RE.test(phone)) {
+      toast("Nomor HP harus diawali 08 dan 10-13 digit angka.", true);
+      return;
+    }
+
     const tombol = formUbah.querySelector('button[type="submit"]');
     tombol.disabled = true;
     try {
       await panggil("/api/admin/members/" + idDiubah, kirimJson({
-        name: document.getElementById("editNama").value,
-        email: document.getElementById("editEmail").value,
-        phone: document.getElementById("eHp").value,
+        name: nama,
+        email: email,
+        phone: phone,
+        program_study: prodi,
         status: document.getElementById("editStatus").value
       }));
       tutup(modalUbah);

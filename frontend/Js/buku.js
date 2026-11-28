@@ -1,5 +1,5 @@
 //BUKU — halaman admin, tersambung ke database lewat /api/admin/books
-lucide.createIcons();
+if (window.lucide) lucide.createIcons();
 
 (function () {
   "use strict";
@@ -14,11 +14,11 @@ lucide.createIcons();
   const WARNA = ["#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"];   // warna garis di samping judul
 
   // ---------------- alat bantu kecil ----------------
-  function angka(n) { return Number(n).toLocaleString("en-US"); }
+  function angka(n) { return Number(n || 0).toLocaleString("id-ID"); }
   function isi(el, teks) { if (el) el.textContent = teks; }
 
   function esc(teks) {
-    return String(teks).replace(/[&<>"']/g, function (c) {
+    return String(teks ?? "").replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
@@ -41,7 +41,7 @@ lucide.createIcons();
   }
 
   async function panggil(url, opsi) {
-    const respons = await fetch(url, opsi);
+    const respons = await fetch(url, Object.assign({ credentials: "same-origin" }, opsi || {}));
     const data = await respons.json().catch(function () { return {}; });
     if (respons.status === 401) {
       window.location.href = "/index";
@@ -78,12 +78,31 @@ lucide.createIcons();
 
     const input = kolom.querySelector("input");
     const gambar = kolom.querySelector("img");
+    let blobAktif = "";
+
     function tampil(url) {
+      if (blobAktif) {
+        URL.revokeObjectURL(blobAktif);
+        blobAktif = "";
+      }
       gambar.style.display = url ? "block" : "none";
       if (url) gambar.src = url;
     }
     input.addEventListener("change", function () {
-      tampil(input.files.length ? URL.createObjectURL(input.files[0]) : "");
+      if (!input.files.length) {
+        tampil("");
+        return;
+      }
+      const file = input.files[0];
+      if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
+        toast("Sampul harus berformat JPG, PNG, atau WEBP.", true);
+        input.value = "";
+        tampil("");
+        return;
+      }
+      const objUrl = URL.createObjectURL(file);
+      tampil(objUrl);
+      blobAktif = objUrl;
     });
     return { input: input, tampil: tampil, reset: function () { input.value = ""; tampil(""); } };
   }
@@ -143,6 +162,7 @@ lucide.createIcons();
 
   const state = { q: "", category: "all", status: "all", page: 1 };
   let daftar = [];   // buku yang sedang tampil
+  let timerCari = null;
 
   // ---------------- alamat (?q=...&category=...&status=...&hal=...) ----------------
   function setKontrol() {
@@ -236,9 +256,9 @@ lucide.createIcons();
   function gambarTabel(data) {
     const rows = data.books;
     badan.innerHTML = rows.length === 0
-      ? '<tr><td colspan="8" class="muted">Tidak ada buku yang cocok.</td></tr>'
+      ? '<tr><td colspan="8" class="muted" style="text-align:center;padding:24px;">Tidak ada buku yang cocok.</td></tr>'
       : rows.map(barisHtml).join("");
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
     const awal = rows.length ? (data.page - 1) * data.per_page + 1 : 0;
     const akhir = rows.length ? awal + rows.length - 1 : 0;
@@ -282,6 +302,10 @@ lucide.createIcons();
     muat();
   }
   formCari.addEventListener("submit", function (e) { e.preventDefault(); terapkanFilter(); });
+  inputCari.addEventListener("input", function () {
+    clearTimeout(timerCari);
+    timerCari = setTimeout(terapkanFilter, 300);
+  });
   pilihKategori.addEventListener("change", terapkanFilter);
   pilihStatus.addEventListener("change", terapkanFilter);
 
@@ -337,14 +361,24 @@ lucide.createIcons();
 
   formTambah.addEventListener("submit", async function (e) {
     e.preventDefault();
+    const title = document.getElementById("bJudul").value.trim();
+    const author = document.getElementById("bPenulis").value.trim();
+    const category = KATEGORI[document.getElementById("bKategori").value];
+    const total = Number(bStok.value);
+
+    if (!title) { toast("Judul buku wajib diisi.", true); return; }
+    if (!author) { toast("Nama penulis wajib diisi.", true); return; }
+    if (!category) { toast("Pilih kategori buku.", true); return; }
+    if (!Number.isInteger(total) || total < 1) { toast("Jumlah stok minimal 1 eksemplar.", true); return; }
+
     const tombol = formTambah.querySelector('button[type="submit"]');
     tombol.disabled = true;
     try {
       const data = await panggil("/api/admin/books", kirimJson({
-        title: document.getElementById("bJudul").value,
-        author: document.getElementById("bPenulis").value,
-        category: KATEGORI[document.getElementById("bKategori").value],
-        total: Number(bStok.value)
+        title: title,
+        author: author,
+        category: category,
+        total: total
       }));
 
       let galatSampul = "";
@@ -398,14 +432,24 @@ lucide.createIcons();
   formUbah.addEventListener("submit", async function (e) {
     e.preventDefault();
     if (!bukuDiubah) return;
+    const title = document.getElementById("eJudul").value.trim();
+    const author = document.getElementById("ePenulis").value.trim();
+    const category = KATEGORI[document.getElementById("eKategori").value];
+    const total = Number(document.getElementById("eStok").value);
+
+    if (!title) { toast("Judul buku wajib diisi.", true); return; }
+    if (!author) { toast("Nama penulis wajib diisi.", true); return; }
+    if (!category) { toast("Pilih kategori buku.", true); return; }
+    if (!Number.isInteger(total) || total < 0) { toast("Jumlah stok tidak valid.", true); return; }
+
     const tombol = formUbah.querySelector('button[type="submit"]');
     tombol.disabled = true;
     try {
       await panggil("/api/admin/books/" + bukuDiubah.id, kirimJson({
-        title: document.getElementById("eJudul").value,
-        author: document.getElementById("ePenulis").value,
-        category: KATEGORI[document.getElementById("eKategori").value],
-        total: Number(document.getElementById("eStok").value)
+        title: title,
+        author: author,
+        category: category,
+        total: total
       }));
 
       let galatSampul = "";

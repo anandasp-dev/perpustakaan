@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: btbme109w697mgx0v57j-mysql.services.clever-cloud.com:3306
--- Waktu pembuatan: 26 Nov 2026 pada 10.09
+-- Waktu pembuatan: 28 Nov 2026 pada 08.52
 -- Versi server: 8.0.22-13
 -- Versi PHP: 8.2.36
 
@@ -51,7 +51,7 @@ INSERT INTO `buku` (`id`, `title`, `author`, `category`, `isbn`, `stock`, `cover
 (7, 'Laskar Pelangi', 'Andrea Hirata', 'Fiction', NULL, 6, NULL, '2026-11-20 08:55:34'),
 (8, 'Bumi Manusia', 'Pramoedya Ananta Toer', 'Fiction', NULL, 4, NULL, '2026-11-20 08:55:34'),
 (9, 'Pride and Prejudice', 'Jane Austen', 'Fiction', NULL, 5, NULL, '2026-11-20 08:55:34'),
-(10, '1984', 'George Orwell', 'Fiction', NULL, 7, NULL, '2026-11-20 08:55:34'),
+(10, '1984', 'George Orwell', 'Fiction', NULL, 5, NULL, '2026-11-20 08:55:34'),
 (11, 'The Alchemist', 'Paulo Coelho', 'Fiction', NULL, 8, NULL, '2026-11-20 08:55:34'),
 (12, 'To Kill a Mockingbird', 'Harper Lee', 'Fiction', NULL, 3, NULL, '2026-11-20 08:55:34'),
 (13, 'Laut Bercerita', 'Leila S. Chudori', 'Fiction', NULL, 5, NULL, '2026-11-20 08:55:34'),
@@ -152,7 +152,9 @@ INSERT INTO `peminjaman` (`id`, `user_id`, `book_id`, `borrowed_at`, `due_date`,
 (18, 11, 10, '2026-11-23 10:32:52', '2026-12-07', '2026-11-23 10:33:23', 0, '2026-11-23 10:42:09', 'returned'),
 (19, 14, 14, '2026-11-26 00:32:16', '2026-12-10', '2026-11-26 00:49:48', 0, '2026-11-26 01:06:39', 'returned'),
 (20, 15, 28, '2026-11-26 01:11:55', '2026-11-27', '2026-11-26 01:11:55', 0, NULL, 'borrowed'),
-(21, 16, 18, '2026-11-26 01:14:01', '2026-11-26', '2026-11-26 01:14:01', 0, NULL, 'borrowed');
+(21, 16, 18, '2026-11-26 01:14:01', '2026-11-26', '2026-11-26 01:14:01', 0, NULL, 'borrowed'),
+(22, 11, 10, '2026-11-27 00:23:56', '2026-12-11', '2026-11-27 00:26:31', 0, NULL, 'borrowed'),
+(23, 10, 10, '2026-11-27 21:41:59', NULL, NULL, 0, NULL, 'pending');
 
 -- --------------------------------------------------------
 
@@ -164,27 +166,32 @@ CREATE TABLE `user` (
   `id` int UNSIGNED NOT NULL,
   `npm` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `full_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `program_study` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `phone` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `role` enum('admin','member') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'member',
   `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `deactivated_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `notif_seen_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data untuk tabel `user`
 --
 
-INSERT INTO `user` (`id`, `npm`, `full_name`, `email`, `phone`, `password_hash`, `role`, `status`, `created_at`) VALUES
-(8, '202543500196', 'ananda', 'as3914583@gmail.com', '081283989378', 'pbkdf2_sha256$600000$5142a2f1632b211033c0c39ed667887d$79d25435f356c7b6ff1f9778f364e8caae8160277c93119e8dc8bc9cefc89cb2', 'member', 'active', '2026-11-18 18:24:22'),
-(10, '202543500195', 'Yashi', 'r@gmail.com', '085692991035', 'pbkdf2_sha256$600000$4e89ecac7720847d762b50a7a0b6e940$ea02bcd4af7ee9ddf0b351422ed22b05bc561dd693018d3d8ce60053b5d29ea7', 'admin', 'active', '2026-11-19 09:12:17'),
-(11, '202543500194', 'Zyzho Putra Wiliam', 'jijo@gmail.com', '085770312308', 'pbkdf2_sha256$600000$8ca250c115b9ae189ba2d1fcbffd00b4$f347107d2723b55a2fd6c84a3b9be6241dfd7c24bc7337081eb6f14142df7f3f', 'member', 'active', '2026-11-22 16:07:34'),
-(12, '202543509870', 'hanip', 'h@gmail.com', '08123456789', 'pbkdf2_sha256$600000$a186017b1efd7e86e4c2e8c1704887ea$3a1780040db5d4c18f49b50847dbd2735b33bdfe0bfcf31d6932593fcb7228af', 'member', 'active', '2026-11-24 13:01:31'),
-(13, '202543500190', 'pou', 'p@gmail.com', '08123456444', 'pbkdf2_sha256$600000$aca4f8fec49fa3a788258c50bc3611c5$e2dc69610c71b1e82cfdffb001c2b437443d4908382986f072ad4bb0d0574b85', 'member', 'active', '2026-11-25 23:46:02'),
-(14, '202543500175', 'Aghnia Dhela', 'aghnia@gmail.com', '088709870987', 'pbkdf2_sha256$600000$c43d41afe71bf1b88ab4c9e22b7c008c$a8480c89af5113c97e4ee05de05cc73cf340d27eeb6d850d77f10c159bd3312e', 'member', 'active', '2026-11-26 00:30:27'),
-(15, '202543500166', 'Olivia', 'olivia.piaaa1234@gmail.com', '085173480913', 'pbkdf2_sha256$600000$2edf30f38e59853f9bb7eecf275615d1$41524c08147fc233660489cd174ffea666f9cd64dbab9beee7743f403da9006a', 'member', 'active', '2026-11-26 00:35:49'),
-(16, '202543500201', 'Ahmad', 'luthfisetyanto14@gmail.com', '081389967304', 'pbkdf2_sha256$600000$acbcf8805f8cf1ef072c1edb78898683$a8be0b4db29835908664673755ffd756ed7d07a381d3c9f8f54e4c7a001c29ae', 'member', 'active', '2026-11-26 00:51:02');
+INSERT INTO `user` (`id`, `npm`, `full_name`, `program_study`, `email`, `phone`, `password_hash`, `role`, `status`, `deactivated_at`, `created_at`, `notif_seen_at`) VALUES
+(8, '202543500196', 'ananda', NULL, 'as3914583@gmail.com', '081283989378', 'pbkdf2_sha256$600000$5142a2f1632b211033c0c39ed667887d$79d25435f356c7b6ff1f9778f364e8caae8160277c93119e8dc8bc9cefc89cb2', 'member', 'active', NULL, '2026-11-18 18:24:22', NULL),
+(10, '202543500195', 'Yashi', 'Teknik Informatika (S1)', 'r@gmail.com', '085692991035', 'pbkdf2_sha256$600000$4e89ecac7720847d762b50a7a0b6e940$ea02bcd4af7ee9ddf0b351422ed22b05bc561dd693018d3d8ce60053b5d29ea7', 'admin', 'active', NULL, '2026-11-19 09:12:17', NULL),
+(11, '202543500194', 'Zyzho Putra Wiliam', NULL, 'jijo@gmail.com', '085770312308', 'pbkdf2_sha256$600000$8ca250c115b9ae189ba2d1fcbffd00b4$f347107d2723b55a2fd6c84a3b9be6241dfd7c24bc7337081eb6f14142df7f3f', 'member', 'active', NULL, '2026-11-22 16:07:34', NULL),
+(12, '202543509870', 'hanip', NULL, 'h@gmail.com', '08123456789', 'pbkdf2_sha256$600000$a186017b1efd7e86e4c2e8c1704887ea$3a1780040db5d4c18f49b50847dbd2735b33bdfe0bfcf31d6932593fcb7228af', 'member', 'active', NULL, '2026-11-24 13:01:31', NULL),
+(13, '202543500190', 'pou', NULL, 'p@gmail.com', '08123456444', 'pbkdf2_sha256$600000$aca4f8fec49fa3a788258c50bc3611c5$e2dc69610c71b1e82cfdffb001c2b437443d4908382986f072ad4bb0d0574b85', 'member', 'active', NULL, '2026-11-25 23:46:02', NULL),
+(14, '202543500175', 'Aghnia Dhela', NULL, 'aghnia@gmail.com', '088709870987', 'pbkdf2_sha256$600000$c43d41afe71bf1b88ab4c9e22b7c008c$a8480c89af5113c97e4ee05de05cc73cf340d27eeb6d850d77f10c159bd3312e', 'member', 'active', NULL, '2026-11-26 00:30:27', NULL),
+(15, '202543500166', 'Olivia', NULL, 'olivia.piaaa1234@gmail.com', '085173480913', 'pbkdf2_sha256$600000$2edf30f38e59853f9bb7eecf275615d1$41524c08147fc233660489cd174ffea666f9cd64dbab9beee7743f403da9006a', 'member', 'active', NULL, '2026-11-26 00:35:49', NULL),
+(16, '202543500201', 'Ahmad', NULL, 'luthfisetyanto14@gmail.com', '081389967304', 'pbkdf2_sha256$600000$acbcf8805f8cf1ef072c1edb78898683$a8be0b4db29835908664673755ffd756ed7d07a381d3c9f8f54e4c7a001c29ae', 'member', 'active', NULL, '2026-11-26 00:51:02', NULL),
+(18, '202543500345', 'kop', NULL, 'hfff@gmail.com', '081283989990', 'pbkdf2_sha256$600000$e7a5ac90ce745f86c615af1fd9a23ff7$492324da89dcb863df8acb3ebdce206bb394973f0e5bef0ed8697844633e741a', 'member', 'active', NULL, '2026-11-26 17:28:23', NULL),
+(19, '123123123123', 'Orang', NULL, 'orang@gmail.com', '0880088008', 'pbkdf2_sha256$600000$3736a9495c40975d7eaa12a9de8673d4$46a56bdc49dde705da5db8d637035ccb5078bbfd155ef75d407234287a6e72a5', 'member', 'active', NULL, '2026-11-27 21:22:20', NULL);
 
 --
 -- Indexes for dumped tables
@@ -242,13 +249,13 @@ ALTER TABLE `kunjungan`
 -- AUTO_INCREMENT untuk tabel `peminjaman`
 --
 ALTER TABLE `peminjaman`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT untuk tabel `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)

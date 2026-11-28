@@ -19,17 +19,17 @@ class DuplicateUserError(Exception):
 
 def _duplicate_field(error):
     """Tebak kolom mana yang bentrok dari teks error MySQL 1062."""
-    text = str(error)
-    if "uq_users_npm" in text:
+    text = str(error).lower()
+    if "uq_users_npm" in text or "npm" in text:
         return "npm"
-    if "uq_users_email" in text:
+    if "uq_users_email" in text or "email" in text:
         return "email"
     return None
 
 
 class User:
     @staticmethod
-    def create(email, password_hash, role="member", 
+    def create(email, password_hash, role="member",
                  npm=None, full_name=None, phone=None, program_study=None):
         try:
             with cursor() as cur:
@@ -53,7 +53,7 @@ class User:
     def find_by_id(user_id):
         with cursor() as cur:
             cur.execute(
-                "SELECT id, npm, full_name, email, phone, role, created_at, program_study "
+                "SELECT id, npm, full_name, email, phone, role, status, created_at, program_study "
                 "FROM `user` WHERE id = %s",
                 (user_id,),
             )
@@ -64,7 +64,7 @@ class User:
         with cursor() as cur:
             cur.execute(
                 "SELECT id, npm, full_name, email, phone, "
-                "password_hash, role, created_at, program_study "
+                "password_hash, role, status, created_at, program_study "
                 "FROM `user` WHERE email = %s OR npm = %s",
                 (identifier, identifier),
             )
@@ -74,7 +74,7 @@ class User:
     def find_by_email(email):
         with cursor() as cur:
             cur.execute(
-                "SELECT id, email, full_name FROM `user` WHERE email = %s",
+                "SELECT id, email, full_name, status FROM `user` WHERE email = %s",
                 (email,),
             )
             return cur.fetchone()
@@ -90,8 +90,8 @@ class User:
 
     @staticmethod
     def find_for_admin(text):
-        """Cari anggota dari teks yang diketik petugas: NPM, ID anggota (MB-0008)
-        nama lengkap. Hasil: daftar (kosong = tidak ada, lebih dari 1 = ambigu)."""
+        """Cari anggota dari teks yang diketik petugas: NPM, ID anggota (MB-0008),
+        atau nama lengkap. Hasil: daftar (kosong = tidak ada, lebih dari 1 = ambigu)."""
         text = text.strip()
         if not text:
             return []
@@ -99,7 +99,7 @@ class User:
         member_id = int(upper[3:]) if upper.startswith("MB-") and upper[3:].isdigit() else 0
         with cursor() as cur:
             cur.execute(
-                "SELECT id, full_name FROM `user` "
+                "SELECT id, npm, full_name, status FROM `user` "
                 "WHERE role = 'member' "
                 "AND (id = %s OR npm = %s OR full_name = %s) "
                 "LIMIT 5",

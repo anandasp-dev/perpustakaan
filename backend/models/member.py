@@ -1,7 +1,16 @@
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import mysql.connector
 
+from core import session
 from database.db import cursor
 from utils.security import hash_password
+
+WIB = ZoneInfo("Asia/Jakarta")
+
+
+def _today_wib():
+    return datetime.now(WIB).date()
 
 
 class MemberNotFoundError(Exception):
@@ -16,7 +25,7 @@ _STATUS_READY = False
 
 
 def ensure_status_column():
-    """Pastikan kolom `status` ('active' / 'suspended') tersedia di tabel `user`."""
+    """Pastikan kolom `status` dan `deactivated_at` tersedia di tabel `user`."""
     global _STATUS_READY
     if _STATUS_READY:
         return
@@ -27,19 +36,26 @@ def ensure_status_column():
                 "ALTER TABLE `user` "
                 "ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'active' AFTER role"
             )
+        cur.execute("SHOW COLUMNS FROM `user` LIKE 'deactivated_at'")
+        if cur.fetchone() is None:
+            cur.execute(
+                "ALTER TABLE `user` "
+                "ADD COLUMN deactivated_at DATETIME NULL DEFAULT NULL AFTER status"
+            )
     _STATUS_READY = True
 
 
 # urutan yang diizinkan (isi ORDER BY dipilih dari daftar ini, tidak pernah dari kiriman pengguna)
 _SORTS = {
     "recent": "v.last_visit IS NULL, v.last_visit DESC, u.id DESC",
-    "name": "COALESCE(u.full_name) ASC, u.id ASC",
+    "name": "COALESCE(u.full_name, '') ASC, u.id ASC",
     "borrowed": "loans_total DESC, u.id ASC",
 }
 
 # total pinjam = pinjaman yang pernah dikonfirmasi; kunjungan = total catatan kunjungan
 _ADMIN_SELECT = (
-    "SELECT u.id, u.npm, u.full_name, u.email, u.phone, u.status, u.created_at, "
+    "SELECT u.id, u.npm, u.full_name, u.program_study, u.email, u.phone, "
+    "u.status, u.deactivated_at, u.created_at, "
     "COALESCE(l.total, 0) AS loans_total, "
     "COALESCE(v.total, 0) AS visits_total, v.last_visit "
     "FROM `user` u "
@@ -99,13 +115,15 @@ class Member:
     def admin_summary():
         """Angka untuk tiga kartu di atas halaman Anggota."""
         ensure_status_column()
+        today = _today_wib()
         with cursor() as cur:
             cur.execute(
                 "SELECT COUNT(*) AS total, "
                 "COALESCE(SUM(u.status = 'suspended'), 0) AS suspended, "
-                "COALESCE(SUM(YEAR(created_at) = YEAR(CURRENT_DATE()) "
-                "AND MONTH(created_at) = MONTH(CURRENT_DATE())), 0) AS new_month "
-                "FROM `user` u WHERE role = 'member'"
+                "COALESCE(SUM(YEAR(created_at) = YEAR(%s) "
+                "AND MONTH(created_at) = MONTH(%s)), 0) AS new_month "
+                "FROM `user` u WHERE role = 'member'",
+                (today, today),
             )
             row = cur.fetchone()
         return {
@@ -131,9 +149,10 @@ class Member:
 
             try:
                 cur.execute(
-                    "INSERT INTO `user` (npm, full_name, email, phone, program_study, password_hash, role, status) "
-                    "VALUES (%s, %s, %s, %s, %s, %s, 'member', %s)",
-                    (npm, name, email, phone, program_study, hash_password(password), clean_status),
+                    "INSERT INTO `user` "
+                    "(npm, full_name, email, phone, program_study, password_hash, role, status, deactivated_at) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, 'member', %s, IF(%s = 'active', NULL, NOW()))",
+                    (npm, name, email, phone, program_study, hash_password(password), clean_status, clean_status),
                 )
             except mysql.connector.Error as exc:
                 if exc.errno == 1062:
@@ -164,11 +183,17 @@ class Member:
                 status if status in ("active", "suspended") else existing.get("status", "active")
             )
             cur.execute(
-                "UPDATE `user` SET full_name = %s, email = %s, phone = %s, program_study = %s, status = %s WHERE id = %s",
-                (name, email, phone, program_study, clean_status, member_id),
+                "UPDATE `user` "
+                "SET full_name = %s, email = %s, phone = %s, program_study = %s, status = %s, "
+                "deactivated_at = IF(%s = 'active', NULL, COALESCE(deactivated_at, NOW())) "
+                "WHERE id = %s",
+                (name, email, phone, program_study, clean_status, clean_status, member_id),
             )
-            return Member._get(cur, member_id)
+            updated = Member._get(cur, member_id)
 
+        if clean_status != "active":
+            session.destroy_user(member_id)
+        return updated
 
     @staticmethod
     def admin_delete(member_id):
@@ -204,12 +229,15 @@ class Member:
             )
             cur.execute("DELETE FROM `user` WHERE id = %s", (member_id,))
 
+        session.destroy_user(member_id)
+
     @staticmethod
     def profile(user_id):
         """Data profil milik satu akun, plus kunjungan bulan ini."""
+        today = _today_wib()
         with cursor() as cur:
             cur.execute(
-                "SELECT id, npm, full_name, email, phone, program_study, role, created_at "
+                "SELECT id, npm, full_name, email, phone, program_study, role, status, created_at "
                 "FROM `user` WHERE id = %s",
                 (user_id,),
             )
@@ -220,9 +248,9 @@ class Member:
             cur.execute(
                 "SELECT COUNT(*) AS total FROM kunjungan "
                 "WHERE user_id = %s "
-                "AND YEAR(visit_date) = YEAR(CURRENT_DATE()) "
-                "AND MONTH(visit_date) = MONTH(CURRENT_DATE())",
-                (user_id,),
+                "AND YEAR(visit_date) = YEAR(%s) "
+                "AND MONTH(visit_date) = MONTH(%s)",
+                (user_id, today, today),
             )
             row["visits_this_month"] = cur.fetchone()["total"]
             return row

@@ -199,3 +199,23 @@
     width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 22px;
+  }
+
+  .detail-book-card {
+    padding: 18px 16px;
+    gap: 18px;
+  }
+
+  .detail-cover-img {
+    width: 124px;
+    height: 176px;
+  }
+
+  .detail-title {
+    font-size: 21px;
+  }
+}

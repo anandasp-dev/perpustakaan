@@ -1,11 +1,17 @@
-from datetime import date, datetime, time, timedelta
+from datetime import datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 from database.db import cursor
 from models.loan import CONFIRM_HOURS
 
+WIB = ZoneInfo("Asia/Jakarta")
 WINDOW_DAYS = 14      # kejadian yang lebih lama dari ini tidak ditampilkan
 MAX_ITEMS = 20
 BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+
+
+def _now_wib():
+    return datetime.now(WIB).replace(tzinfo=None)
 
 
 def _tgl(d):
@@ -19,9 +25,9 @@ def _tgl_jam(dt):
 class Notification:
     @staticmethod
     def for_user(user_id):
-        """Susun notifikasi dari kondisi pinjaman milik user. Hasil: (daftar, jumlah belum dibaca)."""
-        today = date.today()
-        now = datetime.now()
+        """Susun notifikasi dari kondisi pinjaman milik user (WIB). Hasil: (daftar, jumlah belum dibaca)."""
+        now = _now_wib()
+        today = now.date()
         limit = now - timedelta(days=WINDOW_DAYS)
 
         with cursor() as cur:
@@ -35,9 +41,9 @@ class Notification:
                 "FROM peminjaman p JOIN buku b ON b.id = p.book_id "
                 "WHERE p.user_id = %s "
                 "AND (p.status IN ('pending', 'borrowed') "
-                "     OR COALESCE(p.returned_at, p.borrowed_at) >= DATE_SUB(NOW(), INTERVAL %s DAY)) "
+                "     OR COALESCE(p.returned_at, p.borrowed_at) >= %s) "
                 "ORDER BY p.id DESC",
-                (user_id, WINDOW_DAYS),
+                (user_id, limit),
             )
             loans = cur.fetchall()
 
@@ -85,7 +91,7 @@ class Notification:
                         "info", "clock", "Peminjaman hampir jatuh tempo",
                         f"{name} jatuh tempo {kapan} ({_tgl(loan['due_date'])}).")
 
-            elif status == "returned":
+            elif status == "returned" and loan["returned_at"]:
                 add("returned", loan, loan["returned_at"], "info", "book",
                     "Buku dikembalikan",
                     f"{name} sudah tercatat kembali. Terima kasih!")
@@ -103,6 +109,7 @@ class Notification:
 
     @staticmethod
     def mark_seen(user_id):
-        """Tandai semua notifikasi sebagai sudah dibaca (sampai saat ini)."""
+        """Tandai semua notifikasi sebagai sudah dibaca (waktu WIB)."""
+        now = _now_wib()
         with cursor() as cur:
-            cur.execute("UPDATE `user` SET notif_seen_at = NOW() WHERE id = %s", (user_id,))
+            cur.execute("UPDATE `user` SET notif_seen_at = %s WHERE id = %s", (now, user_id))

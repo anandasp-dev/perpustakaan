@@ -1,5 +1,5 @@
 //PEMINJAMAN — halaman admin, tersambung ke database lewat /api/admin/loans
-lucide.createIcons();
+if (window.lucide) lucide.createIcons();
 
 (function () {
   "use strict";
@@ -19,12 +19,12 @@ lucide.createIcons();
 
   // ---------------- alat bantu kecil ----------------
   function dua(n) { return String(n).padStart(2, "0"); }
-  function angka(n) { return Number(n).toLocaleString("id-ID"); }
+  function angka(n) { return Number(n || 0).toLocaleString("id-ID"); }
   function isi(el, teks) { if (el) el.textContent = teks; }
   function kodePN(id) { return "PN-" + String(id).padStart(4, "0"); }
 
   function esc(teks) {
-    return String(teks).replace(/[&<>"']/g, function (c) {
+    return String(teks ?? "").replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
@@ -75,7 +75,7 @@ lucide.createIcons();
   }
 
   async function panggil(url, opsi) {
-    const respons = await fetch(url, opsi);
+    const respons = await fetch(url, Object.assign({ credentials: "same-origin" }, opsi || {}));
     const data = await respons.json().catch(function () { return {}; });
     if (respons.status === 401) {
       window.location.href = "/index";
@@ -112,6 +112,7 @@ lucide.createIcons();
 
   const state = { q: "", status: "all", tanggal: "all", page: 1 };
   let daftar = [];
+  let timerCari = null;
 
   // ---------------- alamat (?q=...&status=...&tanggal=...&hal=...) ----------------
   function bacaUrl() {
@@ -190,19 +191,19 @@ lucide.createIcons();
   function gambarTabel(data) {
     const rows = data.loans;
     badan.innerHTML = rows.length === 0
-      ? '<tr><td colspan="8" class="muted">Tidak ada transaksi yang cocok.</td></tr>'
+      ? '<tr><td colspan="8" class="muted" style="text-align:center;padding:24px;">Tidak ada transaksi yang cocok.</td></tr>'
       : rows.map(barisHtml).join("");
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
     const awal = rows.length ? (data.page - 1) * data.per_page + 1 : 0;
     const akhir = rows.length ? awal + rows.length - 1 : 0;
     const sekarang = new Date();
     isi(document.querySelector(".section-sub"),
       "Data per " + sekarang.getDate() + " " + BULAN_PENUH[sekarang.getMonth()] + " " +
-      sekarang.getFullYear() + " • diurutkan menurut tanggal pinjam terbaru");
+      sekarang.getFullYear() + " \u2022 diurutkan menurut tanggal pinjam terbaru");
     isi(document.querySelector(".section-row > .muted"), rows.length + " dari " + angka(data.total) + " transaksi");
     isi(document.querySelector(".table-foot > .muted"),
-      "Menampilkan " + awal + "-" + akhir + " dari " + angka(data.total) + " transaksi • " +
+      "Menampilkan " + awal + "-" + akhir + " dari " + angka(data.total) + " transaksi \u2022 " +
       data.per_page + " transaksi per halaman");
     isi(pilPager, data.page + " / " + data.pages);
     nonaktifkanTombol(tombolSebelum, data.page <= 1);
@@ -224,7 +225,7 @@ lucide.createIcons();
       isi(aktif.querySelector(".stat-number"), angka(r.borrowed));
       isi(aktif.querySelector(".stat-note"),
         "Termasuk " + r.overdue + " pinjaman terlambat" +
-        (r.pending > 0 ? " • " + r.pending + " menunggu konfirmasi" : ""));
+        (r.pending > 0 ? " \u2022 " + r.pending + " menunggu konfirmasi" : ""));
     }
     const kembali = cariKartu("Dikembalikan hari ini");
     if (kembali) {
@@ -278,6 +279,10 @@ lucide.createIcons();
     muat();
   }
   formCari.addEventListener("submit", function (e) { e.preventDefault(); terapkanFilter(); });
+  inputCari.addEventListener("input", function () {
+    clearTimeout(timerCari);
+    timerCari = setTimeout(terapkanFilter, 300);
+  });
   pilihStatus.addEventListener("change", terapkanFilter);
   pilihTanggal.addEventListener("change", terapkanFilter);
 
@@ -693,13 +698,19 @@ lucide.createIcons();
       return;
     }
 
+    const dueDate = document.getElementById("lTempo").value;
+    if (!dueDate) {
+      toast("Tanggal jatuh tempo wajib diisi.", true);
+      return;
+    }
+
     const tombol = formTambah.querySelector('button[type="submit"]');
     tombol.disabled = true;
     try {
       const data = await panggil("/api/admin/loans", kirimJson({
         member: anggotaValid.npm || anggotaValid.code,
         book: bukuValid.code,
-        due_date: document.getElementById("lTempo").value
+        due_date: dueDate
       }));
       tutup(modalTambah);
       toast("Peminjaman " + kodePN(data.loan.id) + " dicatat.");
@@ -731,7 +742,8 @@ lucide.createIcons();
     kunci("elId", p.code);
     kunci("elPeminjam", p.borrower.name);
     kunci("elBuku", p.title);
-    kunci("elPinjam", keIso(parseTanggal(p.confirmed_at || p.borrowed_at)));
+    const tglPinjam = parseTanggal(p.confirmed_at || p.borrowed_at);
+    kunci("elPinjam", tglPinjam ? keIso(tglPinjam) : "");
     kunci("elStatus", p.display_status === "overdue" ? "overdue" : "borrowed");
     document.getElementById("elKembali").value = "";
     document.getElementById("elKembali").disabled = true;
@@ -744,11 +756,16 @@ lucide.createIcons();
 
   formUbah.addEventListener("submit", async function (e) {
     e.preventDefault();
+    const nilaiTempo = document.getElementById("elTempo").value;
+    if (!nilaiTempo) {
+      toast("Tanggal jatuh tempo wajib diisi.", true);
+      return;
+    }
     const tombol = formUbah.querySelector('button[type="submit"]');
     tombol.disabled = true;
     try {
       await panggil("/api/loans/" + idDiubah + "/due-date",
-        kirimJson({ due_date: document.getElementById("elTempo").value }));
+        kirimJson({ due_date: nilaiTempo }));
       tutup(modalUbah);
       toast("Jatuh tempo diperbarui.");
       await muat();
@@ -781,7 +798,7 @@ lucide.createIcons();
         '</div>' +
       '</div>';
     document.body.appendChild(modalWa);
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
   }
 
   const btnOverdue = document.getElementById("btnReviewOverdueLoan");
@@ -817,7 +834,7 @@ lucide.createIcons();
               tombolWa +
             '</div>';
           }).join("");
-          lucide.createIcons();
+          if (window.lucide) lucide.createIcons();
         }
       } catch (galat) {
         isiModal.innerHTML = '<p style="color:#dc2626;text-align:center;padding:24px 0;">Gagal memuat daftar peminjaman terlambat.</p>';

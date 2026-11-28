@@ -19,10 +19,17 @@
 
 <body>
 
-    <aside class="sidebar">
-        <div class="logo">
-            <i data-lucide="book-open"></i>
-            Keyto Perpustakaan
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <aside class="sidebar" id="adminSidebar">
+        <div class="sidebar-head">
+            <div class="logo">
+                <i data-lucide="book-open"></i>
+                Keyto Perpustakaan
+            </div>
+            <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Tutup menu navigasi">
+                <i data-lucide="x"></i>
+            </button>
         </div>
         <span class="badge">ADMIN WORKSPACE</span>
 
@@ -42,7 +49,13 @@
 
     <div class="main">
         <header class="topbar">
-            <span class="crumb">Workspace / Dashboard</span>
+            <div class="topbar-left">
+                <button type="button" class="menu-toggle" id="sidebarToggle" aria-label="Buka menu navigasi"
+                    aria-expanded="false">
+                    <i data-lucide="menu"></i>
+                </button>
+                <span class="crumb">Workspace / Dashboard</span>
+            </div>
 
             <div class="user">
                 <div class="notif">
@@ -103,7 +116,7 @@
 
                 <div class="modal-head">
                     <div class="modal-title">
-                        <h2 id="profileTitle">Edit Profil</h2>
+                        <h2 id="adminProfileTitle">Edit Profil</h2>
                         <p>Perbarui informasi pribadi dan keamanan akun.</p>
                     </div>
                     <button type="button" class="modal-close" data-close aria-label="Tutup">
@@ -117,28 +130,31 @@
                     <div class="field-row">
                         <div class="field">
                             <label for="nama">Nama Lengkap</label>
-                            <input type="text" id="nama" name="nama" value="Emma Reed" required>
+                            <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
                         </div>
                         <div class="field">
                             <label for="npm">NPM</label>
-                            <input type="text" id="npm" name="npm" value="202511223330" required>
+                            <input type="text" id="npm" name="npm" placeholder="12 digit angka" maxlength="12"
+                                inputmode="numeric" required>
                         </div>
                     </div>
 
                     <div class="field-row">
                         <div class="field">
                             <label for="email">Alamat Email</label>
-                            <input type="email" id="email" name="email" value="emma@gmail.com" required>
+                            <input type="email" id="email" name="email" placeholder="nama@unindra.ac.id" required>
                         </div>
                         <div class="field">
                             <label for="telepon">Nomor Telepon</label>
-                            <input type="tel" id="telepon" name="telepon" value="0812-3456-7890">
+                            <input type="tel" id="telepon" name="telepon" placeholder="08xxxxxxxxxx" maxlength="13"
+                                inputmode="numeric">
                         </div>
                     </div>
-                    
+
                     <div class="field">
                         <label for="prodi">Program Studi</label>
                         <select id="prodi" name="prodi">
+                            <option value="">Pilih program studi</option>
                             <option value="Bimbingan dan Konseling (S1)">Bimbingan dan Konseling (S1)</option>
                             <option value="Pendidikan Ekonomi (S1)">Pendidikan Ekonomi (S1)</option>
                             <option value="Pendidikan Sejarah (S1)">Pendidikan Sejarah (S1)</option>
@@ -147,7 +163,7 @@
                             <option value="Pendidikan Matematika (S1)">Pendidikan Matematika (S1)</option>
                             <option value="Biologi (S1)">Biologi (S1)</option>
                             <option value="Fisika (S1)">Fisika (S1)</option>
-                            <option value="Teknik Informatika (S1)" selected>Teknik Informatika (S1)</option>
+                            <option value="Teknik Informatika (S1)">Teknik Informatika (S1)</option>
                             <option value="Sistem Informasi (S1)">Sistem Informasi (S1)</option>
                             <option value="Teknik Industri (S1)">Teknik Industri (S1)</option>
                             <option value="Arsitektur (S1)">Arsitektur (S1)</option>
@@ -204,17 +220,15 @@
     </div>
 
     <script>
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     </script>
 
-    <!-- JS Global & Utilitas (dimuat sekali) -->
     <script src="/Js/api.js"></script>
     <script src="/Js/auth.js"></script>
     <script src="/Js/notifikasi.js"></script>
     <script src="/Js/app.js"></script>
     <script src="/Js/transisi.js"></script>
 
-    <!-- Kerangka Utama (harus paling bawah agar semua fungsi global di atas sudah siap) -->
     <script src="/Js/admin-shell.js"></script>
 </body>
 
